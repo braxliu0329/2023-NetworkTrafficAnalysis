@@ -1,4 +1,4 @@
-## Group Mentor Meeting 11/10/2023 ##
+## Group Mentor Meeting 10/10/2023 ##
 Group Members Present: Ani, Tomos, Tony, Joe  
 Others present: Oliver (Mentor)
 - Group roles were discussed:
