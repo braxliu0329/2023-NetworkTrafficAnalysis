@@ -7,7 +7,7 @@
     ICMP is a supporting internet protocl that differs from TCP and UDP, in that the latter protocols are used to exchange data between systems. Instead,
     ICMP is used for diagnostic purposes, sending error messages and requesting that the data be resent.
   - ## Detecting ICMP floods
-    Ping floods are easier to detect based on the volume of ICMP traffic.
+    Ping floods are easier to detect than say a SYN flood, based on the volume of ICMP traffic.
   - ## Mitigating ICMP floods
     - Traffic Rate limiting: Set a maximum number of ICMP echo requests that can be processed at any given time.
     - ICMP Protocol Blocking: Potentially a final effort in stopping an attack, blocking ICMP outright will stop the attack at the cost of being
