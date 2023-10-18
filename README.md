@@ -27,7 +27,21 @@
   - Oliver Gay
 
 ## User Stories
-  To be discussed with Synoptix
-  
+  1. As a Synoptix information technology apartment:
+     - I want an automated system for monitoring and analyzing clients' private networks.
+     - The purpose is to check if data is being stolen or abused.
+     - The primary goal is to safeguard the network from potential threats.
+  2. As a Synoptix client:
+     - I want my network been carefully analysed
+     - I wish for the reporting of potential threats.
+     - The objective is to ensure the security and smooth operation of my network.
+  3. As a network engineer:
+     - I want 
+     - The purpose is 
+     - The primary goal is 
+  5. 
+  6. 
+  7. 
+  8. 
 ## Ethics
   To be discussed with Synoptix
