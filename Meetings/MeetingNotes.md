@@ -27,3 +27,33 @@ Others present: Oliver (Mentor)
   - Familiarise ourselves with the files that we will be working on
   - Research the technologies brought up by the client
   - Consider the feasibility of changing the project's language from python
+
+## Client Meeting 17/10/2023 ##
+Group Members Present: Ani, Tomos, Tony, Joe  
+Others present: Louis (Client)
+- The general project outcome was discussed:
+  - We will be improving last year's existing solution
+    - The existing solution was implemented in Python
+  - Improving the project's documentation and comments was requested, and will help us better understand the project
+  - Adding detection of more methods of cyberattacks would serve as a good stretch goal
+  - Last year's project's GUI needs improvement
+- The feasibility of implementing code via a different programming language than Python was discussed:
+  - Python is often considered slow and unoptimised
+  - Critical sections of code can be rewritten in a better optimised language
+  - Adding a new language would require implementation of a new compatibility layer
+  - Ani suggests Golang as the new language
+    - Golang is part of the CS course, so we should be familiar with it
+    - Golang is optimised well, similarly to languages such as C
+    - Golang allows specific parallelization implementation to further optimise
+- Minimum Viable Product requirements were discussed:
+  - The MVP should have at least the same functionality as the original solution
+  - Another fleshed out feature would be good
+  - Comments on last year's code
+- Ani asked Louis about Stakeholders and User Stories:
+  - The tool will be used by Synoptix
+  - It will likely be used by people in IT who are experienced with cybersecurity
+  - Louis will send a follow-up email with more detailed user stories
+- Legal and Ethical issues were discussed:
+  - A legal contract was made and signed last year
+  - Louis will forward the desired contract
+  - There is no reason to worry about ethical considerations, as no personal data is used
