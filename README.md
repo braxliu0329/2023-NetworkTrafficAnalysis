@@ -1,7 +1,7 @@
 ## Table of Contents
   - [Project Description](#project-description)
   - [Requirements](#requirements)
-  - [Stakeholders](#stakeholders)
+  - [Key Stakeholder](#key-stakeholder)
   - [Group Members](#group-members)
   - [Supporting Mentor](#supporting-mentor)
   - [User Stories](#user-stories)
@@ -19,8 +19,8 @@
  - Analysis of data with consideration of previously unimplemented attack methods
  - An interactive, intuitive GUI
 
-## Stakeholders
-  To be discussed with Synoptix
+## Key Stakeholder
+  Louis and Synoptix - Acting as the client behind this project and its main user. They will be expecting a system that allows monitoring and analysis of data packets over provided networks. They require a final, robust program that will allow them to test their network security by periodically scanning packets for any cyberattacks the company isn't aware of.
 
 ## Group Members
   - Ani Boja
@@ -37,18 +37,20 @@
      - The purpose is to check if data is being stolen or abused.
      - The primary goal is to safeguard the network from potential threats.
   2. As a Synoptix client:
-     - I want my network been carefully analysed.
-     - I wish for the reporting of potential threats.
-     - The objective is to ensure the security and smooth operation of my network.
+     - I want my network to be carefully analysed for potential threats.
+     - I would like to use the program on our testing network in a passive or active way:
+       - I would like to passively monitor the network using the program to automatically identify any ongoing network attacks that we are not aware of.
+       - I will actively scan our network using the program if we suspect there is some form of ongoing attack.
+     - The primary goal of using the program in these ways is, if the program has identified an ongoing attack, to escalate security further to IT.
   3. As a network engineer:
      - I want a useful network analysis tool with an intuitive GUI.
      - The purpose is to provide an interface to be able to dynamically capture, filter and sort packets.
      - The primary goal is to be able to monitor and report suspicious packets within a network to direct investigations into the network's security.
 ## Minimum Viable Product Requirements  
- - The capabilities and features of the existing solution are preserved
- - The code is well documented and commented
- - The project's GUI is made more intuitive and organised
- - Support for protection against a new form of cyberattack
+ - The capabilities and features of the existing solution are preserved.
+ - The code is well documented and commented.
+ - The project's GUI is made more intuitive and organised.
+ - The existing product is recreated in a different, better optimised language.
 
 ## Setup instruction for development
 ### Prerequisites
@@ -128,4 +130,4 @@ python code/pythonGUI/main.py
 _(MacOS) When prompted to configure Python interpreter, select conda interpretor_
 
 ## License
-  To be discussed with Synoptix
+Distributed under a *MIT License*
