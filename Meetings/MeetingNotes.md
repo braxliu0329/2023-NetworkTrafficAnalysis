@@ -1,6 +1,6 @@
 ## Group Mentor Meeting 10/10/2023 ##
 Group Members Present: Ani, Tomos, Tony, Joe  
-Others present: Oliver (Mentor)
+Others Present: Oliver (Mentor)
 - Group roles were discussed:
   - Client Liaison - Ani
   - Admin and Notes - Tomos
@@ -30,7 +30,7 @@ Others present: Oliver (Mentor)
 
 ## Client Meeting 17/10/2023 ##
 Group Members Present: Ani, Tomos, Tony, Joe  
-Others present: Louis (Client)
+Others Present: Louis (Client)
 - The general project outcome was discussed:
   - We will be improving last year's existing solution
     - The existing solution was implemented in Python
@@ -57,3 +57,33 @@ Others present: Louis (Client)
   - A legal contract was made and signed last year
   - Louis will forward the desired contract
   - There is no reason to worry about ethical considerations, as no personal data is used
+
+## Group Mentor Meeting 25/10/2023 ##
+Group Members Present: Ani, Tomos  
+Group Members Absent: Tony, Joe  
+Others Present: Oliver (Mentor)  
+- This week's group rankings and feedback were evaluated:
+  - Our project was ranked 12th
+  - The ReadMe was the main area to be improved
+    - Every section should be filled in soon
+    - Last year's project ReadMe can be used as inspiration
+  - Branch names should be in dash camel case and more concise
+  - The development branch should be renamed to dev to allow easier access for markers
+  - There is no need to allocate everyone to an issue, allocate no one instead
+- Oliver also gave some more specific feedback:
+  - Make milestones to group issues
+  - Split up larger issues such as "comment code"
+  - Don't risk changing any code while commenting - it could break everything!
+  - When considering someone else's code related pull request, make sure it runs on your machine
+  - It would be a good idea to make a commit to main with a good ReadMe and the code
+- Tomos suggested setting up branch protection on github
+  - Only the mentor (Oliver) can change the repo settings
+  - The group decided on the following branch rules:
+    - dev and main both require pull requests to commit and merge branches
+    - Pull requests need to be approved by one other team member before pulling to dev
+    - Pull requests need to be approved by two other team members before pulling to main
+- The contract was discussed:
+  - The soft deadline for submitting the contract is 25/10/2023
+  - Ani has not yet received any updates from the client about which contract to go for
+  - Every group member will need to sign the contract, and the client will need to sign the contract before submitting it
+  - Ani will send a follow up email to the client about the contract
