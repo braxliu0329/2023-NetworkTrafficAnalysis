@@ -19,7 +19,7 @@
  - Analysis of data with consideration of previously unimplemented attack methods
  - An interactive, intuitive GUI
 
-## Key Stakeholder
+## Stakeholders
   Louis and Synoptix - Acting as the client behind this project and its main user. They will be expecting a system that allows monitoring and analysis of data packets over provided networks. They require a final, robust program that will allow them to test their network security by periodically scanning packets for any cyberattacks the company isn't aware of.
 
 ## Group Members
