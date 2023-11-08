@@ -87,3 +87,25 @@ Others Present: Oliver (Mentor)
   - Ani has not yet received any updates from the client about which contract to go for
   - Every group member will need to sign the contract, and the client will need to sign the contract before submitting it
   - Ani will send a follow up email to the client about the contract
+ 
+ ## Group Mentor Meeting 8/11/2023
+ Group Members Present: Ani, Tomos, Tony, Joe    
+ Others Present: Oliver (Mentor)
+### Rankings and Feedback
+ - Oliver had not yet recieved our group's rankings for last week
+ - Oliver suggests, given the volatility of the top ten rankings, staying within the top ten is an impressive feat to go for
+ - Ideally, everyone should be working on one issue and on one seperate branch at all times
+ - Team members should commit to branches consistently
+### Progress
+ - Tomos has overhauled the repo's organisation
+   - A Gantt Chart has been added as a view to the kanban board, with the completion dates of issues noted
+   - The Readme has been updated with stakeholders and deployment instructions
+   - A docs directory has been added to the repo
+   - Pull request and issue templates have been added to the new docs folder to allow better documentation and realisation of next steps
+- Ani has been researching how to best update the GUI
+- Joe has completed the ethics form
+- Tony has added some user stories to the Readme
+### Next Steps
+ - This week's weekly workbooks are on cloud computing, which is not applicable to our project
+ - Tomos, Tony and Joe will begin commenting different files of the code
+ - Ani will continue to research and update the GUI
