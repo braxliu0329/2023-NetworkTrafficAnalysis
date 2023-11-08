@@ -1,7 +1,7 @@
 ## Table of Contents
   - [Project Description](#project-description)
   - [Requirements](#requirements)
-  - [Key Stakeholder](#key-stakeholder)
+  - [Stakeholders](#stakeholders)
   - [Group Members](#group-members)
   - [Supporting Mentor](#supporting-mentor)
   - [User Stories](#user-stories)
