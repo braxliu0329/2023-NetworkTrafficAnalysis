@@ -10,20 +10,28 @@ from scapy.sendrecv import sniff
 from pythonGUI.capture_analysis import attack_detection, GUI_actions, dataframe_create
 
 
+# One test case to wrap around all the tests
 class MyTestCase(unittest.TestCase):
+    # Define the actions for this to use as defined in GUI_actions
     def setUp(self):
         self.actions = GUI_actions.GUIActions()
 
     def test_tcp_flood(self):
         # pcap file of a TCP Syn Flood attack with 2 addresses
         self.actions.read_pcap("test_pcaps/SYN.pcap", None)
+        # define the method to get the packets
         read_packets = self.actions.get_sniffed_packets()
+        # define the method to detect attacks using the sniffed packets
         attack_detect = attack_detection.AttackDetection(read_packets, [])
 
+        # expected suspicious address
         known_sus = "10.128.0.2"
+        # expected victim address
         known_vic = "10.0.0.2"
 
+        # execute the tcp detection to test the method works correctly
         attack_detect.tcp_syn_flood_detect()
+        # obtain the suspicious and victim addresses from the executed attack and store them in lists
         suspicious_addresses = attack_detect.tcp_suspicious_addresses
         attacked_addresses = attack_detect.attacked_addresses
 

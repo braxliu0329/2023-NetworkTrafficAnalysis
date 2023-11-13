@@ -124,7 +124,7 @@ deactivate
 
 - Run main.py with command
 ```
-python code/pythonGUI/main.py
+python Code/main.py
 ```
 
 _(MacOS) When prompted to configure Python interpreter, select conda interpretor_
