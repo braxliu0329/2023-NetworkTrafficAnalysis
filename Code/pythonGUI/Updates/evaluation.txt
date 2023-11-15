@@ -1,0 +1,11 @@
+Positive:
+Easy to navigate
+The functionality of each button is made immediately clear
+Use of colours to convery information about packets
+
+Improvements:
+Space isn't used appropriately (Lot's of blank spaces leaving the GUI look strange)
+No hints when hovering
+Graphs are very simple
+Some issues with scaling (e.g. some text clips outside of the gui, meaning some text cannot be read)
+Generally just not visually appealing (Obviously not a must, considering the program purpose, but it just looks unprofessional)
