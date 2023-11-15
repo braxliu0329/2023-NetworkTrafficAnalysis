@@ -9,3 +9,7 @@ No hints when hovering
 Graphs are very simple
 Some issues with scaling (e.g. some text clips outside of the gui, meaning some text cannot be read)
 Generally just not visually appealing (Obviously not a must, considering the program purpose, but it just looks unprofessional)
+Add a restart button to restart capture for file
+Go to top of packets
+Go to bottom of packets
+Go to specific packet
