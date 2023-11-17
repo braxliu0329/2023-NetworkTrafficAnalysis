@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model:Screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:model="http://wireframesketcher.com/1.0/model.ecore">
+  <widgets xsi:type="model:Panel" id="8" x="152" y="136" width="689" height="513" measuredWidth="689" measuredHeight="513"/>
+  <widgets xsi:type="model:Button" id="11" x="162" y="176" width="31" measuredWidth="31" measuredHeight="25" icon="assets/play-button (small)">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Button" id="14" x="200" y="176" width="31" measuredWidth="31" measuredHeight="25" icon="assets/pause (small)">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Button" id="15" x="240" y="176" width="31" measuredWidth="31" measuredHeight="25" icon="assets/record (small)">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:SearchField" id="19" x="162" y="217" width="679" text="Apply filter..." measuredWidth="679" measuredHeight="24">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Button" id="20" x="805" y="216" measuredWidth="36" measuredHeight="25" icon="arrow-right (small)">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Menu" id="21" x="152" y="136" text="&amp;File,&amp;Edit,&amp;Capture,&amp;Analysis,&amp;Help,&amp;Test" measuredWidth="252" measuredHeight="27">
+    <items x="5" y="0" width="30" height="27" text="&amp;File"/>
+    <items x="35" y="0" width="33" height="27" text="&amp;Edit"/>
+    <items x="68" y="0" width="55" height="27" text="&amp;Capture"/>
+    <items x="123" y="0" width="54" height="27" text="&amp;Analysis"/>
+    <items x="177" y="0" width="36" height="27" text="&amp;Help"/>
+    <items x="213" y="0" width="34" height="27" text="&amp;Test"/>
+  </widgets>
+  <widgets xsi:type="model:Button" id="22" x="280" y="176" width="31" measuredWidth="31" measuredHeight="25" icon="new (small)">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Button" id="23" x="320" y="177" width="31" measuredWidth="31" measuredHeight="25" icon="curved-arrow-up (small)">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Button" id="24" x="360" y="177" width="31" measuredWidth="31" measuredHeight="25" icon="curved-arrow-down (small)">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Button" id="25" x="403" y="177" width="31" measuredWidth="31" measuredHeight="25" icon="curved-arrow-right (small)">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:HLine" id="26" x="152" y="496" width="689" measuredWidth="689" measuredHeight="6"/>
+  <widgets xsi:type="model:Menu" id="29" x="152" y="240" width="689" text="&amp;No.,&amp;Time,&amp;Source,&amp;Desination,&amp;Source,&amp;Protocol,&amp;Length,&amp;Info" measuredWidth="689" measuredHeight="27">
+    <items x="5" y="0" width="30" height="27" text="&amp;No."/>
+    <items x="35" y="0" width="38" height="27" text="&amp;Time"/>
+    <items x="73" y="0" width="49" height="27" text="&amp;Source"/>
+    <items x="122" y="0" width="70" height="27" text="&amp;Desination"/>
+    <items x="192" y="0" width="49" height="27" text="&amp;Source"/>
+    <items x="241" y="0" width="57" height="27" text="&amp;Protocol"/>
+    <items x="298" y="0" width="50" height="27" text="&amp;Length"/>
+    <items x="348" y="0" width="33" height="27" text="&amp;Info"/>
+  </widgets>
+  <widgets xsi:type="model:VScrollbar" id="27" x="824" y="240" height="257" measuredWidth="17" measuredHeight="257"/>
+  <widgets xsi:type="model:HLine" id="28" x="152" y="240" width="689" measuredWidth="689" measuredHeight="6"/>
+  <widgets xsi:type="model:VLine" id="30" x="494" y="496" height="153" measuredWidth="6" measuredHeight="153"/>
+  <widgets xsi:type="model:HScrollbar" id="31" x="494" y="632" width="347" measuredWidth="347" measuredHeight="17"/>
+  <widgets xsi:type="model:Text" id="32" x="499" y="501" width="174" height="132" text="0000: 53 74 1A 9B C2 F7 80 2E&#x9;&#x9;&#xA;0010: A5 D4 6E 7F 01 4B 9E 5D&#xA;0020: 23 8C 67 51 BF E2 3A 4F&#xA;0030: 72 D9 0A 61 5F 8E C7 2B&#xA;0040: 3F B8 17 D6 E4 98 0D A2&#xA;0050: 6C F5 33 7A C1 57 BD 84&#xA;0060: E1 26 F0 49 05 D8 A7 91&#xA;0070: 2D 80 FC 3E B6 14 CE 70&#xA;" measuredWidth="174" measuredHeight="132">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Text" id="33" x="680" y="501" width="161" height="132" text="St......¥N....K.]&#xA;#.gQ¿¢:Or.aa_.Æ+&#xA;?¸.Öè..ló3zÁW½.d.¦.½Ç+?¸.Öè..ló3zÁW½..æ&amp;ðI.Ø§.&#xA;-..?.¶.Îp&#xA;" measuredWidth="161" measuredHeight="132">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Text" id="34" x="153" y="501" width="326" height="148" text="Frame 1: 64 bytes on wire (512 bits), 64 bytes captured (512 bits)&#xA;Ethernet II, Src: 00:1a:2b:3c:4d:5e (00:1a:2b:3c:4d:5e), Dst: 08:00:27:1c:1d:1a (08:00:27:1c:1d:1a)&#xA;Internet Protocol Version 4, Src: 192.168.1.2, Dst: 8.8.8.8&#xA;Transmission Control Protocol, Src Port: 12345, Dst Port: 80&#xA;Hypertext Transfer Protocol (GET /index.html)&#xA;&#xA;Frame: Number = 1, Captured Frame Length: 64 bytes, Actual Frame Length: 64 bytes&#xA;Ethernet II: Source Address: 00:1a:2b:3c:4d:5e, Destination Address: 08:00:27:1c:1d:1a&#xA;Internet Protocol Version 4: Source Address: 192.168.1.2, Destination Address: 8.8.8.8&#xA;Transmission Control Protocol: Source Port: 12345, Destination Port: 80&#xA;Hypertext Transfer Protocol: GET /index.html&#xA;" measuredWidth="326" measuredHeight="148">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:VScrollbar" id="35" x="478" y="501" height="148" measuredWidth="17" measuredHeight="148"/>
+  <widgets xsi:type="model:Text" id="36" x="153" y="266" width="672" height="231" text="1       0.000000        192.168.1.100   203.0.113.1     TCP      74        SYN&#xA;2       0.001234        203.0.113.1       192.168.1.100 TCP      60        SYN, ACK&#xA;3       0.002345        192.168.1.100   203.0.113.1     TCP      54        ACK&#xA;4       0.003456        192.168.1.100   8.8.8.8               ICMP   98        Echo (ping) request&#xA;5       0.004567        8.8.8.8                 192.168.1.100 ICMP   74        Echo (ping) reply&#xA;6       0.005678        192.168.1.100    203.0.113.1     UDP   120      DNS Query&#xA;7       0.006789        203.0.113.1        192.168.1.100 UDP    80        DNS Response&#xA;8       0.007890        192.168.1.100    8.8.4.4               TCP    1500    HTTP GET&#xA;9       0.008901        8.8.4.4                  192.168.1.100 TCP     500     HTTP Response&#xA;" measuredWidth="672" measuredHeight="231">
+    <font/>
+  </widgets>
+  <hRuler/>
+  <vRuler/>
+  <font size="12px"/>
+</model:Screen>
