@@ -28,9 +28,19 @@ The test to carry out is passed into MyTestCase as a test case. The class will t
 ### Test TCP Flood
 test_tcp_flood is a test definition used to assert that the TCP flood analysis of packets is working as expected.
 
-**Expected Output:** suspicious_addresses{"10.128.0.2"}, attacked_addresses{"10.0.0.2"}
+| Input Files        | Method Executed      | Expected Suspicious | Expected Victim |
+|--------------------|----------------------|---------------------|-----------------|
+| dns.pcap           | tcp_syn_flood_detect | None                | None            |
+| dns.pcap, SYN.pcap | tcp_syn_flood_detect | ["10.128.0.2"]      | ["10.0.0.2"]    |
 
-    def test_tcp_flood(self):
+     def test_tcp_flood(self):
+        # pcap file without a TCP SYN flood attack
+        self.actions.read_pcap("test_pcaps/dns.pcap", None)
+        # define the method to get the packets
+        read_false_packets = self.actions.get_sniffed_packets()
+        # define the method to detect attacks using the sniffed packets
+        attack_false_detect = attack_detection.AttackDetection(read_false_packets, [])
+
         # pcap file of a TCP Syn Flood attack with 2 addresses
         self.actions.read_pcap("test_pcaps/SYN.pcap", None)
         # define the method to get the packets
@@ -49,20 +59,34 @@ test_tcp_flood is a test definition used to assert that the TCP flood analysis o
         suspicious_addresses = attack_detect.tcp_suspicious_addresses
         attacked_addresses = attack_detect.attacked_addresses
 
-        # Tests whether any suspicious addresses were detected
-        self.assertTrue(suspicious_addresses)
-        self.assertTrue(attacked_addresses)
+        # execute the tcp detection on a file without a tcp attack to ensure it doesn't flag  a false positive
+        attack_false_detect.tcp_syn_flood_detect()
+        # obtain the suspicious and victim addresses from the executed attack and store them in lists
+        false_suspicious_addresses = attack_false_detect.tcp_suspicious_addresses
+        false_attacked_addresses = attack_false_detect.attacked_addresses
+
+        # ensure that the method does not incur any false positives
+        self.assertFalse(false_suspicious_addresses, "The TCP Flood Attack Analysis has detected false suspicious "
+                                                     "addresses")
+        self.assertFalse(false_attacked_addresses, "The TCP Flood Attack Analysis has detected false victim "
+                                                   "addresses")
 
         # Tests whether the known suspicious and victim addresses appeared in the correct lists
-        self.assertTrue(known_sus in suspicious_addresses)
-        self.assertTrue(known_vic in attacked_addresses)
-        self.assertTrue(known_sus not in attacked_addresses)
-        self.assertTrue(known_vic not in suspicious_addresses)
- It begins by retrieving the sniffed packets from the pcap file "SYN.pcap" and pointing the method to detect attacks to this file. The expected suspicious address and expected victim address are predetermined. These are the addresses the attack detection method should flag as suspicious and attacked.
+        self.assertIn(known_sus, suspicious_addresses,
+                      "The TCP Flood Attack Analysis has not detected an expected suspicious address")
+        self.assertIn(known_vic, attacked_addresses,
+                      "The TCP Flood Attack Analysis has not detected an expected victim address")
+        self.assertNotIn(known_sus, attacked_addresses,
+                         "The TCP Flood Attack Analysis has identified a suspicious address as an attacked address")
+        self.assertNotIn(known_vic, suspicious_addresses,
+                         "The TCP Flood Attack Analysis has identified an attacked address as a suspicious address")
+ It begins by retrieving the sniffed packets from the pcap files "dns.pcap" and "SYN.pcap".
 
-It then executes the tcp flood detection method defined in actions, retrieving the results of the suspicious addresses and attacked addresses to two separate lists.
+It then executes the tcp flood detection method twice, once on packets only from dns.pcap, and once on packets from both files.
 
-Lastly, the test checks that the expected return values match the actual executed return values by first checking that the lists returned are not empty, and then checking that they only contain the expected suspicious or victim address.
+Lastly, the test asserts the detection run on only the dns packets returned no suspicious or attacked addresses (which is expected as the dns.pcap file should contain no tcp flood attacks).
+The test then checks that the detection method found the expected suspicious and victim addresses in the SYN packets.
+
 ### Test TCP Scan Detect
 test_tcp_scan_detect is a test definition used to assert that the TCP connect scanning detection method is working. The test behaves differently than test tcp flood as it does not return attacked addresses and requires a detection threshold as input.
 

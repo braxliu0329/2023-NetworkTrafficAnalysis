@@ -17,6 +17,13 @@ class MyTestCase(unittest.TestCase):
         self.actions = GUI_actions.GUIActions()
 
     def test_tcp_flood(self):
+        # pcap file without a TCP SYN flood attack
+        self.actions.read_pcap("test_pcaps/dns.pcap", None)
+        # define the method to get the packets
+        read_false_packets = self.actions.get_sniffed_packets()
+        # define the method to detect attacks using the sniffed packets
+        attack_false_detect = attack_detection.AttackDetection(read_false_packets, [])
+
         # pcap file of a TCP Syn Flood attack with 2 addresses
         self.actions.read_pcap("test_pcaps/SYN.pcap", None)
         # define the method to get the packets
@@ -35,15 +42,27 @@ class MyTestCase(unittest.TestCase):
         suspicious_addresses = attack_detect.tcp_suspicious_addresses
         attacked_addresses = attack_detect.attacked_addresses
 
-        # Tests whether any suspicious addresses were detected
-        self.assertTrue(suspicious_addresses)
-        self.assertTrue(attacked_addresses)
+        # execute the tcp detection on a file without a tcp attack to ensure it doesn't flag  a false positive
+        attack_false_detect.tcp_syn_flood_detect()
+        # obtain the suspicious and victim addresses from the executed attack and store them in lists
+        false_suspicious_addresses = attack_false_detect.tcp_suspicious_addresses
+        false_attacked_addresses = attack_false_detect.attacked_addresses
+
+        # ensure that the method does not incur any false positives
+        self.assertFalse(false_suspicious_addresses, "The TCP Flood Attack Analysis has detected false suspicious "
+                                                     "addresses")
+        self.assertFalse(false_attacked_addresses, "The TCP Flood Attack Analysis has detected false victim "
+                                                   "addresses")
 
         # Tests whether the known suspicious and victim addresses appeared in the correct lists
-        self.assertTrue(known_sus in suspicious_addresses)
-        self.assertTrue(known_vic in attacked_addresses)
-        self.assertTrue(known_sus not in attacked_addresses)
-        self.assertTrue(known_vic not in suspicious_addresses)
+        self.assertIn(known_sus, suspicious_addresses,
+                      "The TCP Flood Attack Analysis has not detected an expected suspicious address")
+        self.assertIn(known_vic, attacked_addresses,
+                      "The TCP Flood Attack Analysis has not detected an expected victim address")
+        self.assertNotIn(known_sus, attacked_addresses,
+                         "The TCP Flood Attack Analysis has identified a suspicious address as an attacked address")
+        self.assertNotIn(known_vic, suspicious_addresses,
+                         "The TCP Flood Attack Analysis has identified an attacked address as a suspicious address")
 
     def test_tcp_scan_detect(self):
         # pcap file of a TCP connection
