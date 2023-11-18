@@ -16,20 +16,22 @@ class MyTestCase(unittest.TestCase):
     def setUp(self):
         self.actions = GUI_actions.GUIActions()
 
-    def test_tcp_flood(self):
-        # pcap file without a TCP SYN flood attack
-        self.actions.read_pcap("test_pcaps/dns.pcap", None)
-        # define the method to get the packets
-        read_false_packets = self.actions.get_sniffed_packets()
-        # define the method to detect attacks using the sniffed packets
-        attack_false_detect = attack_detection.AttackDetection(read_false_packets, [])
-
-        # pcap file of a TCP Syn Flood attack with 2 addresses
-        self.actions.read_pcap("test_pcaps/SYN.pcap", None)
+    # set up an attack detection method by adding the packets in the provided file to sniffed packets, returning an
+    # attack method using ALL sniffed packets
+    def setUpAttackDetection(self, filename):
+        # pcap file provided using filename
+        self.actions.read_pcap("test_pcaps/" + filename + ".pcap", None)
         # define the method to get the packets
         read_packets = self.actions.get_sniffed_packets()
         # define the method to detect attacks using the sniffed packets
-        attack_detect = attack_detection.AttackDetection(read_packets, [])
+        return attack_detection.AttackDetection(read_packets, [])
+
+    def test_tcp_flood(self):
+        # set up an attack detection using a pcap file without tcp flood attacks
+        attack_false_detect = self.setUpAttackDetection("dns")
+
+        # set up an attack detection adding a pcap file with a tcp flood attack
+        attack_detect = self.setUpAttackDetection("SYN")
 
         # expected suspicious address
         known_sus = "10.128.0.2"
@@ -65,15 +67,19 @@ class MyTestCase(unittest.TestCase):
                          "The TCP Flood Attack Analysis has identified an attacked address as a suspicious address")
 
     def test_tcp_scan_detect(self):
-        # pcap file of a TCP connection
-        self.actions.read_pcap("test_pcaps/SYN.pcap", None)
-        # define the method to get the packets
-        read_packets = self.actions.get_sniffed_packets()
-        # define the method to detect attacks using the sniffed packets
-        attack_detect = attack_detection.AttackDetection(read_packets, [])
+        # set up an attack detection using a pcap file without tcp flood attacks
+        attack_false_detect = self.setUpAttackDetection("dns")
+
+        # set up an attack detection adding a pcap file with a tcp flood attack
+        attack_detect = self.setUpAttackDetection("SYN")
 
         # expected suspicious address
         known_sus = "10.128.0.2"
+
+        # execute the tcp connection on a file that shouldn't flag any suspicion
+        attack_false_detect.tcp_connect_scanning_detect(100)
+        # obtain the suspicious addresses from the attack and store them in a list
+        false_suspicious_addresses = attack_false_detect.tcp_scanning_suspicious
 
         # execute the tcp connection scan to test the method works correctly, providing a low enough threshold to
         # detect the suspicious address
@@ -81,28 +87,31 @@ class MyTestCase(unittest.TestCase):
         # obtain the suspicious addresses from the attack and store them in a list
         suspicious_addresses = attack_detect.tcp_scanning_suspicious
 
-        # Tests whether any suspicious addresses were detected
-        self.assertTrue(suspicious_addresses)
-
-        # Tests whether the known suspicious addresses appeared in the correct lists
-        self.assertTrue(known_sus in suspicious_addresses)
-
         # execute the tcp connection scan to test the method works correctly, providing a threshold that should be too
         # high to detect the suspicious address
         attack_detect.tcp_connect_scanning_detect(10000)
         # obtain the suspicious addresses from the attack and store them in a new list
         suspicious_addresses_wthreshold = attack_detect.tcp_scanning_suspicious
 
+        # ensure that the method does not incur any false positives for clean packets
+        self.assertFalse(false_suspicious_addresses,
+                         "The TCP Connect Scanning Analysis has detected false suspicious addresses")
+
+        # Tests whether the known suspicious addresses appeared in the correct lists
+        self.assertIn(known_sus, suspicious_addresses,
+                      "The TCP Connect Scanning Analysis has not detected an expected suspicious address")
+
         # Assert that the new suspicious address list is empty as expected
-        self.assertTrue(known_sus not in suspicious_addresses_wthreshold)
+        self.assertNotIn(known_sus, suspicious_addresses_wthreshold,
+                         "The TCP Connect Scanning Analysis has detected an unexpected suspicious address given a high "
+                         "threshold")
 
     def test_arp_poison(self):
-        # pcap file of an ARP poison attack with 2 addresses
-        self.actions.read_pcap("test_pcaps/arp-poisoning.pcap", None)
-        # define the method to get the packets
-        read_packets = self.actions.get_sniffed_packets()
-        # define the method to detect attacks using the sniffed packets
-        attack_detect = attack_detection.AttackDetection(read_packets, [])
+        # set up an attack detection using a pcap file without arp poisoning attacks
+        attack_false_detect = self.setUpAttackDetection("dns")
+
+        # set up an attack detection adding a pcap file with arp poisoning attacks
+        attack_detect = self.setUpAttackDetection("arp-poisoning")
 
         # expected suspicious addresses
         known_sus = ['192.168.1.1', '192.168.1.254']
@@ -112,19 +121,33 @@ class MyTestCase(unittest.TestCase):
         # obtain the suspicious addresses from the attack and store them in a list
         suspicious_addresses = attack_detect.arp_suspicious_addresses
 
+        # execute the arp poisoning on a file that shouldn't flag any suspicion
+        attack_false_detect.arp_poison_detect()
+        # obtain the suspicious addresses from the attack and store them in a list
+        false_suspicious_addresses = attack_false_detect.arp_suspicious_addresses
+
+        # ensure that the method does not incur any false positives for clean packets
+        self.assertFalse(false_suspicious_addresses,
+                         "The ARP Poisoning Analysis has detected false suspicious addresses")
+
         # assert that every expected address appears in the suspicious addresses list
-        self.assertCountEqual(suspicious_addresses, known_sus)
+        self.assertCountEqual(suspicious_addresses, known_sus,
+                              "The ARP Poisoning Analysis does not contain exactly all expected suspicious addresses")
 
     def test_icmp_flood(self):
-        # pcap file of an icmp flood attack
-        self.actions.read_pcap("test_pcaps/icmp-ping.pcap", None)
-        # define the method to get the packets
-        read_packets = self.actions.get_sniffed_packets()
-        # define the method to detect attacks using the sniffed packets
-        attack_detect = attack_detection.AttackDetection(read_packets, [])
+        # set up an attack detection using a pcap file without arp poisoning attacks
+        attack_false_detect = self.setUpAttackDetection("dns")
+
+        # set up an attack detection adding a pcap file with arp poisoning attacks
+        attack_detect = self.setUpAttackDetection("icmp-ping")
 
         # expected suspicious address
         known_sus = '10.0.0.2'
+
+        # execute the icmp flood detection on a file that shouldn't flag any suspicion
+        attack_false_detect.icmp_flood_detect(100)
+        # obtain the suspicious addresses from the attack and store them in a list
+        false_suspicious_addresses = attack_false_detect.tcp_scanning_suspicious
 
         # execute the icmp flood detection to test the method works correctly, providing a low enough threshold to
         # detect the suspicious address
@@ -132,27 +155,36 @@ class MyTestCase(unittest.TestCase):
         # obtain the suspicious addresses from the attack and store them in a new list
         suspicious_addresses = attack_detect.icmp_suspicious
 
-        # Tests whether the known suspicious address appeared in the correct lists
-        self.assertTrue(known_sus in suspicious_addresses)
-
         # execute the icmp flood detection to test the method works correctly, providing a threshold that should be too
         # high to detect the suspicious address
         attack_detect.icmp_flood_detect(10000)
         # obtain the suspicious addresses from the attack and store them in a new list
         suspicious_addresses_wthreshold = attack_detect.icmp_suspicious
+
+        # ensure that the method does not incur any false positives for clean packets
+        self.assertFalse(false_suspicious_addresses,
+                         "The ICMP Flood Analysis has detected false suspicious addresses")
+        # Tests whether the known suspicious address appeared in the correct lists
+        self.assertIn(known_sus, suspicious_addresses,
+                      "The ICMP Flood Analysis does not contain exactly all expected suspicious addresses")
         # Assert that the new suspicious address list is empty as expected
-        self.assertTrue(known_sus not in suspicious_addresses_wthreshold)
+        self.assertNotIn(known_sus, suspicious_addresses_wthreshold,
+                         "The ICMP Flood Analysis has detected an unexpected suspicious address given a high threshold")
 
     def test_http_flood(self):
-        # pcap file of a http flood attack
-        self.actions.read_pcap("test_pcaps/http-flood.pcap", None)
-        # define the method to get the packets
-        read_packets = self.actions.get_sniffed_packets()
-        # define the method to detect attacks using the sniffed packets
-        attack_detect = attack_detection.AttackDetection(read_packets, [])
+        # set up an attack detection using a pcap file without http flood attacks
+        attack_false_detect = self.setUpAttackDetection("dns")
+
+        # set up an attack detection adding a pcap file with http flood attacks
+        attack_detect = self.setUpAttackDetection("http-flood")
 
         # expected suspicious address
         known_sus = "10.0.0.2"
+
+        # execute the http flood detection on a file that shouldn't flag any suspicion
+        attack_false_detect.http_attack(5)
+        # obtain the suspicious addresses from the attack and store them in a list
+        false_suspicious_addresses = attack_false_detect.http_suspicious
 
         # execute the http flood detection to test the method works correctly, providing a low enough threshold to
         # detect the suspicious address
@@ -160,16 +192,21 @@ class MyTestCase(unittest.TestCase):
         # obtain the suspicious addresses from the attack and store them in a new list
         suspicious_addresses = attack_detect.http_suspicious
 
-        # Tests whether the known suspicious address appeared in the correct lists
-        self.assertTrue(known_sus in suspicious_addresses)
-
         # execute the http flood detection to test the method works correctly, providing a threshold that should be too
         # high to detect the suspicious address
         attack_detect.http_attack(500)
         # obtain the suspicious addresses from the attack and store them in a new list
         suspicious_addresses_wthreshold = attack_detect.http_suspicious
+
+        # ensure that the method does not incur any false positives for clean packets
+        self.assertFalse(false_suspicious_addresses,
+                         "The HTTP Flood Analysis has detected false suspicious addresses")
+        # Tests whether the known suspicious address appeared in the correct lists
+        self.assertIn(known_sus, suspicious_addresses,
+                      "The HTTP Flood Analysis does not contain exactly all expected suspicious addresses")
         # Assert that the new suspicious address list is empty as expected
-        self.assertTrue(known_sus not in suspicious_addresses_wthreshold)
+        self.assertNotIn(known_sus, suspicious_addresses_wthreshold,
+                         "The HTTP Flood Analysis has detected an unexpected suspicious address given a high threshold")
 
     def test_dns(self):
         # pcap file of a dns attack
