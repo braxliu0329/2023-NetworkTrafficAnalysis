@@ -12,17 +12,18 @@ from scapy.layers.l2 import ARP, Ether
 from PyQt5.QtGui import QDesktopServices
 import webbrowser
 
-from Code.pythonGUI.capture_analysis import plotting
+from pythonGUI.capture_analysis import plotting
 from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action
 
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
 
-
+# Turns the packet data into a hex string
 def hex_packet_data(packet_data):
     result = []
     digits = 4 if isinstance(packet_data, str) else 2
-
+    # loops through the length of packet data
     for i in range(0, len(packet_data), 16):
+        # gets the data for the current packet in a 16 byte chunk
         data = packet_data[i: i + 16]
         hexa = ' '.join([hex(x)[2:].upper().zfill(digits) for x in data])
         text = ' '.join([chr(x) if 0x20 <= x < 0x7F else '.' for x in data])
@@ -30,7 +31,7 @@ def hex_packet_data(packet_data):
 
     return ' --- '.join(result)
 
-
+# define the window class that inherits from the GUI window class and the main window class
 class Window(window.Ui_MainWindow, QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
@@ -130,10 +131,12 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # set status bar
         self.statusBar.showMessage('Ready for Capturing')
 
+    # Helper function to get the current row of the capture list
     def get_current_list_row(self):
         row = self.captureList.currentRow()
         return row
 
+    # Helper function to get the selected packet and its details from the capture list based on the row number
     def get_select_packet(self, row):
         item = self.captureList.item(row, 0)
         selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(item.text()) - 1]
@@ -151,17 +154,18 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # displays the detailed view of the packet
         # details = str.splitlines(selected_packet.show(dump=True))
-        # print(str(selected_packet.show(dump=True)))
         self.display_packet_detail(details)
 
         self.display_packet_data(selected_packet)
 
+    # Puts the data of the packet into a tree structure to make it easier to read
     def display_packet_detail(self, detail):
         root_amount = 0
         root_arr = []
         root_name = []
         root_index_arr = []
         for i in range(len(detail)):
+            # Identify the root element of the packet
             if detail[i].__contains__('[ '):
                 root_amount += 1
                 temp = detail[i].strip('|###[ ')
@@ -171,13 +175,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
             else:
                 root_index_arr.append(' ')
 
-        # print(root_name)
-        # print(root_index_arr)
-
+        # Create a tree structure to display the packet detail
         for i in range(root_amount):
             root_arr.append(QTreeWidgetItem(self.detail))
             root_arr[i].setText(0, root_name[i])
-            # print(root_arr[i].text(0))
 
         temp_index = 0
         for i in range(len(detail)):
@@ -193,6 +194,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # if a row is double-clicked, display the packets detail in new window (subWindow)
     def handle_double_clicked_row(self, row):
         length = len(self.subs)
+        # Add the new subWindow to the subs list, which is used to keep track of all the subWindows
         self.subs.append(subWindow.SubWindow())
         item = self.captureList.item(row, 0)
         selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(item.text()) - 1]
@@ -201,6 +203,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.subs[length].setWindowTitle("Packet #" + str(row + 1) + "  " + str(selected_packet.sprintf(
             "%Ether.type%"
         )))
+        # Display the packet detail in the newly created subWindow
         self.subs[length].display_packet_data(selected_packet)
         self.subs[length].display_packet_detail(details)
         self.subs[length].show()
