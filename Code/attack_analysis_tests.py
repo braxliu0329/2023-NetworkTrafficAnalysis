@@ -209,16 +209,21 @@ class MyTestCase(unittest.TestCase):
                          "The HTTP Flood Analysis has detected an unexpected suspicious address given a high threshold")
 
     def test_dns(self):
-        # pcap file of a dns attack
-        self.actions.read_pcap("test_pcaps/dns.pcap", None)
-        # define the method to get the packets
-        read_packets = self.actions.get_sniffed_packets()
-        # define the method to detect attacks using the sniffed packets
-        attack_detect = attack_detection.AttackDetection(read_packets, [])
+        # set up an attack detection using a pcap file without dns attacks
+        attack_false_detect = self.setUpAttackDetection("http-flood")
+
+        # set up an attack detection adding a pcap file with dns attacks
+        attack_detect = self.setUpAttackDetection("dns")
 
         # expected suspicious request and response addresses
         known_request_sus = "207.86.6.174"
         known_response_sus = "205.94.14.222"
+
+        # execute the http flood detection on a file that shouldn't flag any suspicion
+        attack_false_detect.dns_request_response_detect(20)
+        # obtain the suspicious addresses from the attack and store them in two lists
+        false_request_sus_addresses = attack_false_detect.dns_request_suspicious
+        false_response_sus_addresses = attack_false_detect.dns_response_suspicious
 
         # execute the dns detection to test the method works correctly, providing a low enough threshold to
         # detect the suspicious address
@@ -226,10 +231,6 @@ class MyTestCase(unittest.TestCase):
         # obtain the suspicious request and response addresses from the attack and store them in new lists
         request_sus_addresses = attack_detect.dns_request_suspicious
         response_sus_addresses = attack_detect.dns_response_suspicious
-
-        # Tests whether the known suspicious request and response addresses appeared in the correct lists
-        self.assertTrue(known_request_sus in request_sus_addresses)
-        self.assertTrue(known_response_sus in response_sus_addresses)
 
         # execute the dns detection to test the method works correctly, providing a threshold that should be too
         # high to detect the suspicious address
@@ -239,50 +240,95 @@ class MyTestCase(unittest.TestCase):
         request_sus_addresses_wthreshold = attack_detect.dns_request_suspicious
         response_sus_addresses_wthreshold = attack_detect.dns_response_suspicious
 
+        # ensure that the method does not incur any false positives for clean packets
+        self.assertFalse(false_request_sus_addresses,
+                         "The DNS Analysis has detected false suspicious request addresses")
+        self.assertFalse(false_response_sus_addresses,
+                         "The DNS Analysis has detected false suspicious response addresses")
+        # Tests whether the known suspicious request and response addresses appeared in the correct lists
+        self.assertIn(known_request_sus, request_sus_addresses,
+                      "The DNS Analysis does not contain exactly all expected suspicious request addresses")
+        self.assertIn(known_response_sus, response_sus_addresses,
+                      "The DNS Analysis does not contain exactly all expected suspicious response addresses")
         # Assert that the new suspicious address list is empty as expected
-        self.assertTrue(known_request_sus not in request_sus_addresses_wthreshold)
-        self.assertTrue(known_response_sus not in response_sus_addresses_wthreshold)
+        self.assertNotIn(known_request_sus, request_sus_addresses_wthreshold,
+                         "The DNS Analysis has detected an unexpected suspicious request address given a high threshold")
+        self.assertNotIn(known_response_sus, response_sus_addresses_wthreshold,
+                         "The DNS Analysis has detected an unexpected suspicious request address given a high threshold")
 
     def test_run_all(self):
-        # pcap file containing dos and icmp attacks
-        self.actions.read_pcap("test_pcaps/icmp-ping.pcap", None)
-        # define the method to get the packets
-        read_packets = self.actions.get_sniffed_packets()
-        # define the method to detect attacks using the sniffed packets
-        attack_detect = attack_detection.AttackDetection(read_packets, [])
+        # set up an attack detection using a pcap file with tcp flood attacks
+        attack_syn_detect = self.setUpAttackDetection("SYN")
+        # set up an attack detection using a pcap file with icmp attacks
+        attack_icmp_detect = self.setUpAttackDetection("icmp-ping")
 
-        # define the attacks to execute as all the implemented attack detection methods
-        attack_lists = {"TCP Scanning": attack_detect.tcp_scanning_suspicious,
-                        "TCP": attack_detect.tcp_suspicious_addresses,
-                        "HTTP": attack_detect.http_suspicious,
-                        "ARP": attack_detect.arp_suspicious_addresses,
-                        "DNSreq": attack_detect.dns_request_suspicious,
-                        "DNS": attack_detect.dns_response_suspicious}
+        # define the attacks to execute as all the implemented attack detection methods that shouldn't flag using tcp
+        # packets
+        attack_syn_lists = {"HTTP": attack_syn_detect.http_suspicious,
+                            "ARP": attack_syn_detect.arp_suspicious_addresses,
+                            "DNSreq": attack_syn_detect.dns_request_suspicious,
+                            "DNS": attack_syn_detect.dns_response_suspicious,
+                            "DOS": attack_syn_detect.dos_suspicious_addresses,
+                            "ICMP": attack_syn_detect.icmp_suspicious}
+
+        # define the attacks to execute as all the implemented attack detection methods on the icmp packets
+        attack_icmp_lists = {"TCP Scanning": attack_icmp_detect.tcp_scanning_suspicious,
+                             "TCP": attack_icmp_detect.tcp_suspicious_addresses,
+                             "HTTP": attack_icmp_detect.http_suspicious,
+                             "ARP": attack_icmp_detect.arp_suspicious_addresses,
+                             "DNSreq": attack_icmp_detect.dns_request_suspicious,
+                             "DNS": attack_icmp_detect.dns_response_suspicious}
 
         # the expected suspicious value that should be flagged for icmp and dos attacks
         known_sus = "10.0.0.2"
+        known_tcp_sus = "10.128.0.2"
 
         # execute all detection methods to test the methods work correctly, providing a low enough threshold to
         # detect the suspicious address
-        attack_detect.run_all_detection(500)
+        attack_syn_detect.run_all_detection(20)
+        attack_icmp_detect.run_all_detection(20)
 
         # Checks that the address is not in all the lists it shouldn't be
-        for attack_sus in attack_lists:
-            self.assertTrue(known_sus not in attack_sus)
+        for attack_sus in attack_syn_lists:
+            self.assertNotIn(known_tcp_sus, attack_sus,
+                             "An attack detection method has unexpectedly flagged a suspicious address in the syn.pcap file")
 
         # check that the suspicious address is in the expected attack lists
-        self.assertTrue(known_sus in attack_detect.dos_suspicious_addresses)
-        self.assertTrue(known_sus in attack_detect.icmp_suspicious)
+        self.assertIn(known_tcp_sus, attack_syn_detect.tcp_scanning_suspicious,
+                      "The TCP Scanning Analysis does not contain exactly all expected suspicious addresses")
+        self.assertIn(known_tcp_sus, attack_syn_detect.tcp_suspicious_addresses,
+                      "The TCP Flood Analysis does not contain exactly all expected suspicious addresses")
+
+        # Checks that the address is not in all the lists it shouldn't be
+        for attack_sus in attack_icmp_lists:
+            self.assertNotIn(known_sus, attack_sus,
+                             "An attack detection method has unexpectedly flagged a suspicious address in the icmp-ping.pcap file")
+
+        # check that the suspicious address is in the expected attack lists
+        self.assertIn(known_sus, attack_icmp_detect.icmp_suspicious,
+                      "The ICMP Flood Analysis does not contain exactly all expected suspicious addresses")
 
         # Run with high threshold so should not be any list
-        attack_detect.run_all_detection(5000)
+        attack_syn_detect.run_all_detection(5000)
+        attack_icmp_detect.run_all_detection(5000)
 
         # assert that the suspicious address isn't in any list
-        for attack_sus in attack_lists:
-            self.assertTrue(known_sus not in attack_sus)
+        for attack_sus in attack_syn_lists:
+            self.assertNotIn(known_tcp_sus, attack_sus,
+                             "An attack detection method has unexpectedly flagged a suspicious address in the syn.pcap file")
 
-        self.assertTrue(known_sus not in attack_detect.dos_suspicious_addresses)
-        self.assertTrue(known_sus not in attack_detect.icmp_suspicious)
+        self.assertNotIn(known_tcp_sus, attack_syn_detect.tcp_scanning_suspicious,
+                         "The TCP Scanning Analysis has detected an unexpected suspicious address given a high threshold")
+
+        # assert that the suspicious address isn't in any list
+        for attack_sus in attack_icmp_lists:
+            self.assertNotIn(known_sus, attack_sus,
+                             "An attack detection method has unexpectedly flagged a suspicious address in the icmp-ping.pcap file")
+
+        self.assertNotIn(known_sus, attack_icmp_detect.icmp_suspicious,
+                         "The ICMP Flood Analysis has detected an unexpected suspicious address given a high threshold")
+        self.assertNotIn(known_sus, attack_icmp_detect.dos_suspicious_addresses,
+                         "The DOS Analysis has detected an unexpected suspicious address given a high threshold")
 
 
 if __name__ == '__main__':
