@@ -865,12 +865,19 @@
                <layout class="QHBoxLayout" name="horizontalLayout">
                 <item>
                  <widget class="QPushButton" name="pushButton_7">
+                  <property name="autoFillBackground">
+                   <bool>false</bool>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">border : 0;
+background: transparent;</string>
+                  </property>
                   <property name="text">
                    <string/>
                   </property>
                   <property name="icon">
                    <iconset>
-                    <normaloff>../Wireframe/assets/icons/play-button.svg</normaloff>../Wireframe/assets/icons/play-button.svg</iconset>
+                    <normaloff>Icons/play.png</normaloff>Icons/play.png</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
@@ -882,15 +889,38 @@
                 </item>
                 <item>
                  <widget class="QPushButton" name="pushButton_6">
+                  <property name="styleSheet">
+                   <string notr="true">border : 0;
+background: transparent;</string>
+                  </property>
                   <property name="text">
                    <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normaloff>Icons/pause.png</normaloff>Icons/pause.png</iconset>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QPushButton" name="pushButton_5">
+                  <property name="styleSheet">
+                   <string notr="true">border : 0;
+background: transparent;</string>
+                  </property>
                   <property name="text">
                    <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normaloff>Icons/stop.png</normaloff>Icons/stop.png</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="Line" name="line">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
                   </property>
                  </widget>
                 </item>
@@ -910,6 +940,10 @@
                 </item>
                 <item>
                  <widget class="QPushButton" name="pushButton_2">
+                  <property name="styleSheet">
+                   <string notr="true">border : 0;
+background: transparent;</string>
+                  </property>
                   <property name="text">
                    <string/>
                   </property>
@@ -917,6 +951,10 @@
                 </item>
                 <item>
                  <widget class="QPushButton" name="pushButton">
+                  <property name="styleSheet">
+                   <string notr="true">border : 0;
+background: transparent;</string>
+                  </property>
                   <property name="text">
                    <string/>
                   </property>
@@ -941,11 +979,65 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit">
-             <property name="placeholderText">
-              <string>Apply filter...</string>
-             </property>
+            <widget class="QWidget" name="widget_2" native="true">
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_3">
+                <item>
+                 <widget class="QLineEdit" name="filterBar">
+                  <property name="styleSheet">
+                   <string notr="true"/>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Apply filter...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="goFilterButton">
+                  <property name="styleSheet">
+                   <string notr="true">border : 0;
+background: #3d3846;</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normaloff>Icons/rightArrow.png</normaloff>Icons/rightArrow.png</iconset>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
             </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
           </layout>
          </item>
