@@ -364,7 +364,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "ICMP":
                 self.set_background(row_number, 220, 208, 255)
 
+        # Handles the case where the packet has an ARP layer
         elif packet.haslayer(ARP):
+            # The capture list is updated with the source and destination IP addresses
             self.captureList.setItem(row_number, 2, QTableWidgetItem(packet.getlayer(ARP).psrc))
 
             self.captureList.setItem(row_number, 3, QTableWidgetItem(packet.getlayer(ARP).pdst))
@@ -372,29 +374,34 @@ class Window(window.Ui_MainWindow, QMainWindow):
             self.captureList.setItem(row_number, 4,
                                      QTableWidgetItem("ARP"))
 
+            # The capture list is updated with the length of the packet
+            # TableItemInt is used to allow the table to sort the length of the packet
             packet_len_item = self.TableItemInt(str(len(packet)))
             self.captureList.setItem(row_number, 5, packet_len_item)
-
+            
+            # The capture list is updated
             self.captureList.update()
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
-
             self.set_background(row_number, 245, 212, 217)
 
+        # Handles the case where the packet has an IPv6 layer
         elif packet.haslayer(IPv6):
+            
             self.captureList.setItem(row_number, 2, QTableWidgetItem(packet.getlayer(IPv6).src))
 
             self.captureList.setItem(row_number, 3, QTableWidgetItem(packet.getlayer(IPv6).dst))
 
+            # The capture list is updated with the protocol for the packet
             self.captureList.setItem(row_number, 4,
                                      QTableWidgetItem(
                                          str(self.GUI_actions.get_protocol(packet.getlayer(IPv6).nh, packet))))
 
+            # The capture list is updated as above
             packet_len_item = self.TableItemInt(str(len(packet)))
             self.captureList.setItem(row_number, 5, packet_len_item)
 
             self.captureList.update()
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
-
             self.set_background(row_number, 204, 232, 207)
 
         # if the packet capture has been stopped
@@ -406,6 +413,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
             self.captureList.update()
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
 
+        # updates the status bar to show the amount of packets captured
         packet_total = "Packets: " + str(self.packet_number)
         self.statusBar.showMessage(packet_total)
 
@@ -424,8 +432,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # method to display the byte version of the packet
     # currently displays data but would like, so it shows in the detail section the selected bytes
     def display_packet_data(self, packet):
+        # clears any previous data
         self.data.clear()
         packet_data = bytes(packet)
+        # converts the packet data into a hex string
         hex_data = hex_packet_data(packet_data)
         datas = hex_data.split(' --- ')
         length = len(datas)
@@ -433,22 +443,25 @@ class Window(window.Ui_MainWindow, QMainWindow):
         hex_num = 1
         text_num = 2
 
+        # extracts the labels (every 3rd element starting at 0)
         labels = []
         while label_num <= length - 3:
             labels.append(datas[label_num])
             label_num += 3
 
+        # extracts the hex data (every 3rd element starting at 1)
         hex_datas = []
         while hex_num <= length - 2:
             hex_datas.append(datas[hex_num])
             hex_num += 3
 
-
+        # extracts the text data (every 3rd element starting at 2)
         text_datas = []
         while text_num <= length - 1:
             text_datas.append(datas[text_num])
             text_num += 3
 
+        # sets the number of rows in the table
         row_number = length / 3
         self.data.setRowCount(int(row_number))
         self.data.setColumnCount(32)
@@ -457,27 +470,35 @@ class Window(window.Ui_MainWindow, QMainWindow):
             self.data.setVerticalHeaderLabels(labels)
             current_row = 0
             while current_row < int(row_number):
+                # splits the hex data into a list of bytes
                 hex_data_current = hex_datas[current_row]
                 hex_data_current_split = hex_data_current.split(' ')
                 hex_data_helper = 0
+                # loops through the first 16 bytes of the packet
                 while hex_data_helper < 16:
                     if hex_data_helper >= len(hex_data_current_split):
                         break
+                    # create a table item for each byte
                     self.data.setItem(int(current_row), hex_data_helper,
                                       QTableWidgetItem(str(hex_data_current_split[hex_data_helper])))
                     hex_data_helper += 1
+                # splits the text data into a list of bytes similar to above
                 text_data_current = text_datas[current_row]
                 text_data_current_split = text_data_current.split(' ')
                 text_data_helper1 = 16
                 text_data_helper2 = 0
+                # loops through the last 16 bytes of the packet
                 while text_data_helper1 < 32:
                     if text_data_helper2 >= len(text_data_current_split):
                         break
+                    # create a table item for each byte
                     self.data.setItem(int(current_row), text_data_helper1,
                                       QTableWidgetItem(str(text_data_current_split[text_data_helper2])))
                     text_data_helper1 += 1
                     text_data_helper2 += 1
+                # move on to the next row of data
                 current_row += 1
+        # displays "NO DATA" if there is no data
         except:
             self.data.setItem(0, 0, QTableWidgetItem("NO DATA"))
 
@@ -489,55 +510,67 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.show_in_hex = True
         self.show_in_bin = False
 
+    # create a menu for the data box when the user right clicks
     def create_rightMenu(self):
 
+        # add a checkbox to the menu
         self.actionTurnBin.setCheckable(True)
-        # self.actionTurnOri.setChecked(False)
         self.data_box_menu.addAction(self.actionTurnBin)
 
         self.actionTurnHex.setCheckable(True)
-        # self.actionTurnHex.setChecked(False)
         self.data_box_menu.addAction(self.actionTurnHex)
-
+        
+        # display the menu at the current cursor position
         self.data_box_menu.popup(QCursor.pos())
 
+    # display the packet data in binary
     def show_data_bin(self, packet):
+        # clear any previous data
         self.data.clear()
+        # convert the packet data into a list of bytes which are stored in datas
         packet_data = bytes(packet)
         hex_data = hex_packet_data(packet_data)
         datas = hex_data.split(' --- ')
         length = len(datas)
+        # sets some variables to be used in the while loops below
         label_num = 0
         hex_num = 1
         text_num = 2
         print(datas)
 
+        # extract the labels (every 3rd element starting at 0)
         labels = []
         while label_num <= length - 3:
             labels.append(datas[label_num])
             label_num += 3
 
+        # extract the hex data (every 3rd element starting at 1)
         hex_datas = []
         while hex_num <= length - 2:
             hex_datas.append(datas[hex_num])
             hex_num += 3
 
+        # extract the text data (every 3rd element starting at 2)
         text_datas = []
         while text_num <= length - 1:
             text_datas.append(datas[text_num])
             text_num += 3
 
+        # set the number of rows in the table
         row_number = length / 3
         self.data.setRowCount(int(row_number))
         self.data.setColumnCount(32)
 
         try:
+            # set the labels for the table
             self.data.setVerticalHeaderLabels(labels)
             current_row = 0
+            # loops through each row of the table
             while current_row < int(row_number):
                 hex_data_current = hex_datas[current_row]
                 hex_data_current_split = hex_data_current.split(' ')
-
+                
+                # convert hex data to binary
                 index = 0
                 hex_data_fin = []
                 while index < len(hex_data_current_split):
