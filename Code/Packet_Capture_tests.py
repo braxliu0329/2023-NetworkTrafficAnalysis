@@ -82,7 +82,7 @@ class PacketCaptureTesting(unittest.TestCase):
         self.actions.write_pcap("test_pcap.pcap")
         self.actions.sniffer.reset()
         self.actions.read_pcap("test_pcap.pcap", None)
-        #checks that the packets captured and written to the sniffed_packets are the same as the packets read back from the read_packets
+        #checks that the packets captured and written to the sniffed_packets are the same as the packets read back from the read_packets..
         read_packets = self.actions.get_sniffed_packets()
         self.assertEqual(sniffed_packets, read_packets)
 
