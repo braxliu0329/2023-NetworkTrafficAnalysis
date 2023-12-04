@@ -578,15 +578,17 @@ class Window(window.Ui_MainWindow, QMainWindow):
                         hex_data_fin.append(hex_data_current_split[index])
                     index += 1
 
+
                 bin_data_current_split = []
                 for x in hex_data_fin:
                     bin_data_current_split.append(bin(int(str(x), 16))[2:].zfill(2 * 4))
-                # print(bin_data_current_split)
 
                 bin_data_helper = 0
+                # handles the binary representation of the packet data
                 while bin_data_helper < 16:
                     if bin_data_helper >= len(bin_data_current_split):
                         break
+                    # sets the item at the current row and column to be the binary data
                     self.data.setItem(int(current_row), bin_data_helper,
                                       QTableWidgetItem(bin_data_current_split[bin_data_helper]))
                     bin_data_helper += 1
@@ -594,6 +596,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 text_data_current_split = text_data_current.split(' ')
                 text_data_helper1 = 16
                 text_data_helper2 = 0
+                # handles the text representation of the packet data
                 while text_data_helper1 < 32:
                     if text_data_helper2 >= len(text_data_current_split):
                         break
@@ -601,6 +604,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
                                       QTableWidgetItem(str(text_data_current_split[text_data_helper2])))
                     text_data_helper1 += 1
                     text_data_helper2 += 1
+                # move on to the next row of data
                 current_row += 1
         except:
             self.data.setItem(0, 0, QTableWidgetItem("NO DATA"))
@@ -613,8 +617,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.show_in_hex = False
         self.show_in_bin = True
 
+    # display the packet data in hexadecimal
     def operate_turn_hex(self):
         row = self.get_current_list_row()
+        # gets the selected packet and its details
         selected_packet, details = self.get_select_packet(row)
         if self.show_in_bin:
             self.display_packet_data(selected_packet)
@@ -623,9 +629,11 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionTurnBin.setCheckable(True)
         self.actionTurnHex.setChecked(True)
         self.actionTurnBin.setChecked(False)
+        # sets variables to show that the data is now in hexadecimal
         self.show_in_hex = True
         self.show_in_bin = False
 
+    # display the packet data in binary in the same way as above
     def operate_turn_bin(self):
         row = self.get_current_list_row()
         selected_packet, details = self.get_select_packet(row)
@@ -639,15 +647,18 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.show_in_hex = False
         self.show_in_bin = True
 
-    # filter autocomplete the protocol with one/some letter(s)
+    # autocomplete the input in the filter box
     def completer_operate(self, text):
+        # if the text is not an empty string
         if text:
+            # find the index of the text in the filter list
             index = self.filterBox.findText(text)
             self.filterBox.setCurrentIndex(index)
 
     # update the filter and completer model when model has changed
     def set_model(self, model):
         super(QComboBox, self.filterBox).setModel(model)
+        # sets the source model of the filter model using the given model
         self.filterBox.pFilterModel.setSourceModel(model)
         self.filterBox.completr.setModel(self.filterBox.pFilterModel)
 
@@ -657,19 +668,23 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.filterBox.pFilterModel.setFilterKeyColumn(column)
         super(QComboBox, self.filterBox).setModelColumn(column)
 
-    # use <ENTER> in filter box to select filter
-    def enter_keypress(self, key):
+    # use <ENTER> in filter box of the GUI to select filter
+    def enter_keypress(self, key): # key refers to the key that was pressed
+        # if the key pressed is the enter key
         if key.key() == Qt.Key_Enter & key.key() == Qt.Key_Return:
+            # get the text and index of the text from the filter box
             text = self.filterBox.currentText()
             index = self.filterBox.findText(text, Qt.MatchExactly | Qt.MatchCaseSensitive)
             self.filterBox.setCurrentIndex(index)
+            # hide the dropdown list
             self.filterBox.hidePopup()
-            super(QComboBox, self.filterBox).enter_keypress(key)
-        else:
-            super(QComboBox, self.filterBox).enter_keypress(key)
+        super(QComboBox, self.filterBox).enter_keypress(key)
 
+    # helper functions to generate graphs and detect attacks using the sniffed packets
     def bar_analysis(self):
+        # create plotting object with sniffed packets
         plotter = plotting.Plotting(self.GUI_actions.get_sniffed_packets())
+        # generate bar chart with sniffed packets
         plotter.plot_protocol()
 
     def network_graph(self):
