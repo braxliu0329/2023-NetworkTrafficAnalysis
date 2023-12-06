@@ -27,5 +27,5 @@ jobs:
     - name: run docsify
       run: |
         ls
-        cd code
+        cd src
         python -m unittest webpage_test.py
