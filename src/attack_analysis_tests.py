@@ -52,7 +52,7 @@ class MyTestCase(unittest.TestCase):
 
         # ensure that the method does not incur any false positives
         self.assertFalse(false_suspicious_addresses, "The TCP Flood Attack Analysis has detected false suspicious "
-                                                     "addresses")
+                                                     "addresses ")
         self.assertFalse(false_attacked_addresses, "The TCP Flood Attack Analysis has detected false victim "
                                                    "addresses")
 
