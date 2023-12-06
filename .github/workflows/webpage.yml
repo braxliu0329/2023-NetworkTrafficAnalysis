@@ -5,7 +5,7 @@ name: webpage_test
 
 on:
   pull_request:
-    branches: [ "main", "develop"  ]
+    branches: [ "main", "dev", "continuous-integration"  ]
 
 jobs:
   build:
