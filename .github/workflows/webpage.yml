@@ -1,0 +1,31 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: webpage_test
+
+on:
+  pull_request:
+    branches: [ "main", "dev", "continuous-integration"  ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install node.js
+      run: | 
+        npm install
+        npm version
+    
+    - name: Install docsify
+      run: |
+        npm i docsify-cli -g
+    
+    - name: run docsify
+      run: |
+        ls
+        cd src
+        python -m unittest webpage_test.py
