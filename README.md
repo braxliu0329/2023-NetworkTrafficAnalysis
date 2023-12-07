@@ -57,18 +57,14 @@
 
 - Clone GitHub repository with the following command
 ```
-git clone https://github.com/spe-uob/2022-NetworkTrafficAnalysis.git
+git clone https://github.com/spe-uob/2023-NetworkTrafficAnalysis.git
 ```
 
 #### Windows
 - Download [Python](https://www.python.org/downloads/)
-- Check the python version with command (<3.9 recommended)
+- Check the Python version with command (<3.9 recommended) and download Python libraries Scapy, Npcap, Pyqt5, MatPlotLib, pandas, and networkx with the command
 ```
 python --version
-```
-
-- Download Python libraries Scapy, Npcap, Pyqt5, MatPlotLib, pandas, and networkx with the command
-```
 pip install Scapy
 pip install Npcap
 pip install Pyqt5
@@ -90,44 +86,25 @@ pip install -r requirements.txt
 #### MacOS - Arm64 (M1 / M2)
 *The Scapy library is currently unavailable with local machine itself.*
 
-- Download [Anaconda](https://www.anaconda.com/download/)
-
-- Create a virtual enviroment
+- Download [Anaconda](https://www.anaconda.com/download/), create a virtual environment and download dependencies.
 ```
 conda create -n <Environment name> python=<Version>
-```
-- Check if the environment is initialised
-```
 conda env list
-```
-- Activate the environment
-```
 activate <Environment name>
-```
-or
-```
-source activate <Environment name>
-```
-
-- Download library dependencies with the following command
-```
 pip install -r requirements.txt
 ```
 
 
-_When finished running the program, don't forget to deactivate the virtual environment._
-```
-deactivate
-```
+_When finished running the program, don't forget to deactivate the virtual environment using `deactivate`._
 
 ## Deployment Instructions
 
 - Run main.py with command
 ```
-python Code/main.py
+python src/main.py
 ```
 
-_(MacOS) When prompted to configure Python interpreter, select conda interpretor_
+_(MacOS) When prompted to configure Python interpreter, select conda interpreter_
 
 ## License
 Distributed under a *MIT License*
