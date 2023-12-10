@@ -21,3 +21,10 @@ toolz @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_a7gk
 tqdm @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_2adqcbsqqd/croots/recipe/tqdm_1664392689227/work
 urllib3 @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_4cyi6_u2vj/croot/urllib3_1673575523861/work
 zstandard @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_c5lm04h6cy/croots/recipe/zstandard_1663827377465/work
+
+PyQt5~=5.15.10
+scapy~=2.5.0
+matplotlib~=3.8.0
+pandas~=2.1.1
+networkx~=3.2
+numpy~=1.26.1

@@ -1,25 +1,23 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import networkx as nx
-import scapy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-
-from pythonGUI.capture_analysis import dataframe_create
+import dataframe_create
 
 
 # small object used to create embedded graphs onto GUI
-class ImbeddedCanvas(FigureCanvas):
+class EmbeddedCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
+        # set graph parameters and data to initialise the embedded graph
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
-        super(ImbeddedCanvas, self).__init__(fig)
+        super(EmbeddedCanvas, self).__init__(fig)
 
 
 class AttackDetection:
+    # initialise attack detection variables
     def __init__(self, data, flagged_IPs):
-
+        # initialise all flagged ip addresses as empty
         self.arp_suspicious_addresses = None
         self.icmp_suspicious = None
         self.dns_response_suspicious = None
@@ -29,15 +27,22 @@ class AttackDetection:
         self.tcp_suspicious_addresses = None
         self.tcp_scanning_suspicious = None
 
+        # initialise quarantined packets as empty
         self.quarantined_packets = None
+
+        # create a dataframe with the attack analysis data
         dataframe_creator = dataframe_create.DataframeCreate(data)
         self.dataframe = dataframe_creator.data_frame
 
+        # initialise all general addresses
         self.blocked_addresses = []
         self.suspicious_addresses = flagged_IPs
         self.attacked_addresses = []
+
+        # initialise the packets to the provided data
         self.packets = data
 
+    # updates this class' flagged ip addresses with any new ips in the provided list of addresses
     def update_flagged_ips(self, ips):
         for ip in ips:
             if ip not in self.suspicious_addresses:
@@ -45,7 +50,7 @@ class AttackDetection:
 
     def tcp_syn_flood_detect(self):
         # creates canvas
-        canvas = ImbeddedCanvas(self)
+        canvas = EmbeddedCanvas(self)
 
         # initialises suspicious address lists
         self.tcp_suspicious_addresses = []
@@ -103,7 +108,7 @@ class AttackDetection:
         return canvas
 
     def tcp_connect_scanning_detect(self, threshold):
-        canvas = ImbeddedCanvas()
+        canvas = EmbeddedCanvas()
         self.tcp_scanning_suspicious = []
         # Sets interval time
         interval = 5
@@ -194,7 +199,7 @@ class AttackDetection:
 
     def arp_poison_detect(self):
         self.arp_suspicious_addresses = []
-        canvas = ImbeddedCanvas()
+        canvas = EmbeddedCanvas()
 
         # dataframe with only ARP packets
         arp_packets = pd.DataFrame(self.dataframe[self.dataframe['Protocol'] == 'ARP'])
@@ -259,7 +264,7 @@ class AttackDetection:
     # Simple detection to see if pps are above a threshold
     def threshold_dos_detect(self, threshold):
         self.dos_suspicious_addresses = []
-        canvas = ImbeddedCanvas()
+        canvas = EmbeddedCanvas()
 
         sources_addresses = self.dataframe['SourceIP'].unique()
 
@@ -302,7 +307,7 @@ class AttackDetection:
 
     def icmp_flood_detect(self, threshold):
         self.icmp_suspicious = []
-        canvas = ImbeddedCanvas()
+        canvas = EmbeddedCanvas()
 
         # dataframe with only ICMP Echo packets
         icmp_packets = self.dataframe[(self.dataframe['Protocol'] == 'ICMP') & (self.dataframe['ICMP_Type'] == 8)]
@@ -330,7 +335,7 @@ class AttackDetection:
 
     def http_attack(self, threshold):
         self.http_suspicious = []
-        canvas = ImbeddedCanvas()
+        canvas = EmbeddedCanvas()
 
         tcp_packets = pd.DataFrame(
             self.dataframe[(self.dataframe['Protocol'] == 'TCP') & (self.dataframe["IP_Version"] == "IPv4")])
@@ -405,8 +410,8 @@ class AttackDetection:
         return canvas
 
     def dns_request_response_detect(self, threshold):
-        canvas = ImbeddedCanvas()
-        canvas2 = ImbeddedCanvas()
+        canvas = EmbeddedCanvas()
+        canvas2 = EmbeddedCanvas()
         self.dns_request_suspicious = []
         self.dns_response_suspicious = []
 
