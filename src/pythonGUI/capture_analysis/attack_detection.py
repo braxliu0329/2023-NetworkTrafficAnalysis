@@ -108,36 +108,51 @@ class AttackDetection:
         return canvas
 
     def tcp_connect_scanning_detect(self, threshold):
+        # create an empty canvas to store data points
         canvas = EmbeddedCanvas()
+        # initialise suspicious addresses as an empty list
         self.tcp_scanning_suspicious = []
         # Sets interval time
         interval = 5
 
+        # get all tcp packets
         tcp_packets = pd.DataFrame(self.dataframe[self.dataframe['Protocol'] == 'TCP'])
+        # if there are no tcp packets, return nothing as there is no possibility of a tcp connect attack
         if tcp_packets.empty:
             return None
 
+        # get all syn packets
         tcp_syn_packets = pd.DataFrame(
             tcp_packets[tcp_packets["TCP_Flags"].apply(lambda x: True if str(x).find('S') != -1 else False)])
-
+        # get all syn-ack packets
         tcp_syn_ack_packets = pd.DataFrame(
             tcp_packets[tcp_packets["TCP_Flags"].apply(lambda x: True if str(x).find('SA') != -1 else False)])
-
+        # if there are no syn or syn-ack packets, return nothing
         if tcp_syn_packets.empty or tcp_syn_ack_packets.empty:
             return None
 
+        # get all syn source addresses
         syn_sources_addresses = pd.Series(tcp_syn_packets['SourceIP'])
+        # get all syn-ack destination addresses
         syn_ack_dest_addresses = pd.Series(tcp_syn_ack_packets['DestIP'])
 
+        # combine syn source and syn-ack destination addresses into one dataframe
         syn_addresses = pd.concat([syn_sources_addresses.value_counts(), syn_ack_dest_addresses.value_counts()],
                                   axis=1).reset_index()
         syn_addresses.columns = ['Address', 'SendsSYN', 'ReceivesSYN-ACK']
+        # if there are empty addresses, set the data to 0
         syn_addresses = syn_addresses.replace(np.nan, 0)
+        # create empty data slots for the syn rate
         syn_rate = {'Address': [],
                     'SYN_rate': []}
+        # combine all unique addresses
         src_addr = tcp_syn_packets['SourceIP'].unique()
+
+        # loop through each unique address
         for add in src_addr:
+            # get all packets that match this address' source ip
             packet_ip = self.dataframe[self.dataframe['SourceIP'] == add]
+            # initialise time difference
             time_diff = 0
             if len(packet_ip) > 1:
                 time_diff = packet_ip['Time'].iloc[-1] - packet_ip['Time'].iloc[0]
@@ -153,13 +168,17 @@ class AttackDetection:
                 syn_rate['Address'].append(add)
                 syn_rate['SYN_rate'].append(int(rate))
 
+        # get a dataframe of all syn time differences
         syn_rate_df = pd.DataFrame.from_dict(syn_rate)
+        # if this dataframe is empty, return None as a tcp connect attack is unfeasible
         if syn_rate_df.empty:
             return None
+        # create the graph to display the data points
         tcp_con_graph = syn_rate_df.plot(ax=canvas.axes, x="Address", kind='barh', legend=False)
         tcp_con_graph.axvline(threshold, color='r', linestyle='--')
         tcp_con_graph.set(xlabel="SYN sending rate (packets/sec)")
 
+        # initialise lists to contain the tcp connection count and time
         tcp_connection_count = {}
         tcp_connection_time = {}
 
@@ -195,6 +214,7 @@ class AttackDetection:
                             tcp_connection_time[src_ip] = r['Time']
                     tcp_connection_count[src_ip] += 1
 
+        # return the dataframe to be displayed
         return canvas
 
     def arp_poison_detect(self):
