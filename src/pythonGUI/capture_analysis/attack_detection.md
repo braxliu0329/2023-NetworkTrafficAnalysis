@@ -140,3 +140,127 @@ as a suspicious address and plots it on the graph.
 Similarly, any addresses that receive at least 50% more SYN packets than SYN-ACK packets are treated as attacked addresses,
 and are also plotted on the graph. After scanning through all SYN packets, the method returns the plotted canvas to be displayed
 on the GUI.
+
+### TCP Connect Scanning Detection
+`tcp_connect_scanning_detect` scans all provided TCP packets for signs of a TCP Connection attack. This detection requires two conditions to flag an address as suspicious:
+ - it has sent SYN flags without receiving SYN-ACK packets
+ - it sends more SYN packets than the threshold within a decided time interval _(currently 5)_
+```
+    def tcp_connect_scanning_detect(self, threshold):
+        # create an empty canvas to store data points
+        canvas = EmbeddedCanvas()
+        # initialise suspicious addresses as an empty list
+        self.tcp_scanning_suspicious = []
+        # Sets interval time
+        interval = 5
+
+        # get all tcp packets
+        tcp_packets = pd.DataFrame(self.dataframe[self.dataframe['Protocol'] == 'TCP'])
+        # if there are no tcp packets, return nothing as there is no possibility of a tcp connect attack
+        if tcp_packets.empty:
+            return None
+
+        # get all syn packets
+        tcp_syn_packets = pd.DataFrame(
+            tcp_packets[tcp_packets["TCP_Flags"].apply(lambda x: True if str(x).find('S') != -1 else False)])
+        # get all syn-ack packets
+        tcp_syn_ack_packets = pd.DataFrame(
+            tcp_packets[tcp_packets["TCP_Flags"].apply(lambda x: True if str(x).find('SA') != -1 else False)])
+        # if there are no syn or syn-ack packets, return nothing
+        if tcp_syn_packets.empty or tcp_syn_ack_packets.empty:
+            return None
+
+        # get all syn source addresses
+        syn_sources_addresses = pd.Series(tcp_syn_packets['SourceIP'])
+        # get all syn-ack destination addresses
+        syn_ack_dest_addresses = pd.Series(tcp_syn_ack_packets['DestIP'])
+
+        # combine syn source and syn-ack destination addresses into one dataframe
+        syn_addresses = pd.concat([syn_sources_addresses.value_counts(), syn_ack_dest_addresses.value_counts()],
+                                  axis=1).reset_index()
+        syn_addresses.columns = ['Address', 'SendsSYN', 'ReceivesSYN-ACK']
+        # if there are empty addresses, set the data to 0
+        syn_addresses = syn_addresses.replace(np.nan, 0)
+        # create empty data slots for the syn rate
+        syn_rate = {'Address': [],
+                    'SYN_rate': []}
+        # combine all unique addresses
+        src_addr = tcp_syn_packets['SourceIP'].unique()
+
+        # loop through each unique address
+        for add in src_addr:
+            # get all packets that match this address' source ip
+            packet_ip = self.dataframe[self.dataframe['SourceIP'] == add]
+            # initialise time difference
+            time_diff = 0
+            if len(packet_ip) > 1:
+                time_diff = packet_ip['Time'].iloc[-1] - packet_ip['Time'].iloc[0]
+
+            # Added time_diff condition to mitigate the rate soaring
+            # if the time difference is too short
+            if time_diff <= 1 or len(packet_ip) == 1:
+                rate = len(packet_ip)
+                syn_rate['Address'].append(add)
+                syn_rate['SYN_rate'].append(int(rate))
+            else:
+                rate = len(packet_ip) / time_diff
+                syn_rate['Address'].append(add)
+                syn_rate['SYN_rate'].append(int(rate))
+
+        # get a dataframe of all syn time differences
+        syn_rate_df = pd.DataFrame.from_dict(syn_rate)
+        # if this dataframe is empty, return None as a tcp connect attack is unfeasible
+        if syn_rate_df.empty:
+            return None
+        # create the graph to display the data points
+        tcp_con_graph = syn_rate_df.plot(ax=canvas.axes, x="Address", kind='barh', legend=False)
+        tcp_con_graph.axvline(threshold, color='r', linestyle='--')
+        tcp_con_graph.set(xlabel="SYN sending rate (packets/sec)")
+
+        # initialise lists to contain the tcp connection count and time
+        tcp_connection_count = {}
+        tcp_connection_time = {}
+
+        # The detection requires two steps to be suspicious:
+        # 1. If the address sends SYN flags without receiving SYN-ACK packets
+        # 2. If the same address sends more SYN packets than the threshold within the time interval
+        for index, row in syn_addresses.iterrows():
+            if row['SendsSYN'] > 0 and row['ReceivesSYN-ACK'] == 0:
+                src_ip = row['Address']
+                # DataFrame of packets that has src_ip as the Source IP
+                tcp_ip = pd.DataFrame(tcp_packets[tcp_packets["SourceIP"]
+                                      .apply(lambda x: True if str(x).find(src_ip) != -1 else False)])
+                # Initialising the SYN packet count
+                tcp_connection_count[src_ip] = 0
+                for i, r in tcp_ip.iterrows():
+
+                    # Initialising with time of the first occurrence of the src_ip
+                    if src_ip not in tcp_connection_time.keys():
+                        tcp_connection_time[src_ip] = r['Time']
+
+                    # If the number of SYN packet excels the threshold,
+                    # Check whether the time elapsed if less than interval.
+                    # If so, the packet is classified as suspicious
+                    if tcp_connection_count[src_ip] >= threshold:
+                        if r['Time'] - tcp_connection_time[src_ip] <= interval:
+                            if src_ip not in self.tcp_scanning_suspicious:
+                                self.tcp_scanning_suspicious.append(src_ip)
+                            if src_ip not in self.suspicious_addresses:
+                                self.suspicious_addresses.append(src_ip)
+                        # If not, reset the time period by the latest occurrence
+                        else:
+                            tcp_connection_count[src_ip] = 0
+                            tcp_connection_time[src_ip] = r['Time']
+                    tcp_connection_count[src_ip] += 1
+
+        # return the dataframe to be displayed
+        return canvas
+```
+The method begins by creating a new canvas to contain a graphical representation of the TCP Connection analysis. It then filters
+out all non-TCP packets provided.
+
+After initialising axes and labels of the graph, the analysis loops through all SYN addresses provided and, if the address has sent
+a SYN flag without receiving SYN packets, and it has sent more SYN packets within the time interval, it is marked
+as a suspicious address and plots it on the graph.
+
+After scanning through all SYN packets, the method returns the plotted canvas to be displayed on the GUI.
