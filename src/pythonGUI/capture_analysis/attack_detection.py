@@ -95,16 +95,16 @@ class AttackDetection:
 
         for index, row in syn_addresses.iterrows():
             address = row['Address']
-            # add to attacked addresses if receives more SYN packets then sends SYN-ACK packets back
+            # add to attacked addresses if receives more SYN packets than SYN-ACK packets sent back
             if row['ReceivesSYN'] > 1.5 * row['SendsSYN-ACK']:
                 self.attacked_addresses.append(address)
-            # add to suspicious addresses if sends more SYN packets then receives SYN-ACK packets back
+            # add to suspicious addresses if sends more SYN packets than SYN-ACK packets received
             if row['SendsSYN'] > 1.5 * row['ReceivesSYN-ACK']:
                 if address not in self.suspicious_addresses:
                     self.suspicious_addresses.append(address)
                 if address not in self.tcp_suspicious_addresses:
                     self.tcp_suspicious_addresses.append(address)
-
+        # return the plotted graph
         return canvas
 
     def tcp_connect_scanning_detect(self, threshold):
