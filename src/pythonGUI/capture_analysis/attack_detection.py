@@ -218,7 +218,9 @@ class AttackDetection:
         return canvas
 
     def arp_poison_detect(self):
+        # initialise this arp suspicious addresses
         self.arp_suspicious_addresses = []
+        # create an empty canvas to store data points
         canvas = EmbeddedCanvas()
 
         # dataframe with only ARP packets
@@ -228,7 +230,9 @@ class AttackDetection:
         if arp_packets.empty:
             return None
 
+        # reset the indexes on the arp packets
         arp_packets.reset_index()
+        # initialise suspicious addresses and the ip_mac addresses
         ip_mac = {}
         suspicious_addresses = []
 
@@ -249,9 +253,11 @@ class AttackDetection:
         mac_freq_table = {"MAC_addresses": [],
                           "Frequency": []}
 
+        # initialise lists of mac addresses and their frequencies
         mac_addr_list = []
         mac_addr_freq_list = []
 
+        # loop through all mac addresses
         for mac_addr in ip_mac:
             mac_addr_list.append(mac_addr)
             # add number of ip addresses associated with that mac address
@@ -260,16 +266,17 @@ class AttackDetection:
             if len(ip_mac[mac_addr]) > 1:
                 suspicious_addresses.extend(ip_mac[mac_addr])
 
-        # add lists to dictionary, an address at a time
+        # add lists to dictionary, one address at a time
         for index, mac_addr in enumerate(mac_addr_list):
             mac_freq_table["MAC_addresses"].append(mac_addr)
             mac_freq_table["Frequency"].append(mac_addr_freq_list[index])
 
+        # initialise the dataframe with appropriate axes and titles
         table_dataframe = pd.DataFrame.from_dict(mac_freq_table)
         arp_graph = table_dataframe.plot(ax=canvas.axes, kind='barh', x='MAC_addresses', legend=False)
         arp_graph.set(xlabel="Frequency", title="ARP Poison")
         arp_graph.locator_params(axis="x", integer=True, tight=True)
-        # threshold here is 1 since any address having more than one ip address is suspicious
+        # threshold here is 1 since any mac address having more than one ip address is suspicious
         arp_graph.axvline(1, color='r', linestyle='--')
         # removes any repeated addresses
         self.arp_suspicious_addresses = list(dict.fromkeys(suspicious_addresses))
@@ -279,6 +286,7 @@ class AttackDetection:
             if address not in self.suspicious_addresses:
                 self.suspicious_addresses.append(address)
 
+        # return the canvas to graphically display the suspicious addresses
         return canvas
 
     # Simple detection to see if pps are above a threshold
