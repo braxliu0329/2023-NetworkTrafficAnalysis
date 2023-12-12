@@ -68,7 +68,7 @@ class AttackDetection:
 
 `update_flagged_ips` is a function that uses the provided list of flagged IPs and updates the currently stored list of flagged IPs with any new additions.
 
-### TCP Flood Detect
+### TCP Flood Detection
 `tcp_flood_detect` scans all provided TCP packets for signs of a TCP Flood Attack. It is expected that the number of SYN packets on a network is around equal to the number of SYN-ACK packets. A disproportionately large number of SYN packets in comparison to SYN-ACK packets is evidence of a TCP Flood Attack.
 ```
   def tcp_syn_flood_detect(self):
@@ -263,4 +263,86 @@ After initialising axes and labels of the graph, the analysis loops through all 
 a SYN flag without receiving SYN packets, and it has sent more SYN packets within the time interval, it is marked
 as a suspicious address and plots it on the graph.
 
-After scanning through all SYN packets, the method returns the plotted canvas to be displayed on the GUI.
+After finishing analyses, the final state of the canvas is returned to graphically represent the suspicious addresses.
+
+### ARP Poison Detection
+`arp_poison_detect` scans all provided TCP packets for signs of an ARP Poisoning Attack. It is expected that each packet's mac address has one associated ip address. If this is nt the case, the address is marked as suspicious for ARP Poisoning.
+```
+    def arp_poison_detect(self):
+        # initialise this arp suspicious addresses
+        self.arp_suspicious_addresses = []
+        # create an empty canvas to store data points
+        canvas = EmbeddedCanvas()
+
+        # dataframe with only ARP packets
+        arp_packets = pd.DataFrame(self.dataframe[self.dataframe['Protocol'] == 'ARP'])
+
+        # Returns empty canvas if no arp packets are present since no analysis can be performed
+        if arp_packets.empty:
+            return None
+
+        # reset the indexes on the arp packets
+        arp_packets.reset_index()
+        # initialise suspicious addresses and the ip_mac addresses
+        ip_mac = {}
+        suspicious_addresses = []
+
+        # iterates through each ARP packet
+        for index, arp_packet in arp_packets.iterrows():
+            # stores each source ip and mac address
+            source_IP = arp_packet['SourceIP']
+            source_mac = arp_packet['hwsrc']
+            # if source mac not already in dictionary an entry is created
+            if source_mac not in ip_mac:
+                ip_mac[source_mac] = [source_IP]
+            else:
+                # if ip address is not associated with mac address add to its list
+                if source_IP not in ip_mac[source_mac]:
+                    ip_mac.setdefault(source_mac, []).append(source_IP)
+
+        # initialises mac address frequency dictionary to be made into dataframe
+        mac_freq_table = {"MAC_addresses": [],
+                          "Frequency": []}
+
+        # initialise lists of mac addresses and their frequencies
+        mac_addr_list = []
+        mac_addr_freq_list = []
+
+        # loop through all mac addresses
+        for mac_addr in ip_mac:
+            mac_addr_list.append(mac_addr)
+            # add number of ip addresses associated with that mac address
+            mac_addr_freq_list.append(len(ip_mac[mac_addr]))
+            # if that mac address is associated with more than one ip address than it is marked as suspicious
+            if len(ip_mac[mac_addr]) > 1:
+                suspicious_addresses.extend(ip_mac[mac_addr])
+
+        # add lists to dictionary, one address at a time
+        for index, mac_addr in enumerate(mac_addr_list):
+            mac_freq_table["MAC_addresses"].append(mac_addr)
+            mac_freq_table["Frequency"].append(mac_addr_freq_list[index])
+
+        # initialise the dataframe with appropriate axes and titles
+        table_dataframe = pd.DataFrame.from_dict(mac_freq_table)
+        arp_graph = table_dataframe.plot(ax=canvas.axes, kind='barh', x='MAC_addresses', legend=False)
+        arp_graph.set(xlabel="Frequency", title="ARP Poison")
+        arp_graph.locator_params(axis="x", integer=True, tight=True)
+        # threshold here is 1 since any mac address having more than one ip address is suspicious
+        arp_graph.axvline(1, color='r', linestyle='--')
+        # removes any repeated addresses
+        self.arp_suspicious_addresses = list(dict.fromkeys(suspicious_addresses))
+
+        # adds suspicious addresses to main suspicious address list
+        for address in self.arp_suspicious_addresses:
+            if address not in self.suspicious_addresses:
+                self.suspicious_addresses.append(address)
+
+        # return the canvas to graphically display the suspicious addresses
+        return canvas
+```
+The method begins by creating a new canvas to contain a graphical representation of the ARP Poisoning analysis. It then filters
+out all non-ARP packets provided.
+
+After initialising axes and labels of the graph, the analysis loops through all ARP mac addresses provided and, if the address has more than one associated ip addresses, it is marked as a suspicious address and is plotted on the graph.
+
+After finishing analyses, the final state of the canvas is returned to graphically represent the suspicious addresses.
