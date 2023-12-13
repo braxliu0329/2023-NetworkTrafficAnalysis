@@ -218,7 +218,7 @@ class AttackDetection:
         return canvas
 
     def arp_poison_detect(self):
-        # initialise this arp suspicious addresses
+        # initialise arp suspicious addresses
         self.arp_suspicious_addresses = []
         # create an empty canvas to store data points
         canvas = EmbeddedCanvas()
@@ -291,46 +291,55 @@ class AttackDetection:
 
     # Simple detection to see if pps are above a threshold
     def threshold_dos_detect(self, threshold):
+        # initialise dos suspicious addresses
         self.dos_suspicious_addresses = []
+        # create an empty canvas to store data points
         canvas = EmbeddedCanvas()
 
+        # get all unique source addresses
         sources_addresses = self.dataframe['SourceIP'].unique()
 
+        # create a table with addresses and the packets per second
         pps_table = {'Address': [],
                      'PPS': []}
 
         # calculates packets per second sent for each address
         for address in sources_addresses:
             packets_ip = self.dataframe[self.dataframe['SourceIP'] == address]
-
+            # if the address doesn't have enough source addresses to be suspicious, go to the next address
             if len(packets_ip) < 2:
                 continue
 
-            # calculates average packets per second
+            # get the difference in time between two packets
             difference = packets_ip['Time'].iloc[-1] - packets_ip['Time'].iloc[0]
-
+            # if there is no difference in time, go to the next packet
             if difference == 0:
                 continue
-
+            # calculate this address' pps
             packet_per_sec = len(packets_ip) / difference
 
+            # add the pps to the pps table
             pps_table['Address'].append(address)
             pps_table['PPS'].append(int(packet_per_sec))
 
+        # create a dataframe from the pps table
         pps_dataframe = pd.DataFrame.from_dict(pps_table)
 
+        # initialise a graph to represent pps
         dos_graph = pps_dataframe.plot(ax=canvas.axes, x="Address", kind='barh', legend=False)
         dos_graph.set(title="DOS Detection", xlabel="Packets Per Second")
         dos_graph.axvline(threshold, color='r', linestyle='--')
 
-        # marks addresses as suspicious if above 3 standard deviations from the mean
+        # marks addresses as suspicious if the packets per second exceed the mean
         for index, address in pps_dataframe.iterrows():
             if address["PPS"] > threshold:
+                # if the address isn't already marked as suspicious, add it to the suspicious lists
                 if address["Address"] not in self.dos_suspicious_addresses:
                     self.dos_suspicious_addresses.append(address["Address"])
                 if address["Address"] not in self.suspicious_addresses:
                     self.suspicious_addresses.append(address["Address"])
 
+        # return the dataframe to be graphically represented
         return canvas
 
     def icmp_flood_detect(self, threshold):
@@ -502,7 +511,7 @@ class AttackDetection:
             mean = packets_ip['Time'].mean()
             std = packets_ip['Time'].std()
 
-            # removes any outliers (timestamps that are 3 standard deviations away from the mean)
+            # removes any outliers (timestamps that are more than 3 standard deviations away from the mean)
             packets_no_outliers = packets_ip[packets_ip['Time'] <= mean + (3 * std)]
 
             # calculates average packets per second

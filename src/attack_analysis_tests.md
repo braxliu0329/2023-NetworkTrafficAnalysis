@@ -2,7 +2,7 @@
 Attack analysis tests is a file that makes use of python unit tests to assert that the attack methods analysed within capture_analysis work as expected. Packets are provided to this file using .pcap files, as this file's main goal is to test the analysis of the packets works as expected, not to test the capturing of packets.
 
 ## Dependencies
-```
+```cython
 import unittest
 import matplotlib
 matplotlib.use('Agg')
@@ -16,7 +16,7 @@ Attack analysis tests imports the following libraries and code:
 
 ## My Test Case
 MyTestCase is a class that wraps around all the tests within this file. Once this file is run, all tests within MyTestCase also run.
-```
+```cython
 class MyTestCase(unittest.TestCase):
     # Define the actions for this to use as defined in GUI_actions
     def setUp(self):
@@ -32,8 +32,8 @@ test_tcp_flood is a test definition used to assert that the TCP flood analysis o
 |-------------|----------------------|---------------------|-----------------|
 | dns         | tcp_syn_flood_detect | None                | None            |
 | dns, SYN    | tcp_syn_flood_detect | ["10.128.0.2"]      | ["10.0.0.2"]    |
-
-       def test_tcp_flood(self):
+```cython
+def test_tcp_flood(self):
         # set up an attack detection using a pcap file without tcp flood attacks
         attack_false_detect = self.setUpAttackDetection("dns")
 
@@ -72,7 +72,7 @@ test_tcp_flood is a test definition used to assert that the TCP flood analysis o
                          "The TCP Flood Attack Analysis has identified a suspicious address as an attacked address")
         self.assertNotIn(known_vic, suspicious_addresses,
                          "The TCP Flood Attack Analysis has identified an attacked address as a suspicious address")
-
+```
 It begins by retrieving the sniffed packets from the pcap files "dns.pcap" and "SYN.pcap".
 
 It then executes the tcp flood detection method twice, once on packets only from dns.pcap, and once on packets from both files.
@@ -89,8 +89,8 @@ test_tcp_scan_detect is a test definition used to assert that the TCP connect sc
 | dns, SYN    | 100       | tcp_connect_scanning_detect | ["10.128.0.2"]      |
 | dns, SYN    | 10000     | tcp_connect_scanning_detect | None                |
 
-
-    def test_tcp_scan_detect(self):
+```cython 
+def test_tcp_scan_detect(self):
         # set up an attack detection using a pcap file without tcp flood attacks
         attack_false_detect = self.setUpAttackDetection("dns")
 
@@ -129,6 +129,7 @@ test_tcp_scan_detect is a test definition used to assert that the TCP connect sc
         self.assertNotIn(known_sus, suspicious_addresses_wthreshold,
                          "The TCP Connect Scanning Analysis has detected an unexpected suspicious address given a high "
                          "threshold")
+```
 It begins by retrieving the sniffed packets from the pcap files "dns.pcap" and "SYN.pcap".
 
 It then executes the tcp connect scanning detection method three times, once on packets only from dns.pcap, once on packets with both files using a low threshold, and once on packets with both files using a high threshold.
@@ -143,8 +144,8 @@ test_arp_poison is a test definition used to assert that the ARP poison detectio
 |--------------------|-------------------|----------------------------------|
 | dns                | arp_poison_detect | None                             |
 | dns, arp-poisoning | arp_poison_detect | ['192.168.1.1', '192.168.1.254'] |
-
-       def test_arp_poison(self):
+```cython
+def test_arp_poison(self):
         # set up an attack detection using a pcap file without arp poisoning attacks
         attack_false_detect = self.setUpAttackDetection("dns")
 
@@ -172,6 +173,7 @@ test_arp_poison is a test definition used to assert that the ARP poison detectio
         self.assertCountEqual(suspicious_addresses, known_sus,
                               "The ARP Poisoning Analysis does not contain exactly all expected suspicious addresses")
 
+```
 It begins by retrieving the sniffed packets from the pcap files "dns.pcap" and "arp-poisoning.pcap".
 
 It then executes the arp poison detection method twice, once on packets only from dns.pcap and once on packets with both files.
@@ -187,8 +189,8 @@ test_icmp_flood is a test definition used to assert that the ICMP flood detectio
 | dns            | 100       | tcp_connect_scanning_detect | None                |
 | dns, icmp-ping | 100       | tcp_connect_scanning_detect | ["10.0.0.2"]        |
 | dns, icmp-ping | 10000     | tcp_connect_scanning_detect | None                |
-
-        def test_icmp_flood(self):
+```cython
+def test_icmp_flood(self):
         # set up an attack detection using a pcap file without arp poisoning attacks
         attack_false_detect = self.setUpAttackDetection("dns")
 
@@ -224,6 +226,7 @@ test_icmp_flood is a test definition used to assert that the ICMP flood detectio
         # Assert that the new suspicious address list is empty as expected
         self.assertNotIn(known_sus, suspicious_addresses_wthreshold,
                          "The ICMP Flood Analysis has detected an unexpected suspicious address given a high threshold")
+```
 It begins by retrieving the sniffed packets from the pcap files "dns.pcap" and "icmp-ping.pcap".
 
 It then executes the icmp flood detection method three times, once on packets only from dns.pcap, once on packets with both files using a low threshold, and once on packets with both files using a high threshold.
@@ -240,8 +243,8 @@ test_http_flood is a test definition used to assert that the HTTP flood detectio
 | dns, http-flood | 5         | http_attack     | ["10.0.0.2"]        |
 | dns, http-flood | 500       | http_attack     | None                |
 
-
-            def test_http_flood(self):
+```cython
+def test_http_flood(self):
         # set up an attack detection using a pcap file without http flood attacks
         attack_false_detect = self.setUpAttackDetection("dns")
 
@@ -277,6 +280,7 @@ test_http_flood is a test definition used to assert that the HTTP flood detectio
         # Assert that the new suspicious address list is empty as expected
         self.assertNotIn(known_sus, suspicious_addresses_wthreshold,
                          "The HTTP Flood Analysis has detected an unexpected suspicious address given a high threshold")
+```
 It begins by retrieving the sniffed packets from the pcap files "dns.pcap" and "http-flood.pcap".
 
 It then executes the http flood detection method three times, once on packets only from dns.pcap, once on packets with both files using a low threshold, and once on packets with both files using a high threshold.
@@ -292,7 +296,8 @@ test_dns is a test definition used to assert that the dns detection method is wo
 | http-flood      | 20        | dns_request_response_detect | None                        | None                         |
 | dns, http-flood | 20        | dns_request_response_detect | ["207.86.6.174"]            | ["205.94.14.222"]            |
 | dns, http-flood | 500       | dns_request_response_detect | None                        | None                         |
-        def test_dns(self):
+```cython
+def test_dns(self):
         # set up an attack detection using a pcap file without dns attacks
         attack_false_detect = self.setUpAttackDetection("http-flood")
 
@@ -339,6 +344,7 @@ test_dns is a test definition used to assert that the dns detection method is wo
                          "The DNS Analysis has detected an unexpected suspicious request address given a high threshold")
         self.assertNotIn(known_response_sus, response_sus_addresses_wthreshold,
                          "The DNS Analysis has detected an unexpected suspicious request address given a high threshold")
+```
 It begins by retrieving the sniffed packets from the pcap files "dns.pcap" and "http-flood.pcap".
 
 It then executes the dns detection method three times, once on packets only from http-flood.pcap, once on packets with both files using a low threshold, and once on packets with both files using a high threshold.
@@ -380,8 +386,8 @@ test_run_all is a test definition used to assert that all detection methods are 
 | icmp-ping   | 5000      | tcp_scanning_suspicious     | None                |
 | icmp-ping   | 5000      | tcp_suspicious_addresses    | None                |
  
-```
- def test_run_all(self):
+```cython
+def test_run_all(self):
         # set up an attack detection using a pcap file with tcp flood attacks
         attack_syn_detect = self.setUpAttackDetection("SYN")
         # set up an attack detection using a pcap file with icmp attacks

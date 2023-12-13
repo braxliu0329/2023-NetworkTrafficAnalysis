@@ -2,7 +2,7 @@
 Attack Detection is the main file responsible for analysing captured data packets for cyberattacks. It is tested by
 `attack_analysis_tests.py` interacts with the GUI with files such as `dataframe_create.py` to display its analyses.
 ## Dependencies
-```
+```cython
 import numpy as np
 import pandas as pd
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -16,7 +16,7 @@ Attack detection imports the following libraries and code:
  - dataframe_create - another file made for this project used to display attack analysis data.
 
 ## Embedded Canvas
-```
+```cython
 # small object used to create embedded graphs onto GUI
 class EmbeddedCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -29,7 +29,7 @@ class EmbeddedCanvas(FigureCanvas):
 
 ## Attack Detection
 `AttackDetection` is a class that wraps around all the detection methods within this file.
-```
+```cython
 class AttackDetection:
     # initialise attack detection variables
     def __init__(self, data, flagged_IPs):
@@ -70,8 +70,8 @@ class AttackDetection:
 
 ### TCP Flood Detection
 `tcp_flood_detect` scans all provided TCP packets for signs of a TCP Flood Attack. It is expected that the number of SYN packets on a network is around equal to the number of SYN-ACK packets. A disproportionately large number of SYN packets in comparison to SYN-ACK packets is evidence of a TCP Flood Attack.
-```
-  def tcp_syn_flood_detect(self):
+```cython
+def tcp_syn_flood_detect(self):
         # creates canvas
         canvas = EmbeddedCanvas(self)
 
@@ -145,8 +145,8 @@ on the GUI.
 `tcp_connect_scanning_detect` scans all provided TCP packets for signs of a TCP Connection attack. This detection requires two conditions to flag an address as suspicious:
  - it has sent SYN flags without receiving SYN-ACK packets
  - it sends more SYN packets than the threshold within a decided time interval _(currently 5)_
-```
-    def tcp_connect_scanning_detect(self, threshold):
+```cython
+def tcp_connect_scanning_detect(self, threshold):
         # create an empty canvas to store data points
         canvas = EmbeddedCanvas()
         # initialise suspicious addresses as an empty list
@@ -267,8 +267,8 @@ After finishing analyses, the final state of the canvas is returned to graphical
 
 ### ARP Poison Detection
 `arp_poison_detect` scans all provided TCP packets for signs of an ARP Poisoning Attack. It is expected that each packet's mac address has one associated ip address. If this is nt the case, the address is marked as suspicious for ARP Poisoning.
-```
-    def arp_poison_detect(self):
+```cython
+def arp_poison_detect(self):
         # initialise this arp suspicious addresses
         self.arp_suspicious_addresses = []
         # create an empty canvas to store data points
@@ -346,3 +346,68 @@ out all non-ARP packets provided.
 After initialising axes and labels of the graph, the analysis loops through all ARP mac addresses provided and, if the address has more than one associated ip addresses, it is marked as a suspicious address and is plotted on the graph.
 
 After finishing analyses, the final state of the canvas is returned to graphically represent the suspicious addresses.
+
+### Threshold DOS Detection
+`threshold_dos_detect` is a simple DOS detection function that, given a threshold, ensures that each unique IP address
+doesn't send more packets per second (_pps_) than the threshold.
+```cython
+ # Simple detection to see if pps are above a threshold
+def threshold_dos_detect(self, threshold):
+        # initialise dos suspicious addresses
+        self.dos_suspicious_addresses = []
+        # create an empty canvas to store data points
+        canvas = EmbeddedCanvas()
+
+        # get all unique source addresses
+        sources_addresses = self.dataframe['SourceIP'].unique()
+
+        # create a table with addresses and the packets per second
+        pps_table = {'Address': [],
+                     'PPS': []}
+
+        # calculates packets per second sent for each address
+        for address in sources_addresses:
+            packets_ip = self.dataframe[self.dataframe['SourceIP'] == address]
+            # if the address doesn't have enough source addresses to be suspicious, go to the next address
+            if len(packets_ip) < 2:
+                continue
+
+            # get the difference in time between two packets
+            difference = packets_ip['Time'].iloc[-1] - packets_ip['Time'].iloc[0]
+            # if there is no difference in time, go to the next packet
+            if difference == 0:
+                continue
+            # calculate this address' pps
+            packet_per_sec = len(packets_ip) / difference
+
+            # add the pps to the pps table
+            pps_table['Address'].append(address)
+            pps_table['PPS'].append(int(packet_per_sec))
+
+        # create a dataframe from the pps table
+        pps_dataframe = pd.DataFrame.from_dict(pps_table)
+        
+        # initialise a graph to represent pps
+        dos_graph = pps_dataframe.plot(ax=canvas.axes, x="Address", kind='barh', legend=False)
+        dos_graph.set(title="DOS Detection", xlabel="Packets Per Second")
+        dos_graph.axvline(threshold, color='r', linestyle='--')
+
+        # marks addresses as suspicious if the packets per second exceed the mean
+        for index, address in pps_dataframe.iterrows():
+            if address["PPS"] > threshold:
+                # if the address isn't already marked as suspicious, add it to the suspicious lists
+                if address["Address"] not in self.dos_suspicious_addresses:
+                    self.dos_suspicious_addresses.append(address["Address"])
+                if address["Address"] not in self.suspicious_addresses:
+                    self.suspicious_addresses.append(address["Address"])
+
+        # return the dataframe to be graphically represented
+        return canvas
+```
+The method begins by creating a new canvas to contain a graphical representation of the DOS analysis. It then gets a 
+list of all unique IP address.
+
+After initialising axes and labels of the graph, the analysis loops through all ip addresses, if the address 
+sends more packets per second than the threshold, it is marked as a suspicious address and is plotted on the graph.
+
+After finishing analysis, the final state of the canvas is returned to graphically represent packets per second.
