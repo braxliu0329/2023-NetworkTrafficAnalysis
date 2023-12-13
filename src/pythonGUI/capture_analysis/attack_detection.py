@@ -343,18 +343,21 @@ class AttackDetection:
         return canvas
 
     def icmp_flood_detect(self, threshold):
+        # initialise icmp suspicious addresses
         self.icmp_suspicious = []
+        # create an empty canvas to store data points
         canvas = EmbeddedCanvas()
 
         # dataframe with only ICMP Echo packets
         icmp_packets = self.dataframe[(self.dataframe['Protocol'] == 'ICMP') & (self.dataframe['ICMP_Type'] == 8)]
-
+        # if there are no ICMP packets, return nothing as there can be no icmp flood attacks
         if icmp_packets.empty:
             return None
 
         # removes any duplicated addresses
         icmp_addresses = icmp_packets['SourceIP'].unique()
-
+        # create the packets per second table using the calc_pps function. This will also populate the suspicious list
+        # with all icmp addresses that have a pps above the provided threshold
         pps_table = self.calc_pps(icmp_addresses, icmp_packets, self.icmp_suspicious, threshold)
 
         # creates dataframe from dictionary
@@ -363,11 +366,10 @@ class AttackDetection:
         # creates graph from dataframe
         pps_graph = pps_dataframe.plot(ax=canvas.axes, kind='barh', x="Address", legend=False)
         pps_graph.set(title="ICMP Flood Detection", xlabel="Packets Per Second")
-
         pps_graph.locator_params(axis="x", integer=True, tight=True)
-
         pps_graph.axvline(threshold, color='r', linestyle='--')
 
+        # return the created graph to be represented on the GUI
         return canvas
 
     def http_attack(self, threshold):

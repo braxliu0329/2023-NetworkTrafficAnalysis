@@ -407,7 +407,50 @@ def threshold_dos_detect(self, threshold):
 The method begins by creating a new canvas to contain a graphical representation of the DOS analysis. It then gets a 
 list of all unique IP address.
 
-After initialising axes and labels of the graph, the analysis loops through all ip addresses, if the address 
+After initialising axes and labels of the graph, the analysis loops through all ip addresses. If the address 
 sends more packets per second than the threshold, it is marked as a suspicious address and is plotted on the graph.
+
+After finishing analysis, the final state of the canvas is returned to graphically represent packets per second.
+
+### ICMP Flood Detection
+`icmp_flood_detect` uses the `calc_pps` function to mark ICMP echo packets that send more packets per second than the provided
+threshold as suspicious.
+```cython
+def icmp_flood_detect(self, threshold):
+        # initialise icmp suspicious addresses
+        self.icmp_suspicious = []
+        # create an empty canvas to store data points
+        canvas = EmbeddedCanvas()
+
+        # dataframe with only ICMP Echo packets
+        icmp_packets = self.dataframe[(self.dataframe['Protocol'] == 'ICMP') & (self.dataframe['ICMP_Type'] == 8)]
+        # if there are no ICMP packets, return nothing as there can be no icmp flood attacks
+        if icmp_packets.empty:
+            return None
+
+        # removes any duplicated addresses
+        icmp_addresses = icmp_packets['SourceIP'].unique()
+        # create the packets per second table using the calc_pps function. This will also populate the suspicious list
+        # with all icmp addresses that have a pps above the provided threshold
+        pps_table = self.calc_pps(icmp_addresses, icmp_packets, self.icmp_suspicious, threshold)
+
+        # creates dataframe from dictionary
+        pps_dataframe = pd.DataFrame.from_dict(pps_table)
+
+        # creates graph from dataframe
+        pps_graph = pps_dataframe.plot(ax=canvas.axes, kind='barh', x="Address", legend=False)
+        pps_graph.set(title="ICMP Flood Detection", xlabel="Packets Per Second")
+        pps_graph.locator_params(axis="x", integer=True, tight=True)
+        pps_graph.axvline(threshold, color='r', linestyle='--')
+
+        # return the created graph to be represented on the GUI
+        return canvas
+```
+The method begins by creating a new canvas to contain a graphical representation of the ICMP analysis. It then gets a 
+list of all unique ICMP echo IP address.
+
+After initialising axes and labels of the graph, the analysis calls `calc_pps` which loops through all ip addresses. If 
+the address sends more packets per second than the threshold, it is marked as a suspicious address and is plotted on the 
+graph. This function also removes any outlying packets that have a time more than 3 standard deviations from the mean time.
 
 After finishing analysis, the final state of the canvas is returned to graphically represent packets per second.
