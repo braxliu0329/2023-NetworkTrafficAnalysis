@@ -109,3 +109,23 @@ Others Present: Oliver (Mentor)
  - This week's weekly workbooks are on cloud computing, which is not applicable to our project
  - Tomos, Tony and Joe will begin commenting different files of the code
  - Ani will continue to research and update the GUI
+
+## Group Mentor Meeting 24/01/2024
+Group Members Present: Tomos, Tony, Joe
+Others Present: Oliver (Mentor)
+### Rankings and Feedback
+ - Many groups have done work over the holidays, so the rankings have dropped from 4th
+ - The group's average score has dropped to 0.7
+ - All issues need branches - even if empty?
+ - They want the user stories to follow the format "as a _, I want to _, because _ "
+ - We should look into Continuous Deployment
+### Progress
+ - Ani has set up a meeting with the client for next Wednesday
+ - The email issue has been resolved
+ - Continuous integration has been set up
+ - We have decided to go with Go for the CLI implementation
+### Next Steps
+ - Tomos will work on an action plan for TB2
+ - Joe will finish adding install instructions for pcap and look into a new attack 
+ - Tony will continue looking into new attack methods
+ - Ani will continue working on the GUI
