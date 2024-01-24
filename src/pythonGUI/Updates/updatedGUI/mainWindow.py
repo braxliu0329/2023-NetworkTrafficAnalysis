@@ -503,12 +503,3 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.menu_Help.setTitle(_translate("MainWindow", "&Help"))
         self.menu_Test.setTitle(_translate("MainWindow", "&Test"))
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    app.setStyle('Fusion')
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())

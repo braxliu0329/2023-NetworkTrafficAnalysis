@@ -12,7 +12,9 @@ from scapy.layers.l2 import ARP, Ether
 from PyQt5.QtGui import QDesktopServices
 import webbrowser
 
-from updatedGUI import mainWindow
+from pythonGUI.Updates.updatedGUI.mainWindow import Ui_MainWindow
+from pythonGUI.Updates.updatedGUI.packetDetails import Ui_PacketDetails
+
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
 
 def hex_packet_data(packet_data):
@@ -27,7 +29,7 @@ def hex_packet_data(packet_data):
 
     return ' --- '.join(result)
 
-class Window(mainWindow.Ui_MainWindow, QMainWindow):
+class Window(Ui_MainWindow, QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
 
@@ -46,9 +48,15 @@ class Window(mainWindow.Ui_MainWindow, QMainWindow):
         self.show_in_hex = None
         self.show_in_bin = None
 
-        self.startButton.clicked.connect()
-        self.stopButton.clicked.connect()
+        self.startButton.clicked.connect(self.start_capture)
+        self.stopButton.clicked.connect(self.stop_capture)
 
+
+    def open_details(self):
+        self.window = QMainWindow
+        self.ui = Ui_PacketDetails()
+        self.ui.setupUi(self.window)
+        self.window.show()
 
     def start_capture(self):
         self.startButton.setEnabled(False)
@@ -59,6 +67,7 @@ class Window(mainWindow.Ui_MainWindow, QMainWindow):
         self.capture_thread = threading.Thread(target=self.start_capture_thread)
         # starts running the thread
         self.capture_thread.start()
+
         
     def stop_capture(self):
         self.startButton.setEnabled(True)
@@ -73,7 +82,13 @@ class Window(mainWindow.Ui_MainWindow, QMainWindow):
         self.GUI_actions.sniffer.reset()
 
         
-
+if __name__ == "__main__":
+    import sys
+    app = QApplication(sys.argv)
+    app.setStyle('Fusion')
+    mainWindow = Window()
+    mainWindow.show()
+    sys.exit(app.exec_())
        
 
 
