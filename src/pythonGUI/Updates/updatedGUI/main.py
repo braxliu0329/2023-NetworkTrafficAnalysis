@@ -11,10 +11,10 @@ from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import ARP, Ether
 from PyQt5.QtGui import QDesktopServices
 import webbrowser
-
-from pythonGUI.Updates.updatedGUI.mainWindow import Ui_MainWindow
-from pythonGUI.Updates.updatedGUI.packetDetails import Ui_PacketDetails
-
+import sys
+sys.path.append("src/")
+from mainWindow import Ui_MainWindow
+from packetDetails import Ui_PacketDetails
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
 
 def hex_packet_data(packet_data):

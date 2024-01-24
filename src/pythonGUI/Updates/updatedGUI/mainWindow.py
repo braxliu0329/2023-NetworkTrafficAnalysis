@@ -483,7 +483,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.menubar.addAction(self.menu_Analysis.menuAction())
         self.menubar.addAction(self.menu_Help.menuAction())
         self.menubar.addAction(self.menu_Test.menuAction())
-        self.actionStart.setObjectName("actionStart")
         actionFilter = QtWidgets.QAction(QtGui.QIcon("Icons/rightArrow.png"), "Filter", self)
         self.filterBar.addAction(actionFilter, QtWidgets.QLineEdit.ActionPosition.TrailingPosition)
         self.packetTable.setColumnCount(7)

@@ -7,8 +7,7 @@ from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import ARP
 import pandas as pd
 
-from pythonGUI.capture_analysis import Packet_Capture, plotting
-
+from .Packet_Capture import *
 # import Packet_Capture
 from scapy.all import *
 
@@ -18,7 +17,7 @@ class GUIActions:
     def __init__(self):
         self.captured_packets = None
         self.running = True
-        self.sniffer = Packet_Capture.Sniffer()
+        self.sniffer = Sniffer()
 
         self.protocols = {1: "ICMP",
                           2: "IGMP",
