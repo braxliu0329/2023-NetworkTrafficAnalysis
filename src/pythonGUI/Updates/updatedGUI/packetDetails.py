@@ -12,19 +12,29 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_PacketDetails(object):
-    def setupUi(self, Form):
-        Form.setObjectName("PacketDetails")
-        Form.resize(400, 300)
-        self.gridLayout = QtWidgets.QGridLayout(Form)
+    def setupUi(self, packetWindow):
+        packetWindow.setObjectName("packetWindow")
+        packetWindow.resize(800, 600)
+        self.centralwidget = QtWidgets.QWidget(packetWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
-        self.detailTreeWidget = QtWidgets.QTreeWidget(Form)
-        self.detailTreeWidget.setObjectName("detailTreeWidget")
-        self.detailTreeWidget.headerItem().setText(0, "1")
-        self.gridLayout.addWidget(self.detailTreeWidget, 0, 0, 1, 1)
+        self.treeWidget = QtWidgets.QTreeWidget(self.centralwidget)
+        self.treeWidget.setObjectName("treeWidget")
+        self.treeWidget.headerItem().setText(0, "1")
+        self.gridLayout.addWidget(self.treeWidget, 0, 0, 1, 1)
+        packetWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(packetWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
+        self.menubar.setObjectName("menubar")
+        packetWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(packetWindow)
+        self.statusbar.setObjectName("statusbar")
+        packetWindow.setStatusBar(self.statusbar)
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(packetWindow)
+        QtCore.QMetaObject.connectSlotsByName(packetWindow)
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self, packetWindow):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
+        packetWindow.setWindowTitle(_translate("packetWindow", "packetWindow"))

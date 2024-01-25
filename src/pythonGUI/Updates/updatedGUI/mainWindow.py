@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import rc_icons
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
     def setupUi(self, MainWindow):
@@ -368,7 +368,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 "background: transparent;")
         self.startButton.setText("")
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Icons/play.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/play.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.startButton.setIcon(icon)
         self.startButton.setIconSize(QtCore.QSize(14, 16))
         self.startButton.setObjectName("startButton")
@@ -378,7 +378,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 "background: transparent;")
         self.pauseButton.setText("")
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("Icons/pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pauseButton.setIcon(icon1)
         self.pauseButton.setObjectName("pauseButton")
         self.horizontalLayout.addWidget(self.pauseButton)
@@ -387,7 +387,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 "background: transparent;")
         self.stopButton.setText("")
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("Icons/stop.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/stop.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.stopButton.setIcon(icon2)
         self.stopButton.setObjectName("stopButton")
         self.horizontalLayout.addWidget(self.stopButton)
@@ -401,7 +401,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 "background: transparent;")
         self.saveButton.setText("")
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("Icons/save.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/save.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.saveButton.setIcon(icon3)
         self.saveButton.setObjectName("saveButton")
         self.horizontalLayout.addWidget(self.saveButton)
@@ -410,7 +410,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 "background: transparent;")
         self.loadButton.setText("")
         icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("Icons/load.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon4.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/load.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.loadButton.setIcon(icon4)
         self.loadButton.setObjectName("loadButton")
         self.horizontalLayout.addWidget(self.loadButton)
@@ -424,7 +424,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 "background: transparent;")
         self.firstButton.setText("")
         icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("Icons/first.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon5.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/first.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.firstButton.setIcon(icon5)
         self.firstButton.setObjectName("firstButton")
         self.horizontalLayout.addWidget(self.firstButton)
@@ -433,7 +433,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 "background: transparent;")
         self.lastButton.setText("")
         icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap("Icons/last.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon6.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/last.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.lastButton.setIcon(icon6)
         self.lastButton.setObjectName("lastButton")
         self.horizontalLayout.addWidget(self.lastButton)
@@ -483,7 +483,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.menubar.addAction(self.menu_Analysis.menuAction())
         self.menubar.addAction(self.menu_Help.menuAction())
         self.menubar.addAction(self.menu_Test.menuAction())
-        actionFilter = QtWidgets.QAction(QtGui.QIcon("Icons/rightArrow.png"), "Filter", self)
+        actionFilter = QtWidgets.QAction(QtGui.QIcon("src/pythonGUI/Updates/updatedGUI/Icons/rightArrow.png"), "Filter", self)
         self.filterBar.addAction(actionFilter, QtWidgets.QLineEdit.ActionPosition.TrailingPosition)
         self.packetTable.setColumnCount(7)
         self.packetTable.setHorizontalHeaderLabels(["No.", "Time", "Source", "Destination", "Protocol", "Length", "Info"])

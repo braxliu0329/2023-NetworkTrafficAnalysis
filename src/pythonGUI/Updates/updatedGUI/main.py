@@ -16,6 +16,7 @@ sys.path.append("src/")
 from mainWindow import Ui_MainWindow
 from packetDetails import Ui_PacketDetails
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
+import rc_icons
 
 def hex_packet_data(packet_data):
     result = []
@@ -51,14 +52,8 @@ class Window(Ui_MainWindow, QMainWindow):
         self.startButton.clicked.connect(self.start_capture)
         self.stopButton.clicked.connect(self.stop_capture)
 
-
-    def open_details(self):
-        self.window = QMainWindow
-        self.ui = Ui_PacketDetails()
-        self.ui.setupUi(self.window)
-        self.window.show()
-
     def start_capture(self):
+        self.open_window()
         self.startButton.setEnabled(False)
         self.pauseButton.setEnabled(True)
         self.stopButton.setEnabled(True)
@@ -68,7 +63,12 @@ class Window(Ui_MainWindow, QMainWindow):
         # starts running the thread
         self.capture_thread.start()
 
-        
+    def open_window(self):
+        self.window = QMainWindow()
+        self.ui = Ui_PacketDetails()
+        self.ui.setupUi(self.window)
+        self.window.show()
+
     def stop_capture(self):
         self.startButton.setEnabled(True)
         self.pauseButton.setEnabled(False)
@@ -81,7 +81,9 @@ class Window(Ui_MainWindow, QMainWindow):
 
         self.GUI_actions.sniffer.reset()
 
-        
+
+
+
 if __name__ == "__main__":
     import sys
     app = QApplication(sys.argv)
