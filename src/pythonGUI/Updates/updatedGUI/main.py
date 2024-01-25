@@ -49,8 +49,16 @@ class Window(Ui_MainWindow, QMainWindow):
         self.show_in_hex = None
         self.show_in_bin = None
 
+        #set the help menu
+        self.actionUse_Guide.triggered.connect(self.use_guide_operation)
+
+        #start button pressed
         self.startButton.clicked.connect(self.start_capture)
+        #stop button pressed
         self.stopButton.clicked.connect(self.stop_capture)
+
+    def use_guide_operation(self):
+        webbrowser.open_new_tab('https://ubiquitous-sniffle-y217w7w.pages.github.io/#/')
 
     def start_capture(self):
         self.open_window()

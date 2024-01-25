@@ -461,6 +461,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.gridLayout.addWidget(self.actionSearchFrame, 0, 0, 1, 1)
         self.verticalLayout_4.addLayout(self.gridLayout)
         MainWindow.setCentralWidget(self.centralwidget)
+        
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
         self.menubar.setObjectName("menubar")
@@ -477,6 +478,12 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.menu_Test = QtWidgets.QMenu(self.menubar)
         self.menu_Test.setObjectName("menu_Test")
         MainWindow.setMenuBar(self.menubar)
+
+        #Create help option
+        self.actionUse_Guide = QtWidgets.QAction(MainWindow)
+        self.actionUse_Guide.setObjectName("actionUse_Guide")
+        self.menu_Help.addAction(self.actionUse_Guide)
+        
         self.menubar.addAction(self.menu_File.menuAction())
         self.menubar.addAction(self.menu_Edit.menuAction())
         self.menubar.addAction(self.menu_Capture.menuAction())
@@ -501,4 +508,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.menu_Analysis.setTitle(_translate("MainWindow", "&Analysis"))
         self.menu_Help.setTitle(_translate("MainWindow", "&Help"))
         self.menu_Test.setTitle(_translate("MainWindow", "&Test"))
+        self.actionUse_Guide.setText(_translate("MainWindow", "Use Guide"))
+        self.actionUse_Guide.setShortcut(_translate("MainWindow", "Ctrl+H"))
 
