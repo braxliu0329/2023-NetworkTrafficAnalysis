@@ -49,16 +49,42 @@ class Window(Ui_MainWindow, QMainWindow):
         self.show_in_hex = None
         self.show_in_bin = None
 
-        #set the help menu
-        self.actionUse_Guide.triggered.connect(self.use_guide_operation)
+        #set packet table
+        self.packetTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.packetTable.horizontalHeader().setSectionResizeMode(0, QHeaderView.Interactive)
+        self.packetTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.packetTable.verticalHeader().setVisible(False)
+        self.packetTable.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.packetTable.cellClicked.connect(self.handle_clicked_row)
+        self.packetTable.cellClicked.connect(self.get_select_packet)
+        self.packetTable.cellClicked.connect(self.get_current_list_row)
+        self.packetTable.cellDoubleClicked.connect(self.handle_double_clicked_row)
 
+        #set the help menu
+        self.actionUse_Guide.triggered.connect(self.use_guide_operation)    
         #start button pressed
         self.startButton.clicked.connect(self.start_capture)
         #stop button pressed
         self.stopButton.clicked.connect(self.stop_capture)
 
+    def get_select_packet(self, row):
+        pass
+
+    def handle_clicked_row(self, row):
+        selected_packet, details = self.get_select_packet(row)
+    
+    def get_current_list_row(self):
+        pass
+
+    def handle_double_clicked_row(self, row):
+        pass
+        
     def use_guide_operation(self):
         webbrowser.open_new_tab('https://ubiquitous-sniffle-y217w7w.pages.github.io/#/')
+
+    def start_capture_thread(self):
+        self.stopped_capture = False
+        self.GUI_actions.sniffer.set_sniff_amount(self)
 
     def start_capture(self):
         self.open_window()
@@ -72,10 +98,10 @@ class Window(Ui_MainWindow, QMainWindow):
         self.capture_thread.start()
 
     def open_window(self):
-        self.window = QMainWindow()
+        self.packet_window = PacketDetailsWindow(self)
         self.ui = Ui_PacketDetails()
         self.ui.setupUi(self.window)
-        self.window.show()
+        self.packet_window.show()
 
     def stop_capture(self):
         self.startButton.setEnabled(True)
@@ -89,7 +115,25 @@ class Window(Ui_MainWindow, QMainWindow):
 
         self.GUI_actions.sniffer.reset()
 
+    class TableItemInt(QTableWidgetItem):
+        # less than initializer that allows two items to be compared.
+        def __lt__(self, other):
+            return int(self.text()) < int(other.text())
 
+    def display_packet(self, packet):
+        row_number = self.packetTable.rowCount()
+        self.packetTable.inserRow(row_number)
+        packet_number_item = self.TableItemInt(str(self.packet_number))
+        self.packetTable.setItem(row_number, 0, packet_number_item)
+
+
+class PacketDetailsWindow(QMainWindow):
+    def __init__(self, mainWindow):
+        super(PacketDetailsWindow, self).__init__()
+        self.mainWindow = mainWindow
+    
+    def update_packet_details(self, packet):
+        pass
 
 
 if __name__ == "__main__":

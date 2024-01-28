@@ -508,6 +508,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.menu_Analysis.setTitle(_translate("MainWindow", "&Analysis"))
         self.menu_Help.setTitle(_translate("MainWindow", "&Help"))
         self.menu_Test.setTitle(_translate("MainWindow", "&Test"))
+        self.packetTable.setSortingEnabled(True)
         self.actionUse_Guide.setText(_translate("MainWindow", "Use Guide"))
         self.actionUse_Guide.setShortcut(_translate("MainWindow", "Ctrl+H"))
 

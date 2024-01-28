@@ -61,6 +61,7 @@ class GUIActions:
     def get_protocol(self, protocol, packet):
         if protocol in self.protocols.keys():
             protocol_name = self.protocols[protocol]
+            
             # packets can have UDP and DNS layers
             if protocol_name == "UDP" and packet.haslayer(DNS):
                 return "UDP/DNS"
