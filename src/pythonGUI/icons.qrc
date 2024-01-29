@@ -1,15 +1,15 @@
 
 <!DOCTYPE RCC><RCC version="1.0">
-    <qresource prefix="/Updates/updatedGUI/Icons/">
-        <file>Updates/updatedGUI/Icons/first.png</file>
-        <file>Updates/updatedGUI/Icons/last.png</file>
-        <file>Updates/updatedGUI/Icons/load.png</file>
-        <file>Updates/updatedGUI/Icons/pause.png</file>
-        <file>Updates/updatedGUI/Icons/paused.png</file>
-        <file>Updates/updatedGUI/Icons/play.png</file>
-        <file>Updates/updatedGUI/Icons/played.png</file>
-        <file>Updates/updatedGUI/Icons/rightArrow.png</file>
-        <file>Updates/updatedGUI/Icons/save.png</file>
-        <file>Updates/updatedGUI/Icons/stop.png</file>
+    <qresource prefix="/Icons/">
+        <fileIcons/first.png</file>
+        <fileIcons/last.png</file>
+        <fileIcons/load.png</file>
+        <fileIcons/pause.png</file>
+        <fileIcons/paused.png</file>
+        <fileIcons/play.png</file>
+        <fileIcons/played.png</file>
+        <fileIcons/rightArrow.png</file>
+        <fileIcons/save.png</file>
+        <fileIcons/stop.png</file>
     </qresource>
 </RCC>

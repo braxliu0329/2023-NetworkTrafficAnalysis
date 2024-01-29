@@ -17,7 +17,7 @@ from pythonGUI import subWindow, window, graph_window_action, attack_analysis_ac
 
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
 
-import rc_icons
+import pythonGUI.rc_icons as rc_icons
 
 # Turns the packet data into a hex string
 def hex_packet_data(packet_data):

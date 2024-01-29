@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import rc_icons
+import pythonGUI.rc_icons as rc_icons
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -279,17 +279,17 @@ class Ui_MainWindow(object):
         self.actionStop.setObjectName("actionStop")
         self.actionStartCapture = QtWidgets.QAction(MainWindow)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/play.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("src/pythonGUI/Icons/play.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionStartCapture.setIcon(icon)
         self.actionStartCapture.setObjectName("actionStartCapture")
         self.actionPauseCapture = QtWidgets.QAction(MainWindow)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap("src/pythonGUI/Icons/pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionPauseCapture.setIcon(icon1)
         self.actionPauseCapture.setObjectName("actionPauseCapture")
         self.actionStopCaputure = QtWidgets.QAction(MainWindow)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/stop.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap("src/pythonGUI/Icons/stop.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionStopCaputure.setIcon(icon2)
         self.actionStopCaputure.setObjectName("actionStopCaputure")
         self.actionGraph = QtWidgets.QAction(MainWindow)
@@ -310,22 +310,22 @@ class Ui_MainWindow(object):
         self.actionUse_Guide.setObjectName("actionUse_Guide")
         self.actionSaveCapture = QtWidgets.QAction(MainWindow)
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/save.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap("src/pythonGUI/Icons/save.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionSaveCapture.setIcon(icon3)
         self.actionSaveCapture.setObjectName("actionSaveCapture")
         self.actionLoadCapture = QtWidgets.QAction(MainWindow)
         icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/load.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon4.addPixmap(QtGui.QPixmap("src/pythonGUI/Icons/load.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionLoadCapture.setIcon(icon4)
         self.actionLoadCapture.setObjectName("actionLoadCapture")
         self.actionPreviousPacket = QtWidgets.QAction(MainWindow)
         icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/first.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon5.addPixmap(QtGui.QPixmap("src/pythonGUI/Icons/first.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionPreviousPacket.setIcon(icon5)
         self.actionPreviousPacket.setObjectName("actionPreviousPacket")
         self.actionNextPacket = QtWidgets.QAction(MainWindow)
         icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap("src/pythonGUI/Updates/updatedGUI/Icons/last.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon6.addPixmap(QtGui.QPixmap("src/pythonGUI/Icons/last.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionNextPacket.setIcon(icon6)
         self.actionNextPacket.setObjectName("actionNextPacket")
         self.menuFile.addAction(self.actionOpen)
