@@ -16,6 +16,7 @@ from pythonGUI.capture_analysis import plotting
 from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action
 
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
+from pythonGUI.packetDetails import Ui_PacketDetails
 
 import pythonGUI.rc_icons as rc_icons
 
@@ -132,6 +133,13 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # set status bar
         self.statusBar.showMessage('Ready for Capturing')
+
+
+    def open_details(self):
+        self.window = QMainWindow
+        self.ui = Ui_PacketDetails()
+        self.ui.setupUi(self.window)
+        self.window.show()
 
     # Helper function to get the current row of the capture list
     def get_current_list_row(self):
