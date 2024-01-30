@@ -1,8 +1,12 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import networkx as nx
+import scapy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from src.pythonGUI.capture_analysis import dataframe_create
+
+from pythonGUI.capture_analysis import dataframe_create
 
 
 # small object used to create embedded graphs onto GUI
