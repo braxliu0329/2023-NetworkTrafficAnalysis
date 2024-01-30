@@ -57,6 +57,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # set open/save file and quit application function
         self.actionOpen_Multi_Files.triggered.connect(self.open_multiple_file_operation)
         self.actionOpen.triggered.connect(self.open_file_operation)
+        self.actionLoadCapture.triggered.connect(self.open_file_operation)
+        self.actionSaveCapture.triggered.connect(self.save_as_file_operation)
+        self.actionNextPacket.triggered.connect(self.next_packet_operation)
+        self.actionPreviousPacket.triggered.connect(self.previous_packet_opertaion)
         self.actionSave.triggered.connect(self.save_file_operation)
         self.actionSave_As_2.triggered.connect(self.save_as_file_operation)
         self.actionExit.triggered.connect(self.quit_operation)
@@ -168,6 +172,16 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.display_packet_detail(details)
 
         self.display_packet_data(selected_packet)
+
+    def next_packet_operation(self):
+        next_row = (self.get_current_list_row() + 1) % self.captureList.rowCount()
+        self.captureList.setCurrentCell(next_row, 0)
+        self.handle_clicked_row(next_row)
+
+    def previous_packet_opertaion(self):
+        prev_row = (self.get_current_list_row() - 1) % self.captureList.rowCount()
+        self.captureList.setCurrentCell(prev_row, 0)
+        self.handle_clicked_row(prev_row)
 
     # Puts the data of the packet into a tree structure to make it easier to read
     def display_packet_detail(self, detail):
