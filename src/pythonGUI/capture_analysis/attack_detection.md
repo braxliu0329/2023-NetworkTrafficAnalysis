@@ -1,14 +1,22 @@
-import matplotlib.pyplot as plt
+# Attack Detection
+Attack Detection is the main file responsible for analysing captured data packets for cyberattacks. It is tested by
+`attack_analysis_tests.py` interacts with the GUI with files such as `dataframe_create.py` to display its analyses.
+## Dependencies
+```cython
 import numpy as np
 import pandas as pd
-import networkx as nx
-import scapy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+import dataframe_create
+```
+Attack detection imports the following libraries and code:
+ - numpy - allows for faster mathematical operations across the many data packets analysed.
+ - pandas - used to package dataframes for use by `dataframe_create.py`
+ - matplotlib - an object-oriented plotting library used to initialise graphs used by `dataframe_create.py` to display analyses.
+ - dataframe_create - another file made for this project used to display attack analysis data.
 
-from pythonGUI.capture_analysis import dataframe_create
-
-
+## Embedded Canvas
+```cython
 # small object used to create embedded graphs onto GUI
 class EmbeddedCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -16,8 +24,12 @@ class EmbeddedCanvas(FigureCanvas):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super(EmbeddedCanvas, self).__init__(fig)
+```
+`EmbeddedCanvas` initialises a Figure for use by `dataframe_create.py`.
 
-
+## Attack Detection
+`AttackDetection` is a class that wraps around all the detection methods within this file.
+```cython
 class AttackDetection:
     # initialise attack detection variables
     def __init__(self, data, flagged_IPs):
@@ -30,10 +42,10 @@ class AttackDetection:
         self.http_suspicious = None
         self.tcp_suspicious_addresses = None
         self.tcp_scanning_suspicious = None
-
+        
         # initialise quarantined packets as empty
         self.quarantined_packets = None
-
+        
         # create a dataframe with the attack analysis data
         dataframe_creator = dataframe_create.DataframeCreate(data)
         self.dataframe = dataframe_creator.data_frame
@@ -42,7 +54,7 @@ class AttackDetection:
         self.blocked_addresses = []
         self.suspicious_addresses = flagged_IPs
         self.attacked_addresses = []
-
+        
         # initialise the packets to the provided data
         self.packets = data
 
@@ -51,8 +63,15 @@ class AttackDetection:
         for ip in ips:
             if ip not in self.suspicious_addresses:
                 self.suspicious_addresses.append(ip)
+```
+`__init__` defines how the class initialises itself. This class keeps track of resulting IP addresses from all attack analyses, along with quarantined packets, dataframes for representing results and the provided packets. Most of these are initialised to empty arrays or default values, except for the data frame, flagged IPs and packets, which are set to their passed parameters.
 
-    def tcp_syn_flood_detect(self):
+`update_flagged_ips` is a function that uses the provided list of flagged IPs and updates the currently stored list of flagged IPs with any new additions.
+
+### TCP Flood Detection
+`tcp_flood_detect` scans all provided TCP packets for signs of a TCP Flood Attack. It is expected that the number of SYN packets on a network is around equal to the number of SYN-ACK packets. A disproportionately large number of SYN packets in comparison to SYN-ACK packets is evidence of a TCP Flood Attack.
+```cython
+def tcp_syn_flood_detect(self):
         # creates canvas
         canvas = EmbeddedCanvas(self)
 
@@ -110,8 +129,24 @@ class AttackDetection:
                     self.tcp_suspicious_addresses.append(address)
         # return the plotted graph
         return canvas
+```
+The method begins by creating a new canvas to contain a graphical representation of the TCP Flood analysis. It then filters
+out all non-TCP packets provided. 
 
-    def tcp_connect_scanning_detect(self, threshold):
+After initialising axes and labels of the graph, the analysis loops through all SYN
+addresses provided and, if the address sends at least 50% more SYN packets than SYN-ACK packets, it is marked
+as a suspicious address and plots it on the graph.
+
+Similarly, any addresses that receive at least 50% more SYN packets than SYN-ACK packets are treated as attacked addresses,
+and are also plotted on the graph. After scanning through all SYN packets, the method returns the plotted canvas to be displayed
+on the GUI.
+
+### TCP Connect Scanning Detection
+`tcp_connect_scanning_detect` scans all provided TCP packets for signs of a TCP Connection attack. This detection requires two conditions to flag an address as suspicious:
+ - it has sent SYN flags without receiving SYN-ACK packets
+ - it sends more SYN packets than the threshold within a decided time interval _(currently 5)_
+```cython
+def tcp_connect_scanning_detect(self, threshold):
         # create an empty canvas to store data points
         canvas = EmbeddedCanvas()
         # initialise suspicious addresses as an empty list
@@ -220,9 +255,21 @@ class AttackDetection:
 
         # return the dataframe to be displayed
         return canvas
+```
+The method begins by creating a new canvas to contain a graphical representation of the TCP Connection analysis. It then filters
+out all non-TCP packets provided.
 
-    def arp_poison_detect(self):
-        # initialise arp suspicious addresses
+After initialising axes and labels of the graph, the analysis loops through all SYN addresses provided and, if the address has sent
+a SYN flag without receiving SYN packets, and it has sent more SYN packets within the time interval, it is marked
+as a suspicious address and plots it on the graph.
+
+After finishing analyses, the final state of the canvas is returned to graphically represent the suspicious addresses.
+
+### ARP Poison Detection
+`arp_poison_detect` scans all provided TCP packets for signs of an ARP Poisoning Attack. It is expected that each packet's mac address has one associated ip address. If this is nt the case, the address is marked as suspicious for ARP Poisoning.
+```cython
+def arp_poison_detect(self):
+        # initialise this arp suspicious addresses
         self.arp_suspicious_addresses = []
         # create an empty canvas to store data points
         canvas = EmbeddedCanvas()
@@ -292,9 +339,20 @@ class AttackDetection:
 
         # return the canvas to graphically display the suspicious addresses
         return canvas
+```
+The method begins by creating a new canvas to contain a graphical representation of the ARP Poisoning analysis. It then filters
+out all non-ARP packets provided.
 
-    # Simple detection to see if pps are above a threshold
-    def threshold_dos_detect(self, threshold):
+After initialising axes and labels of the graph, the analysis loops through all ARP mac addresses provided and, if the address has more than one associated ip addresses, it is marked as a suspicious address and is plotted on the graph.
+
+After finishing analyses, the final state of the canvas is returned to graphically represent the suspicious addresses.
+
+### Threshold DOS Detection
+`threshold_dos_detect` is a simple DOS detection function that, given a threshold, ensures that each unique IP address
+doesn't send more packets per second (_pps_) than the threshold.
+```cython
+ # Simple detection to see if pps are above a threshold
+def threshold_dos_detect(self, threshold):
         # initialise dos suspicious addresses
         self.dos_suspicious_addresses = []
         # create an empty canvas to store data points
@@ -328,7 +386,7 @@ class AttackDetection:
 
         # create a dataframe from the pps table
         pps_dataframe = pd.DataFrame.from_dict(pps_table)
-
+        
         # initialise a graph to represent pps
         dos_graph = pps_dataframe.plot(ax=canvas.axes, x="Address", kind='barh', legend=False)
         dos_graph.set(title="DOS Detection", xlabel="Packets Per Second")
@@ -345,8 +403,20 @@ class AttackDetection:
 
         # return the dataframe to be graphically represented
         return canvas
+```
+The method begins by creating a new canvas to contain a graphical representation of the DOS analysis. It then gets a 
+list of all unique IP address.
 
-    def icmp_flood_detect(self, threshold):
+After initialising axes and labels of the graph, the analysis loops through all ip addresses. If the address 
+sends more packets per second than the threshold, it is marked as a suspicious address and is plotted on the graph.
+
+After finishing analysis, the final state of the canvas is returned to graphically represent packets per second.
+
+### ICMP Flood Detection
+`icmp_flood_detect` uses the `calc_pps` function to mark ICMP echo packets that send more packets per second than the provided
+threshold as suspicious.
+```cython
+def icmp_flood_detect(self, threshold):
         # initialise icmp suspicious addresses
         self.icmp_suspicious = []
         # create an empty canvas to store data points
@@ -375,182 +445,12 @@ class AttackDetection:
 
         # return the created graph to be represented on the GUI
         return canvas
+```
+The method begins by creating a new canvas to contain a graphical representation of the ICMP analysis. It then gets a 
+list of all unique ICMP echo IP address.
 
-    def http_attack(self, threshold):
-        self.http_suspicious = []
-        canvas = EmbeddedCanvas()
+After initialising axes and labels of the graph, the analysis calls `calc_pps` which loops through all ip addresses. If 
+the address sends more packets per second than the threshold, it is marked as a suspicious address and is plotted on the 
+graph. This function also removes any outlying packets that have a time more than 3 standard deviations from the mean time.
 
-        tcp_packets = pd.DataFrame(
-            self.dataframe[(self.dataframe['Protocol'] == 'TCP') & (self.dataframe["IP_Version"] == "IPv4")])
-
-        # Returns None if no tcp packets
-        if tcp_packets.empty:
-            return None
-
-        # Loop to establish if a tcp handshake has been established
-        synlist = []
-        source_ips = []
-        for index, packet in tcp_packets.iterrows():
-            # adds addresses to dictionary if syn packet is found
-            if packet["TCP_Flags"] == "S":
-                synlist.append({"SourceIP": packet["SourceIP"],
-                                "DestIP": packet["DestIP"],
-                                "Stage": "syn"})
-            # if syn-ack is found, checks if packet addresses link up
-            if packet["TCP_Flags"] == "SA":
-                for syn_packet in synlist:
-                    if syn_packet["SourceIP"] == packet["DestIP"] and syn_packet["DestIP"] == packet["SourceIP"]:
-                        syn_packet["Stage"] = "synack"
-            # if ack is found, check if syn_ack was previously found and adds addresses and sets tcp_connection to true
-            if packet["TCP_Flags"] == "A":
-                for syn_packet in synlist:
-                    if syn_packet["SourceIP"] == packet["SourceIP"] and syn_packet["DestIP"] == packet["DestIP"] and \
-                            syn_packet["Stage"] == "synack":
-                        syn_packet["Stage"] = "connected"
-                        if syn_packet["SourceIP"] not in source_ips:
-                            source_ips.append(syn_packet["SourceIP"])
-
-        # if no tcp connection was established return None
-        if not source_ips:
-            return None
-
-        request_packets = []
-        # for each address in which a tcp connection was established, check if packets sent are GET or POST requests
-        for sourceIP in source_ips:
-            tcp_requests = tcp_packets[(tcp_packets["SourceIP"] == sourceIP) & tcp_packets["raw"].notna()]
-            for index, packet in tcp_requests.iterrows():
-                request = packet["raw"]
-
-                request_utf = ""
-                request_latin = ""
-                try:
-                    request_utf = request.decode("utf-8")
-                except:
-                    request_latin = request.decode("latin-1")
-
-                if ("GET" in request_utf or "POST" in request_utf) or (
-                        "GET" in request_latin or "POST" in request_latin):
-                    request_packets.append(packet["Number"])
-
-        # dataframe of request packets
-        requests = tcp_packets[tcp_packets["Number"].isin(request_packets)]
-
-        if requests.empty:
-            return None
-
-        # calculates packets per second for http request packets
-        pps_table = self.calc_pps(source_ips, requests, self.http_suspicious, threshold)
-
-        # creates dataframe from dictionary
-        pps_dataframe = pd.DataFrame.from_dict(pps_table)
-
-        # creates graph from dataframe
-        pps_graph = pps_dataframe.plot(ax=canvas.axes, kind='barh', x="Address", legend=False)
-        pps_graph.set(title="HTTP Request Flood Detection", xlabel="Packets Per Second")
-        pps_graph.locator_params(axis="x", integer=True, tight=True)
-        pps_graph.axvline(threshold, color='r', linestyle='--')
-
-        return canvas
-
-    def dns_request_response_detect(self, threshold):
-        canvas = EmbeddedCanvas()
-        canvas2 = EmbeddedCanvas()
-        self.dns_request_suspicious = []
-        self.dns_response_suspicious = []
-
-        # Filters to DNS protocols only
-        dns_packets = pd.DataFrame(self.dataframe[self.dataframe['Protocol'] == 'UDP/DNS'])
-
-        # Returns empty canvas if no packets are present
-        if dns_packets.empty:
-            return [None, None]
-
-        # Requests have a qr flag of 0 and responses have a qr flag of 1
-        dns_requests = pd.DataFrame(dns_packets[dns_packets['DNS_Type'] == 0])
-        dns_responses = pd.DataFrame(dns_packets[dns_packets['DNS_Type'] == 1])
-
-        # Obtains unique addresses
-        dns_request_addresses = dns_requests['SourceIP'].unique()
-        dns_response_addresses = dns_responses['SourceIP'].unique()
-
-        # Calculates packets per second for dns requests
-        pps_table = self.calc_pps(dns_request_addresses, dns_requests, self.dns_request_suspicious, threshold)
-
-        # creates dataframe from dictionary
-        pps_dataframe = pd.DataFrame.from_dict(pps_table)
-
-        # creates graph from dataframe
-        pps_graph = pps_dataframe.plot(ax=canvas.axes, kind='barh', x="Address", legend=False)
-        pps_graph.set(title="DNS Request Flood Detection", xlabel="Packets Per Second")
-        pps_graph.locator_params(axis="x", integer=True, tight=True)
-        pps_graph.axvline(threshold, color='r', linestyle='--')
-
-        # Calculates packets per second for dns_responses
-        pps_table = self.calc_pps(dns_response_addresses, dns_responses, self.dns_response_suspicious, threshold)
-
-        # creates dataframe from dictionary
-        pps2_dataframe = pd.DataFrame.from_dict(pps_table)
-
-        # creates graph from dataframe
-        pps2_graph = pps2_dataframe.plot(ax=canvas2.axes, kind='barh', x="Address", legend=False)
-        pps2_graph.set(title="DNS Response Flood Detection", xlabel="Packets Per Second")
-        pps2_graph.locator_params(axis="x", integer=True, tight=True)
-        pps2_graph.axvline(threshold, color='r', linestyle='--')
-
-        # Returns both graphs
-        return [canvas, canvas2]
-
-    def calc_pps(self, suspicious_addresses, packets, attack_sus_list, threshold):
-        # dictionary of the addresses and their packets per second
-        pps_table = {'Address': [],
-                     'PPS': []}
-
-        # For each address:
-        #    - calculate mean and standard deviation
-        #    - remove any outliers using these
-        #    - calculate the packets per second sent by each address
-        #    - adds to suspicious addresses if above the threshold
-        for address in suspicious_addresses:
-            packets_ip = packets[packets['SourceIP'] == address]
-
-            # calculates mean and standard deviation
-            mean = packets_ip['Time'].mean()
-            std = packets_ip['Time'].std()
-
-            # removes any outliers (timestamps that are more than 3 standard deviations away from the mean)
-            packets_no_outliers = packets_ip[packets_ip['Time'] <= mean + (3 * std)]
-
-            # calculates average packets per second
-            difference = packets_no_outliers['Time'].iloc[-1] - packets_no_outliers['Time'].iloc[0]
-            packet_per_sec = len(packets_no_outliers) / difference
-
-            pps_table['Address'].append(address)
-            pps_table['PPS'].append(int(packet_per_sec))
-
-            # adds to suspicious addresses if above threshold
-            if packet_per_sec > threshold:
-                if address not in self.suspicious_addresses:
-                    self.suspicious_addresses.append(address)
-                if address not in attack_sus_list:
-                    attack_sus_list.append(address)
-
-            return pps_table
-
-    # Runs all established attack detections
-    def run_all_detection(self, threshold):
-        if threshold is None:
-            self.tcp_syn_flood_detect()
-            self.tcp_connect_scanning_detect(100)
-            self.threshold_dos_detect(200)
-            self.arp_poison_detect()
-            self.icmp_flood_detect(100)
-            self.http_attack(5)
-            self.dns_request_response_detect(20)
-        else:
-            self.tcp_syn_flood_detect()
-            self.tcp_connect_scanning_detect(threshold)
-            self.threshold_dos_detect(threshold)
-            self.arp_poison_detect()
-            self.icmp_flood_detect(threshold)
-            self.http_attack(threshold)
-            self.dns_request_response_detect(threshold)
+After finishing analysis, the final state of the canvas is returned to graphically represent packets per second.
