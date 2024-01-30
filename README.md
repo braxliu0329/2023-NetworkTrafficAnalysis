@@ -66,13 +66,14 @@ git clone https://github.com/spe-uob/2023-NetworkTrafficAnalysis.git
 ```
 python --version
 pip install Scapy
-pip install Npcap
 pip install Pyqt5
 pip install matplotlib
 pip install pandas  
 pip install networkx
 ```
-Or download [Scapy and Npcap](https://scapy.readthedocs.io/en/latest/installation.html) with this link
+Or download Scapy (https://scapy.readthedocs.io/en/latest/installation.html) with this link
+
+- Download Npcap (https://npcap.com/#download) with this link
 
 
 #### MacOS - Intel
