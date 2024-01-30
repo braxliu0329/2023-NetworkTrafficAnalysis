@@ -16,6 +16,9 @@ from pythonGUI.capture_analysis import plotting
 from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action
 
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
+from pythonGUI.packetDetails import Ui_PacketDetails
+
+import pythonGUI.rc_icons as rc_icons
 
 # Turns the packet data into a hex string
 def hex_packet_data(packet_data):
@@ -108,7 +111,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.attack_analysis_window = None
 
         # set data list
-        self.data.horizontalHeader().setVisible(False)
+        """self.data.horizontalHeader().setVisible(False)
         self.data.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.data.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.data.resizeColumnsToContents()
@@ -117,7 +120,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionTurnHex = QAction('Show hexadecimal data', self)
         self.actionTurnHex.triggered.connect(self.operate_turn_hex)
         self.actionTurnBin = QAction('Show binary data', self)
-        self.actionTurnBin.triggered.connect(self.operate_turn_bin)
+        self.actionTurnBin.triggered.connect(self.operate_turn_bin)"""
 
         # start button pressed
         self.actionStartCapture.triggered.connect(self.start_capture)
@@ -130,6 +133,13 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # set status bar
         self.statusBar.showMessage('Ready for Capturing')
+
+
+    def open_details(self):
+        self.window = QMainWindow
+        self.ui = Ui_PacketDetails()
+        self.ui.setupUi(self.window)
+        self.window.show()
 
     # Helper function to get the current row of the capture list
     def get_current_list_row(self):
@@ -259,10 +269,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.GUI_actions.sniffer.reset()
 
         # clear detail and data box
-        self.detail.clear()
+        """self.detail.clear()
         self.detail.update()
         self.data.clear()
-        self.data.update()
+        self.data.update()"""
 
     # method to start sniffer, ran as thread so packets are displayed dynamically
     def start_capture_thread(self):
@@ -354,15 +364,15 @@ class Window(window.Ui_MainWindow, QMainWindow):
             self.captureList.update()
             # allows scroll bar to follow most recent captured packet
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
-
+            
             if self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "TCP":
-                self.set_background(row_number, 193, 210, 240)
-            elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "UDP" or "UDP/DNS":
-                self.set_background(row_number, 254, 254, 187)
+                self.set_background(row_number, 70, 105, 165)
+            elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "UDP" or self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "UDP/DNS":
+                self.set_background(row_number, 0, 204, 102)
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "IGMP":
-                self.set_background(row_number, 254, 216, 177)
+                self.set_background(row_number, 178, 255, 102)
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "ICMP":
-                self.set_background(row_number, 220, 208, 255)
+                self.set_background(row_number, 0, 102, 102)
 
         # Handles the case where the packet has an ARP layer
         elif packet.haslayer(ARP):
@@ -382,7 +392,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
             # The capture list is updated
             self.captureList.update()
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
-            self.set_background(row_number, 245, 212, 217)
+            self.set_background(row_number, 255, 102, 102)
 
         # Handles the case where the packet has an IPv6 layer
         elif packet.haslayer(IPv6):
@@ -402,7 +412,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
             self.captureList.update()
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
-            self.set_background(row_number, 204, 232, 207)
+            self.set_background(row_number, 255, 178, 102)
 
         # if the packet capture has been stopped
         if self.stopped_capture:

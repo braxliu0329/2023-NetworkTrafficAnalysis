@@ -1,9 +1,0 @@
-!SESSION 2023-11-20 15:34:21.917 -----------------------------------------------
-eclipse.buildId=unknown
-java.version=17.0.8.1
-java.vendor=Eclipse Adoptium
-BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en_GB
-Command-line arguments:  -os linux -ws gtk -arch x86_64 -data /home/dipl0id/2023-NetworkTrafficAnalysis/Code/pythonGUI/Updates/Wireframe
-
-!ENTRY com.wireframesketcher.ui 1 0 2023-11-20 15:34:24.682
-!MESSAGE WireframeSketcher v7.0.0 (trial)
