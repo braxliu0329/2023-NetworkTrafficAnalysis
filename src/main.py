@@ -56,6 +56,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # set open/save file and quit application function
         self.actionOpen_Multi_Files.triggered.connect(self.open_multiple_file_operation)
+        self.actionOpen.triggered.connect(self.open_file_operation)
         self.actionSave.triggered.connect(self.save_file_operation)
         self.actionSave_As_2.triggered.connect(self.save_as_file_operation)
         self.actionExit.triggered.connect(self.quit_operation)
@@ -218,6 +219,12 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.subs[length].display_packet_detail(details)
         self.subs[length].show()
 
+    def open_file_operation(self):
+        self.actionStopCaputure.setEnabled(True)
+        self.stopped_capture = False
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open file", "", 'pcap (*.pcap);;All files (*)')
+        if file_name:
+            self.GUI_actions.read_pcap(str(file_name), mainWindow)
 
     # opens pcap files and displays its content
     def open_multiple_file_operation(self):
