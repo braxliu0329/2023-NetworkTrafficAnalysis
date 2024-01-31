@@ -11,6 +11,7 @@ from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import ARP, Ether
 from PyQt5.QtGui import QDesktopServices
 import webbrowser
+import pyperclip
 
 from pythonGUI.capture_analysis import plotting
 from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action
@@ -138,6 +139,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # set status bar
         self.statusBar.showMessage('Ready for Capturing')
+
+        # set edit tool
+        self.actionCopy.triggered.connect(self.copy_operation)
 
 
     def open_details(self):
@@ -699,6 +703,14 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.filterBox.pFilterModel.setFilterKeyColumn(column)
         super(QComboBox, self.filterBox).setModelColumn(column)
 
+    def copy_operation(self):
+         row = self.get_current_list_row()
+         _, details = self.get_select_packet(row)
+         clipboard = QApplication.clipboard()
+         clipboard.clear()
+         details_str = '\n'.join(details)
+         clipboard.setText(details_str)
+         
     # use <ENTER> in filter box of the GUI to select filter
     def enter_keypress(self, key): # key refers to the key that was pressed
         # if the key pressed is the enter key
