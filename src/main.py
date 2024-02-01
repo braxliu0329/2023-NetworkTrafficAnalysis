@@ -58,15 +58,15 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.marked_packets = []
 
         # set open/save file and quit application function
-        self.actionOpen_Multi_Files.triggered.connect(self.open_multiple_file_operation)
-        self.actionOpen.triggered.connect(self.open_file_operation)
-        self.actionLoadCapture.triggered.connect(self.open_file_operation)
-        self.actionSaveCapture.triggered.connect(self.save_as_file_operation)
-        self.actionNextPacket.triggered.connect(self.next_packet_operation)
+        self.actionOpen_Multi_Files.triggered.connect(self.open_multiple_file)
+        self.actionOpen.triggered.connect(self.open_file)
+        self.actionLoadCapture.triggered.connect(self.open_file)
+        self.actionSaveCapture.triggered.connect(self.save_as_file)
+        self.actionNextPacket.triggered.connect(self.next_packet)
         self.actionPreviousPacket.triggered.connect(self.previous_packet_opertaion)
-        self.actionSave.triggered.connect(self.save_file_operation)
-        self.actionSave_As_2.triggered.connect(self.save_as_file_operation)
-        self.actionExit.triggered.connect(self.quit_operation)
+        self.actionSave.triggered.connect(self.save_file)
+        self.actionSave_As_2.triggered.connect(self.save_as_file)
+        self.actionExit.triggered.connect(self.quit)
 
         # set the capture menu
         self.actionStart.triggered.connect(self.start_capture)
@@ -74,11 +74,11 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionPause.triggered.connect(self.pause_capture)
 
         # set the analysis menu
-        self.actionGraph.triggered.connect(self.graph_operation)
-        self.actionAttack_Analysis.triggered.connect(self.attack_analysis_operation)
+        self.actionGraph.triggered.connect(self.graph)
+        self.actionAttack_Analysis.triggered.connect(self.attack_analysis)
 
         # set the help menu
-        self.actionUse_Guide.triggered.connect(self.use_guide_operation)
+        self.actionUse_Guide.triggered.connect(self.use_guide)
 
         # set display filter
         self.filterBox.setEditable(True)
@@ -143,10 +143,11 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.statusBar.showMessage('Ready for Capturing')
 
         # set edit tool
-        self.actionCopy.triggered.connect(self.copy_operation)
-        self.actionFindNextPacket.triggered.connect(self.next_packet_operation)
+        self.actionCopy.triggered.connect(self.copy)
+        self.actionFindNextPacket.triggered.connect(self.next_packet)
         self.actionFindPreviousPacket.triggered.connect(self.previous_packet_opertaion)
-        self.actionMarkPacket.triggered.connect(self.mark_packet_operation)
+        self.actionMarkPacket.triggered.connect(self.mark_packet)
+        self.actionMarkAllDisplayed.triggered.connect(self.mark_all_displayed)
 
 
     def open_details(self):
@@ -182,7 +183,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         self.display_packet_data(selected_packet)
 
-    def next_packet_operation(self):
+    def next_packet(self):
         next_row = (self.get_current_list_row() + 1) % self.captureList.rowCount()
         self.captureList.setCurrentCell(next_row, 0)
         self.handle_clicked_row(next_row)
@@ -242,8 +243,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.subs[length].display_packet_detail(details)
         self.subs[length].show()
 
-    def open_file_operation(self):
-        self.marked_packets.clear()
+    def open_file(self):
         self.actionStopCaputure.setEnabled(True)
         self.stopped_capture = False
         file_name, _ = QFileDialog.getOpenFileName(self, "Open file", "", 'pcap (*.pcap);;All files (*)')
@@ -251,8 +251,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
             self.GUI_actions.read_pcap(str(file_name), mainWindow)
 
     # opens pcap files and displays its content
-    def open_multiple_file_operation(self):
-        self.marked_packets.clear()
+    def open_multiple_file(self):
         self.actionStopCaputure.setEnabled(True)
         self.stopped_capture = False
         # gets the filename of the selected files
@@ -265,16 +264,16 @@ class Window(window.Ui_MainWindow, QMainWindow):
             temp += 1
 
     # saves a pcap file of the captured packets
-    def save_file_operation(self):
+    def save_file(self):
         file_name = QFileDialog.getSaveFileName(self, 'Save file', "", 'pcap (*.pcap);;All files (*)')
         self.GUI_actions.write_pcap(str(os.path.basename(file_name[0])))
 
-    def save_as_file_operation(self):
+    def save_as_file(self):
         file_name = QFileDialog.getSaveFileName(self, 'Save As', '', 'pcap (*.pcap);;All files (*)')
         self.GUI_actions.write_pcap(str(file_name[0]))
 
     # closes the GUI window
-    def quit_operation(self):
+    def quit(self):
         self.close()
 
     # pauses the packet capturing, does not remove packets, and doesn't reset packet counter
@@ -288,6 +287,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
     # stops the packet capturing
     def stop_capture(self):
+        self.marked_packets.clear()
         self.actionStartCapture.setEnabled(True)
         self.actionPauseCapture.setEnabled(False)
         self.actionStopCaputure.setEnabled(False)
@@ -326,21 +326,21 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.capture_thread.start()
 
     # open the graph subwindow
-    def graph_operation(self):
+    def graph(self):
         data = self.GUI_actions.get_sniffed_packets()
         self.graph_window = graph_window_action.GraphWindow(data)
 
         self.graph_window.show()
 
     # open the attack analysis subwindow
-    def attack_analysis_operation(self):
+    def attack_analysis(self):
         data = self.GUI_actions.get_sniffed_packets()
 
         self.attack_analysis_window = attack_analysis_action.AttackAnalysisWindow(data, self, self.flaggedIPs)
 
         self.attack_analysis_window.show()
 
-    def use_guide_operation(self):
+    def use_guide(self):
         # project_root = os.path.abspath(os.path.dirname(__file__))
         # file_path = f"file://{project_root}/help_resource/index.html"
         # webbrowser.open(file_path)
@@ -711,7 +711,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         super(QComboBox, self.filterBox).setModelColumn(column)
 
     # copies selected packet details to clipboard
-    def copy_operation(self):
+    def copy(self):
          row = self.get_current_list_row()
          _, details = self.get_select_packet(row)
          clipboard = QApplication.clipboard()
@@ -719,22 +719,52 @@ class Window(window.Ui_MainWindow, QMainWindow):
          details_str = '\n'.join(details)
          clipboard.setText(details_str)
 
-    # mark or unmark packet
-    def mark_packet_operation(self):
-        row = self.get_current_list_row()
+    def get_selected_rows(self):
+        selected_indexes = self.captureList.selectionModel().selectedRows()
+        selected_rows = [index.row() for index in selected_indexes]
+        return selected_rows
+
+    def marker(self, row):
         cell = self.captureList.item(row, 0)
         previous_color = cell.background().color()
         if len(self.marked_packets) == 0:
             self.set_background(row, 0, 0, 0)
             self.marked_packets.append((row, previous_color))
             return
-        for r, color in self.marked_packets:
+        found = False
+        for r, c in self.marked_packets:
+                # check if packet is already marked
             if r == row:
-                self.set_background(r, color.red(), color.green(), color.blue())
-                self.marked_packets.remove((r,color))
-                return
-        self.set_background(row, 0, 0, 0)
-        self.marked_packets.append((row, previous_color))  
+                # unmark by restoring to original color
+                self.set_background(r, c.red(), c.green(), c.blue())
+                self.marked_packets.remove((r,c))
+                found = True
+                break
+        # mark packet if it hasn't been marked
+        if not found:
+            self.set_background(row, 0, 0, 0)
+            self.marked_packets.append((row, previous_color))
+
+    # mark or unmark packet(s)
+    def mark_packet(self):
+        selected_rows = self.get_selected_rows()
+        for row in selected_rows:
+            self.marker(row)
+
+    def mark_all_displayed(self):
+        for row in range(self.captureList.rowCount()):
+            self.marker(row)
+
+    def next_marked_packet(self):
+        pass
+
+    def previous_marked_packet(self):
+        pass
+
+    def clear_marked_packets(self):
+        for r, color in self.marked_packets:
+            self.set_background(r, color.red(), color.green(), color.blue())
+        self.marked_packets.clear()
         
     # use <ENTER> in filter box of the GUI to select filter
     def enter_keypress(self, key): # key refers to the key that was pressed
