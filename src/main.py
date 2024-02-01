@@ -11,7 +11,6 @@ from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import ARP, Ether
 from PyQt5.QtGui import QDesktopServices
 import webbrowser
-import pyperclip
 
 from pythonGUI.capture_analysis import plotting
 from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action
@@ -54,6 +53,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.flaggedIPs = []
         self.show_in_hex = None
         self.show_in_bin = None
+
+        # create array which tracks currently marked packets
+        self.marked_packets = []
 
         # set open/save file and quit application function
         self.actionOpen_Multi_Files.triggered.connect(self.open_multiple_file_operation)
@@ -142,6 +144,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # set edit tool
         self.actionCopy.triggered.connect(self.copy_operation)
+        self.actionFindNextPacket.triggered.connect(self.next_packet_operation)
+        self.actionFindPreviousPacket.triggered.connect(self.previous_packet_opertaion)
+        self.actionMarkPacket.triggered.connect(self.mark_packet_operation)
 
 
     def open_details(self):
@@ -238,6 +243,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.subs[length].show()
 
     def open_file_operation(self):
+        self.marked_packets.clear()
         self.actionStopCaputure.setEnabled(True)
         self.stopped_capture = False
         file_name, _ = QFileDialog.getOpenFileName(self, "Open file", "", 'pcap (*.pcap);;All files (*)')
@@ -246,6 +252,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
     # opens pcap files and displays its content
     def open_multiple_file_operation(self):
+        self.marked_packets.clear()
         self.actionStopCaputure.setEnabled(True)
         self.stopped_capture = False
         # gets the filename of the selected files
@@ -703,6 +710,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.filterBox.pFilterModel.setFilterKeyColumn(column)
         super(QComboBox, self.filterBox).setModelColumn(column)
 
+    # copies selected packet details to clipboard
     def copy_operation(self):
          row = self.get_current_list_row()
          _, details = self.get_select_packet(row)
@@ -710,7 +718,24 @@ class Window(window.Ui_MainWindow, QMainWindow):
          clipboard.clear()
          details_str = '\n'.join(details)
          clipboard.setText(details_str)
-         
+
+    # mark or unmark packet
+    def mark_packet_operation(self):
+        row = self.get_current_list_row()
+        cell = self.captureList.item(row, 0)
+        previous_color = cell.background().color()
+        if len(self.marked_packets) == 0:
+            self.set_background(row, 0, 0, 0)
+            self.marked_packets.append((row, previous_color))
+            return
+        for r, color in self.marked_packets:
+            if r == row:
+                self.set_background(r, color.red(), color.green(), color.blue())
+                self.marked_packets.remove((r,color))
+                return
+        self.set_background(row, 0, 0, 0)
+        self.marked_packets.append((row, previous_color))  
+        
     # use <ENTER> in filter box of the GUI to select filter
     def enter_keypress(self, key): # key refers to the key that was pressed
         # if the key pressed is the enter key
