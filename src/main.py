@@ -356,7 +356,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # displays each packet
         for packet in filtered_packets:
             self.display_packet(packet)
-
+        self.reapply_markers()
+        
     # in order to use PyQts build in sorting function for tables with integers,
     # need to store integers using this custom item class which allows integer comparison
     class TableItemInt(QTableWidgetItem):
@@ -405,6 +406,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 self.set_background(row_number, 178, 255, 102)
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "ICMP":
                 self.set_background(row_number, 0, 102, 102)
+
 
         # Handles the case where the packet has an ARP layer
         elif packet.haslayer(ARP):
@@ -724,26 +726,51 @@ class Window(window.Ui_MainWindow, QMainWindow):
         selected_rows = [index.row() for index in selected_indexes]
         return selected_rows
 
+    def hash_packet(self, row):
+        _, details = self.get_select_packet(row)
+        return hash(''.join(details))
+    
+    def hash_row_finder(self, h):
+        for row in range(self.captureList.rowCount()):
+            hashed_packet = self.hash_packet(row)
+            if hashed_packet == h:
+                return row
+        return -1
+
+    def reapply_markers(self):
+        for row in range(self.captureList.rowCount()):
+            for _, _, _, h in self.marked_packets:
+                hashed_packet = self.hash_packet(row)
+                print(hashed_packet)
+                print(h)
+                print("LINE")
+                if h == hashed_packet:
+                    print("here")
+                    self.set_background(row, 0, 0, 0)
+
     def marker(self, row):
         cell = self.captureList.item(row, 0)
         previous_color = cell.background().color()
+        hashed_packet = self.hash_packet(row)
+        red, green, blue = (previous_color.red(), previous_color.green(), previous_color.blue())
         if len(self.marked_packets) == 0:
             self.set_background(row, 0, 0, 0)
-            self.marked_packets.append((row, previous_color))
+            self.marked_packets.append((red, green, blue, self.hash_packet(row)))
             return
         found = False
-        for r, c in self.marked_packets:
+        for r, g, b, h in self.marked_packets:
                 # check if packet is already marked
-            if r == row:
+            if h == hashed_packet:
                 # unmark by restoring to original color
-                self.set_background(r, c.red(), c.green(), c.blue())
-                self.marked_packets.remove((r,c))
+                found_row = self.hash_row_finder(h)
+                self.set_background(found_row, r, g, b)
+                self.marked_packets.remove((r, g, b, h))
                 found = True
                 break
         # mark packet if it hasn't been marked
         if not found:
             self.set_background(row, 0, 0, 0)
-            self.marked_packets.append((row, previous_color))
+            self.marked_packets.append((red, green, blue, self.hash_packet(row)))
 
     # mark or unmark packet(s)
     def mark_packet(self):
