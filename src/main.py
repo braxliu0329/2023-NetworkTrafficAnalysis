@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import os.path
+import ctypes
 
 from PyQt5.Qt import Qt, QCompleter
 from PyQt5.QtCore import QSortFilterProxyModel, QUrl
@@ -56,7 +57,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.show_in_bin = None
 
         # create array which tracks currently marked packets
-        self.marked_packets = []
+        self.marked_packets = dict()
 
         # set open/save file and quit application function
         self.actionOpen_Multi_Files.triggered.connect(self.open_multiple_file)
@@ -742,45 +743,31 @@ class Window(window.Ui_MainWindow, QMainWindow):
     
     def hash_packet(self, row):
         _, details = self.get_select_packet(row)
-        return hash(''.join(details))
+        return ctypes.c_size_t(hash(''.join(details))).value
     
-    def hash_row_finder(self, h):
-        for row in range(self.captureList.rowCount()):
-            hashed_packet = self.hash_packet(row)
-            if hashed_packet == h:
-                return row
-        return -1
-
     def reapply_markers(self):
         for row in range(self.captureList.rowCount()):
-            for _, _, _, h in self.marked_packets:
-                hashed_packet = self.hash_packet(row)
-                if h == hashed_packet:
-                    self.set_background(row, 0, 0, 0)
+            if self.hash_packet(row) in self.marked_packets:
+                self.set_background(row, 0, 0, 0)
 
     def marker(self, row):
         cell = self.captureList.item(row, 0)
-        previous_color = cell.background().color()
         hashed_packet = self.hash_packet(row)
-        red, green, blue = (previous_color.red(), previous_color.green(), previous_color.blue())
-        if len(self.marked_packets) == 0:
-            self.set_background(row, 0, 0, 0)
-            self.marked_packets.append((red, green, blue, self.hash_packet(row)))
-            return
-        found = False
-        for r, g, b, h in self.marked_packets:
-                # check if packet is already marked
-            if h == hashed_packet:
-                # unmark by restoring to original color
-                found_row = self.hash_row_finder(h)
-                self.set_background(found_row, r, g, b)
-                self.marked_packets.remove((r, g, b, h))
-                found = True
-                break
+        if hashed_packet in self.marked_packets:
+            # check if packet is already marked
+            # unmark by restoring to original color
+            marked_packet = self.marked_packets[hashed_packet]
+            self.set_background(row, marked_packet.r, marked_packet.g, marked_packet.b)
+            del self.marked_packets[marked_packet.hash]
         # mark packet if it hasn't been marked
-        if not found:
+        else:
+            previous_color = cell.background().color()
+            red, green, blue = (previous_color.red(), previous_color.green(), previous_color.blue())
+            marked_packet = self.MarkedPacket(hashed_packet, red, green, blue)
             self.set_background(row, 0, 0, 0)
-            self.marked_packets.append((red, green, blue, self.hash_packet(row)))
+            self.marked_packets[marked_packet.hash] = marked_packet
+                
+                
 
     # mark or unmark packet(s)
     def mark_packet(self):
@@ -798,10 +785,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
     def previous_marked_packet(self):
         pass
 
-    def clear_marked_packets(self):
-        for r, color in self.marked_packets:
-            self.set_background(r, color.red(), color.green(), color.blue())
-        self.marked_packets.clear()
+    
         
     # use <ENTER> in filter box of the GUI to select filter
     def enter_keypress(self, key): # key refers to the key that was pressed
