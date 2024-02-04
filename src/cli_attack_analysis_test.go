@@ -1,31 +1,57 @@
 package main
 
 import (
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/pcap"
+	"sort"
 	"testing"
 )
 
-// get packets from a file into a slice of packets
-func getPackets(path string) []gopacket.Packet {
-	// handle errors, such as incorrect file paths
-	if handle, err := pcap.OpenOffline(path); err != nil {
-		panic(err)
-	} else {
-		// slice to store packets
-		var packets []gopacket.Packet
-		// set the packet source as the given pcap file
-		packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-		// loop through every packet in the pcap file
-		for packet := range packetSource.Packets() {
-			// add the packet to the packet slice
-			packets = append(packets, packet)
-		}
-		return packets
+// compare two slices of strings to check that they are equal (in any order)
+func sliceEqual(s []string, t []string) bool {
+	// check they have the same length
+	if len(s) != len(t) {
+		return false
 	}
+
+	// sort the slices to allow any ordering
+	sort.Strings(s)
+	sort.Strings(t)
+
+	// go through each element in s, check that it is in t
+	for i, str := range s {
+		if str != t[i] {
+			return false
+		}
+	}
+
+	// return true as the slices are equal
+	return true
 }
 
 // test the TCP Flood detection for the CLI tool is working as expected
 func TestTcpFlood(t *testing.T) {
-	t.Fatal("test")
+	// detect an attack using a pcap file without tcp flood attacks
+	attackFalseDetect := tcpSynFloodDetect("dns")
+	// detect an attack using a pcap file with a tcp flood attack
+	attackDetect := tcpSynFloodDetect("SYN")
+
+	// expected suspicious address
+	knownSuspicious := []string{"10.128.0.2"}
+	// expected attacked address
+	knownAttacked := []string{"10.0.0.2"}
+
+	// ensure that the method does not incur any false positives
+	if len(attackFalseDetect.suspicious) > 0 {
+		t.Fatalf("Expected no suspicious addresses, got %v instead", attackFalseDetect.suspicious)
+	}
+	if len(attackFalseDetect.attacked) > 0 {
+		t.Fatalf("Expected no attacked addresses, got %v instead", attackFalseDetect.attacked)
+	}
+
+	// tests whether the known suspicious and attacked addresses appeared in the correct lists
+	if !sliceEqual(attackDetect.suspicious, knownSuspicious) {
+		t.Fatalf("Expected suspicious address %v, got %v instead", knownSuspicious, attackDetect.suspicious)
+	}
+	if !sliceEqual(attackDetect.attacked, knownAttacked) {
+		t.Fatalf("Expected suspicious address %v, got %v instead", knownAttacked, attackDetect.attacked)
+	}
 }
