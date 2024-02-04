@@ -52,3 +52,40 @@ func tcpConnectScanDetect(file string, threshold int) []string {
 	// return the suspicious and attacked addresses as a pair
 	return suspiciousAddresses
 }
+
+// using the name of a pcap file, returns a slice containing any suspicious addresses
+func arpPoisonDetect(file string) []string {
+	// slices to contain suspicious and attacked addresses
+	var suspiciousAddresses []string
+
+	// return the suspicious and attacked addresses as a pair
+	return suspiciousAddresses
+}
+
+// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
+func icmpFloodDetect(file string, threshold int) []string {
+	// slices to contain suspicious and attacked addresses
+	var suspiciousAddresses []string
+
+	// return the suspicious and attacked addresses as a pair
+	return suspiciousAddresses
+}
+
+// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
+func httpFloodDetect(file string, threshold int) []string {
+	// slices to contain suspicious and attacked addresses
+	var suspiciousAddresses []string
+
+	// return the suspicious and attacked addresses as a pair
+	return suspiciousAddresses
+}
+
+// using the name of a pcap file and a given threshold, returns lists containing any suspicious and suspected attacked addresses
+func dnsRequestResponse(file string, threshold int) Report {
+	// slices to contain suspicious and attacked addresses
+	var suspiciousAddresses []string
+	var attackedAddresses []string
+
+	// return the suspicious and attacked addresses as a pair
+	return Report{suspicious: suspiciousAddresses, attacked: attackedAddresses}
+}
