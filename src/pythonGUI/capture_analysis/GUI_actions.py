@@ -40,12 +40,14 @@ class GUIActions:
         self.sniffer.set_protocol(protocol)
         # if no filter specified returns all packets
         if protocol == "":
+            self.sniffer.filtered_packets.clear()
             return sniffed_packets
         else:
             # checks if each packet has that protocol and appends to list if so
             for packet in sniffed_packets:
                 if packet.haslayer(protocol):
                     filtered_packets.append(packet)
+                    self.sniffer.filtered_packets = filtered_packets
             return filtered_packets
 
     # Methods to read and write pcap files

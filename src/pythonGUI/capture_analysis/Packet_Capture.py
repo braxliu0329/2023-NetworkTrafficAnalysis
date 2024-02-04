@@ -13,6 +13,7 @@ class Sniffer:
         self.running = True
         self.ptc = ""
 
+        self.filtered_packets = []
         self.sniffed_packets = []
 
     # Method ran when packet capture is initiated by user.

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import os.path
 
 from PyQt5.Qt import Qt, QCompleter
@@ -164,7 +165,12 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # Helper function to get the selected packet and its details from the capture list based on the row number
     def get_select_packet(self, row):
         item = self.captureList.item(row, 0)
-        selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(item.text()) - 1]
+        # if the filtered packets are empty, select the sniffed packets
+        if not self.GUI_actions.sniffer.filtered_packets:
+            selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(item.text()) - 1]
+        # otherwise show the filtered packets
+        else: 
+            selected_packet = self.GUI_actions.sniffer.filtered_packets[int(item.text()) - 1]
         details = str.splitlines(selected_packet.show(dump=True))
         return selected_packet, details
 
@@ -183,11 +189,13 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         self.display_packet_data(selected_packet)
 
+    # select the next packet
     def next_packet(self):
         next_row = (self.get_current_list_row() + 1) % self.captureList.rowCount()
         self.captureList.setCurrentCell(next_row, 0)
         self.handle_clicked_row(next_row)
 
+    # select the previous packet
     def previous_packet_opertaion(self):
         prev_row = (self.get_current_list_row() - 1) % self.captureList.rowCount()
         self.captureList.setCurrentCell(prev_row, 0)
@@ -231,9 +239,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         length = len(self.subs)
         # Add the new subWindow to the subs list, which is used to keep track of all the subWindows
         self.subs.append(subWindow.SubWindow())
-        item = self.captureList.item(row, 0)
-        selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(item.text()) - 1]
-        details = str.splitlines(selected_packet.show(dump=True))
+        selected_packet, details = self.get_select_packet(row)
         # self.subs[length].parse_packet(selected_packet)
         self.subs[length].setWindowTitle("Packet #" + str(row + 1) + "  " + str(selected_packet.sprintf(
             "%Ether.type%"
@@ -242,7 +248,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.subs[length].display_packet_data(selected_packet)
         self.subs[length].display_packet_detail(details)
         self.subs[length].show()
-
+        
+    # open a single pcap file
     def open_file(self):
         self.actionStopCaputure.setEnabled(True)
         self.stopped_capture = False
@@ -250,7 +257,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         if file_name:
             self.GUI_actions.read_pcap(str(file_name), mainWindow)
 
-    # opens pcap files and displays its content
+    # opens pcap file(s) and displays its content
     def open_multiple_file(self):
         self.actionStopCaputure.setEnabled(True)
         self.stopped_capture = False
@@ -726,6 +733,13 @@ class Window(window.Ui_MainWindow, QMainWindow):
         selected_rows = [index.row() for index in selected_indexes]
         return selected_rows
 
+    @dataclass
+    class MarkedPacket:
+        hash: int
+        r: int
+        g: int
+        b: int
+    
     def hash_packet(self, row):
         _, details = self.get_select_packet(row)
         return hash(''.join(details))
@@ -741,11 +755,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         for row in range(self.captureList.rowCount()):
             for _, _, _, h in self.marked_packets:
                 hashed_packet = self.hash_packet(row)
-                print(hashed_packet)
-                print(h)
-                print("LINE")
                 if h == hashed_packet:
-                    print("here")
                     self.set_background(row, 0, 0, 0)
 
     def marker(self, row):
