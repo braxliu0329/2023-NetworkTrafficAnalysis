@@ -55,3 +55,30 @@ func TestTcpFlood(t *testing.T) {
 		t.Fatalf("Expected suspicious address %v, got %v instead", knownAttacked, attackDetect.attacked)
 	}
 }
+
+// test the TCP Connect Scanning detection for the CLI tool is working as expected
+func TestTcpConnectScanningFlood(t *testing.T) {
+	// detect an attack using a pcap file without tcp flood attacks
+	attackFalseDetect := tcpConnectScanDetect("dns", 100)
+	// detect an attack using a high threshold
+	attackDetectThreshold := tcpConnectScanDetect("SYN", 10000)
+	// detect an attack using a pcap file with a tcp flood attack
+	attackDetect := tcpConnectScanDetect("SYN", 100)
+
+	// expected suspicious address
+	knownSuspicious := []string{"10.128.0.2"}
+
+	// ensure that the method does not incur any false positives
+	if len(attackFalseDetect) > 0 {
+		t.Fatalf("Expected no suspicious addresses, got %v instead", attackFalseDetect)
+	}
+	// ensure that the method does not pick up any suspicious addresses if the threshold is high enough
+	if len(attackDetectThreshold) > 0 {
+		t.Fatalf("Expected no suspicious addresses, got %v instead", attackDetectThreshold)
+	}
+
+	// tests whether the known suspicious addresses appeared in the correct list
+	if !sliceEqual(attackDetect, knownSuspicious) {
+		t.Fatalf("Expected suspicious address %v, got %v instead", knownSuspicious, attackDetect)
+	}
+}

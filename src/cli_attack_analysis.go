@@ -43,3 +43,12 @@ func tcpSynFloodDetect(file string) Report {
 	// return the suspicious and attacked addresses as a pair
 	return Report{suspicious: suspiciousAddresses, attacked: attackedAddresses}
 }
+
+// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
+func tcpConnectScanDetect(file string, threshold int) []string {
+	// slices to contain suspicious and attacked addresses
+	var suspiciousAddresses []string
+
+	// return the suspicious and attacked addresses as a pair
+	return suspiciousAddresses
+}
