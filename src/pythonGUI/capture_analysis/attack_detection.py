@@ -6,7 +6,7 @@ import scapy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from pythonGUI.capture_analysis import dataframe_create
+from src.pythonGUI.capture_analysis import dataframe_create
 
 
 # small object used to create embedded graphs onto GUI
@@ -30,6 +30,7 @@ class AttackDetection:
         self.http_suspicious = None
         self.tcp_suspicious_addresses = None
         self.tcp_scanning_suspicious = None
+        self.udp_suspicious_addresses = None
 
         # initialise quarantined packets as empty
         self.quarantined_packets = None
@@ -501,7 +502,6 @@ class AttackDetection:
         return [canvas, canvas2]
 
         # -------------Below are new attack methods----------------
-    
     def udp_flood_detect(self, threshold):
         # initialise udp suspicious addresses
         self.udp_suspicious = []
