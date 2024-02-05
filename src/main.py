@@ -153,6 +153,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionMarkPacket.triggered.connect(self.mark_packet)
         self.actionMarkAllDisplayed.triggered.connect(self.mark_all_displayed)
         self.actionUnmarkAllDisplayed.triggered.connect(self.unmark_all_displayed)
+        self.actionIgnorePacket.triggered.connect(self.ignore_packet)
 
 
     def open_details(self):
@@ -279,6 +280,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         file_name = QFileDialog.getSaveFileName(self, 'Save file', "", 'pcap (*.pcap);;All files (*)')
         self.GUI_actions.write_pcap(str(os.path.basename(file_name[0])))
 
+    # saves a pcap file of the captured packets as a new file
     def save_as_file(self):
         file_name = QFileDialog.getSaveFileName(self, 'Save As', '', 'pcap (*.pcap);;All files (*)')
         self.GUI_actions.write_pcap(str(file_name[0]))
@@ -475,7 +477,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # increments packet number for each captured packet
         self.packet_number += 1
         self.find_duplicates(packet)
-
 
     # set background color for a row depending on the packet's protocol
     def set_background(self, row_number, red, green, blue):
@@ -748,6 +749,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         r: int
         g: int
         b: int
+        ignored: bool
     
     # finds all duplicates, used only in marking
     def find_duplicates(self, packet):
@@ -778,8 +780,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 rows.append(row)
         return rows
 
-
-    def marker(self, row):
+    # logic for marking a packet, as either a packet of interest or ignoring it
+    def marker(self, row, ignore):
         cell = self.captureList.item(row, 0)
         hashed_packet = self.hash_packet(row)
         # check if packet is already marked
@@ -791,21 +793,39 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 duplicate_rows = self.get_rows_from_hash(marked_packet.hash)
                 for dup in duplicate_rows:
                     self.set_background(dup, marked_packet.r, marked_packet.g, marked_packet.b)
+                    if ignore:
+                        packet, _ = self.get_select_packet(dup)
+                        self.GUI_actions.sniffer.ignored_packets.append(packet)
             else:
                 self.set_background(row, marked_packet.r, marked_packet.g, marked_packet.b)
+                if ignore:
+                    packet, _ = self.get_select_packet(row)
+                    self.GUI_actions.sniffer.ignored_packets.append(packet)
             del self.marked_packets[marked_packet.hash]
         # mark packet if it hasn't been marked
         else:
             previous_color = cell.background().color()
             red, green, blue = (previous_color.red(), previous_color.green(), previous_color.blue())
-            marked_packet = self.MarkedPacket(hashed_packet, red, green, blue)
+            marked_packet = self.MarkedPacket(hashed_packet, red, green, blue, False)
             # if this packet is a duplicate, we will mark all duplicates
             if hashed_packet in self.duplicates:
                 duplicate_rows = self.get_rows_from_hash(hashed_packet)
+                marked_packet.ignored = True
                 for dup in duplicate_rows:
-                    self.set_background(dup, 0, 0, 0)
+                    if ignore:
+                        self.set_background(dup, 255, 255, 255)
+                        packet, _ = self.get_select_packet(row)
+                        self.GUI_actions.sniffer.ignored_packets.append(packet)
+                    else:
+                        self.set_background(dup, 0, 0, 0)
             else:
-                self.set_background(row, 0, 0, 0)
+                if ignore:
+                    packet, _ = self.get_select_packet(row)
+                    self.GUI_actions.sniffer.ignored_packets.append(packet)
+                    marked_packet.ignored = True
+                    self.set_background(row, 255, 255, 255)
+                else:
+                    self.set_background(row, 0, 0, 0)
             self.marked_packets[marked_packet.hash] = marked_packet
                 
     # mark or unmark packet(s)
@@ -819,7 +839,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 continue
             if hash in self.duplicates:
                 local_duplicates.add(hash)
-            self.marker(row)
+            self.marker(row, False)
 
     # mark all visible packets
     def mark_all_displayed(self):
@@ -832,8 +852,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     continue
                 if hash in self.duplicates:
                     local_duplicates.add(hash)
-                self.marker(row)
+                self.marker(row, False)
         
+    # unmark all visible packets
     def unmark_all_displayed(self):
         local_duplicates = set()
         for row in range(self.captureList.rowCount()):
@@ -844,7 +865,42 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     continue
                 if hash in self.duplicates:
                     local_duplicates.add(hash)
-                self.marker(row)
+                self.marker(row, False)
+
+    # mark a packet or packets as ignored, or unmark it as such
+    def ignore_packet(self):
+        selected_rows = self.get_selected_rows()
+        local_duplicates = set()
+        for row in selected_rows:
+            hash = self.hash_packet(row)
+            if hash in local_duplicates:
+                continue
+            if hash in self.duplicates:
+                local_duplicates.add(hash)
+            self.marker(row, True)
+
+    def ignore_all_displayed(self):
+        local_duplicates = set()
+        for row in range(self.captureList.rowCount()):
+            hash = self.hash_packet(row)
+            if hash not in self.marked_packets:
+                if hash in local_duplicates:
+                    continue
+                if hash in self.duplicates:
+                    local_duplicates.add(hash)
+                self.marker(row, True)
+
+    def unignore_all_displayed(self):
+        local_duplicates = set()
+        for row in range(self.captureList.rowCount()):
+            hash = self.hash_packet(row)
+            if hash in self.mark_packet:
+                if hash in local_duplicates:
+                    continue
+                if hash in self.duplicates:
+                    local_duplicates.add(hash)
+                self.marker(row, True)
+
 
     # use <ENTER> in filter box of the GUI to select filter
     def enter_keypress(self, key): # key refers to the key that was pressed

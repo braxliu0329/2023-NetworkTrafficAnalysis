@@ -57,7 +57,8 @@ class GUIActions:
     def write_pcap(self, filename):
         # writes each packet captured to a pcap file
         for packet in self.sniffer.sniffed_packets:
-            wrpcap(filename, packet, append=True)
+            if packet not in self.sniffer.ignored_packets:
+                wrpcap(filename, packet, append=True)
 
     # returns protocol depending on protocol number
     def get_protocol(self, protocol, packet):
