@@ -15,7 +15,7 @@ from PyQt5.QtGui import QDesktopServices
 import webbrowser
 
 from pythonGUI.capture_analysis import plotting
-from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action
+from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action, message
 
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
 from pythonGUI.packetDetails import Ui_PacketDetails
@@ -154,6 +154,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionMarkAllDisplayed.triggered.connect(self.mark_all_displayed)
         self.actionUnmarkAllDisplayed.triggered.connect(self.unmark_all_displayed)
         self.actionIgnorePacket.triggered.connect(self.ignore_packet)
+        self.actionIgnoreAllDisplayed.triggered.connect(self.ignore_all_displayed)
+        self.actionUnignoreAllDisplayed.triggered.connect(self.unignore_all_displayed)
 
 
     def open_details(self):
@@ -750,6 +752,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         g: int
         b: int
         ignored: bool
+        marked: bool
     
     # finds all duplicates, used only in marking
     def find_duplicates(self, packet):
@@ -780,14 +783,23 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 rows.append(row)
         return rows
 
+    # create a message box warning user of a marking conflict
+    def mark_and_ignore_alert(self):
+        msgBox = message.MarkWaring(self)
+        msgBox.exec_()
+
     # logic for marking a packet, as either a packet of interest or ignoring it
-    def marker(self, row, ignore):
+    def marker(self, row, ignore, mark):
         cell = self.captureList.item(row, 0)
         hashed_packet = self.hash_packet(row)
         # check if packet is already marked
         if hashed_packet in self.marked_packets:
             # unmark by restoring to original color
             marked_packet = self.marked_packets[hashed_packet]
+            # if we try to mark and ignored packet, or ignore a marked packet, we launch a message box warning us
+            if (ignore and marked_packet.marked) or (marked_packet.ignored and mark):
+                self.mark_and_ignore_alert()
+                return
             # if this packet is a duplicate, we unmark all duplicates
             if marked_packet.hash in self.duplicates:
                 duplicate_rows = self.get_rows_from_hash(marked_packet.hash)
@@ -806,11 +818,13 @@ class Window(window.Ui_MainWindow, QMainWindow):
         else:
             previous_color = cell.background().color()
             red, green, blue = (previous_color.red(), previous_color.green(), previous_color.blue())
-            marked_packet = self.MarkedPacket(hashed_packet, red, green, blue, False)
+            marked_packet = self.MarkedPacket(hashed_packet, red, green, blue, False, True)
             # if this packet is a duplicate, we will mark all duplicates
             if hashed_packet in self.duplicates:
                 duplicate_rows = self.get_rows_from_hash(hashed_packet)
-                marked_packet.ignored = True
+                if ignore:
+                    marked_packet.ignored = True
+                    marked_packet.marked = False
                 for dup in duplicate_rows:
                     if ignore:
                         self.set_background(dup, 255, 255, 255)
@@ -839,7 +853,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 continue
             if hash in self.duplicates:
                 local_duplicates.add(hash)
-            self.marker(row, False)
+            self.marker(row, False, True)
 
     # mark all visible packets
     def mark_all_displayed(self):
@@ -852,7 +866,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     continue
                 if hash in self.duplicates:
                     local_duplicates.add(hash)
-                self.marker(row, False)
+                self.marker(row, False, True)
         
     # unmark all visible packets
     def unmark_all_displayed(self):
@@ -865,7 +879,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     continue
                 if hash in self.duplicates:
                     local_duplicates.add(hash)
-                self.marker(row, False)
+                self.marker(row, False, True)
 
     # mark a packet or packets as ignored, or unmark it as such
     def ignore_packet(self):
@@ -877,8 +891,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 continue
             if hash in self.duplicates:
                 local_duplicates.add(hash)
-            self.marker(row, True)
+            self.marker(row, True, False)
 
+    # ignores all visible packets
     def ignore_all_displayed(self):
         local_duplicates = set()
         for row in range(self.captureList.rowCount()):
@@ -888,19 +903,19 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     continue
                 if hash in self.duplicates:
                     local_duplicates.add(hash)
-                self.marker(row, True)
+                self.marker(row, True, False)
 
+    # removes all markings that say a packet is ignored for visible packets
     def unignore_all_displayed(self):
         local_duplicates = set()
         for row in range(self.captureList.rowCount()):
             hash = self.hash_packet(row)
-            if hash in self.mark_packet:
+            if hash in self.marked_packets:
                 if hash in local_duplicates:
                     continue
                 if hash in self.duplicates:
                     local_duplicates.add(hash)
-                self.marker(row, True)
-
+                self.marker(row, True, False)
 
     # use <ENTER> in filter box of the GUI to select filter
     def enter_keypress(self, key): # key refers to the key that was pressed
