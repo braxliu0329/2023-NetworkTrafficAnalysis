@@ -18,7 +18,6 @@ from pythonGUI.capture_analysis import plotting
 from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action, message
 
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
-from pythonGUI.packetDetails import Ui_PacketDetails
 
 import pythonGUI.rc_icons as rc_icons
 
@@ -110,7 +109,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.captureList.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.captureList.verticalHeader().setVisible(False)
         self.captureList.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.captureList.cellClicked.connect(self.handle_clicked_row)
         self.captureList.cellClicked.connect(self.get_select_packet)
         self.captureList.cellClicked.connect(self.get_current_list_row)
         self.captureList.cellDoubleClicked.connect(self.handle_double_clicked_row)
@@ -121,18 +119,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # set graph window
         self.graph_window = None
         self.attack_analysis_window = None
-
-        # set data list
-        """self.data.horizontalHeader().setVisible(False)
-        self.data.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.data.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.data.resizeColumnsToContents()
-        self.data.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.data.customContextMenuRequested.connect(self.create_rightMenu)
-        self.actionTurnHex = QAction('Show hexadecimal data', self)
-        self.actionTurnHex.triggered.connect(self.operate_turn_hex)
-        self.actionTurnBin = QAction('Show binary data', self)
-        self.actionTurnBin.triggered.connect(self.operate_turn_bin)"""
 
         # start button pressed
         self.actionStartCapture.triggered.connect(self.start_capture)
@@ -157,13 +143,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionIgnoreAllDisplayed.triggered.connect(self.ignore_all_displayed)
         self.actionUnignoreAllDisplayed.triggered.connect(self.unignore_all_displayed)
 
-
-    def open_details(self):
-        self.window = QMainWindow
-        self.ui = Ui_PacketDetails()
-        self.ui.setupUi(self.window)
-        self.window.show()
-
     # Helper function to get the current row of the capture list
     def get_current_list_row(self):
         row = self.captureList.currentRow()
@@ -180,21 +159,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
             selected_packet = self.GUI_actions.sniffer.filtered_packets[int(item.text()) - 1]
         details = str.splitlines(selected_packet.show(dump=True))
         return selected_packet, details
-
-    # if a row is clicked, then displays the packet's detail at the bottom
-    def handle_clicked_row(self, row):
-        # gets the first column of the clicked row which is the packet number
-        # item = self.captureList.item(row, 0)
-        # indexes the packet list to get the correct packet
-        # selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(item.text()) - 1]
-        selected_packet, details = self.get_select_packet(row)
-        self.detail.clear()
-
-        # displays the detailed view of the packet
-        # details = str.splitlines(selected_packet.show(dump=True))
-        self.display_packet_detail(details)
-
-        self.display_packet_data(selected_packet)
 
     # select the next packet
     def next_packet(self):
@@ -225,10 +189,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
             else:
                 root_index_arr.append(' ')
 
-        # Create a tree structure to display the packet detail
-        for i in range(root_amount):
-            root_arr.append(QTreeWidgetItem(self.detail))
-            root_arr[i].setText(0, root_name[i])
+        
 
         temp_index = 0
         for i in range(len(detail)):
@@ -314,12 +275,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.packet_number = 1
         # resets captured packets
         self.GUI_actions.sniffer.reset()
-
-        # clear detail and data box
-        """self.detail.clear()
-        self.detail.update()
-        self.data.clear()
-        self.data.update()"""
 
     # method to start sniffer, ran as thread so packets are displayed dynamically
     def start_capture_thread(self):
@@ -771,8 +726,12 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # on every filter, reapply markings to packets
     def reapply_markers(self):
         for row in range(self.captureList.rowCount()):
+            hashed_packet = self.hash_packet(row)
             if self.hash_packet(row) in self.marked_packets:
-                self.set_background(row, 0, 0, 0)
+                if self.marked_packets[hashed_packet].ignored:
+                    self.set_background(row, 255, 255, 255)
+                else:
+                    self.set_background(row, 0, 0, 0)
 
     # returns row with a packet from a specific hash, used for duplicate packets
     def get_rows_from_hash(self, hash):

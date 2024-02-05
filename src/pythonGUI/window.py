@@ -309,8 +309,6 @@ class Ui_MainWindow(object):
         self.actionMarkAllDisplayed.setObjectName("actionMarkAllDisplayed")
         self.actionUnmarkAllDisplayed = QtWidgets.QAction(MainWindow)
         self.actionUnmarkAllDisplayed.setObjectName("actionUnmarkAllDisplayed")
-        self.actionCommentPacket = QtWidgets.QAction(MainWindow)
-        self.actionCommentPacket.setObjectName("actionCommentPacket")
         self.actionIgnorePacket = QtWidgets.QAction(MainWindow)
         self.actionIgnorePacket.setObjectName("actionIgnorePacket")
         self.actionIgnoreAllDisplayed = QtWidgets.QAction(MainWindow)
@@ -375,8 +373,6 @@ class Ui_MainWindow(object):
         self.menuEdit.addAction(self.actionIgnorePacket)
         self.menuEdit.addAction(self.actionIgnoreAllDisplayed)
         self.menuEdit.addAction(self.actionUnignoreAllDisplayed)
-        self.menuEdit.addSection("")
-        self.menuEdit.addAction(self.actionCommentPacket)
 
         self.menuHelp.addAction(self.actionUse_Guide)
 
@@ -494,5 +490,4 @@ class Ui_MainWindow(object):
         self.actionIgnoreAllDisplayed.setShortcut(_translate("MainWindow", "Ctrl+Shift+D"))
         self.actionUnignoreAllDisplayed.setText(_translate("MainWindow", "Unignore all displayed"))
         self.actionUnignoreAllDisplayed.setShortcut(_translate("MainWindow", "Ctrl+Alt+D"))
-        self.actionCommentPacket.setText(_translate("MainWindow", "Packet Comment..."))
 
