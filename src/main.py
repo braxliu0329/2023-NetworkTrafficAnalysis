@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import os.path
-import ctypes
+import hashlib
 
 from PyQt5.Qt import Qt, QCompleter
 from PyQt5.QtCore import QSortFilterProxyModel, QUrl
@@ -58,6 +58,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # create array which tracks currently marked packets
         self.marked_packets = dict()
+        self.seen = set()
+        self.duplicates = set()
 
         # set open/save file and quit application function
         self.actionOpen_Multi_Files.triggered.connect(self.open_multiple_file)
@@ -150,6 +152,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionFindPreviousPacket.triggered.connect(self.previous_packet_opertaion)
         self.actionMarkPacket.triggered.connect(self.mark_packet)
         self.actionMarkAllDisplayed.triggered.connect(self.mark_all_displayed)
+        self.actionUnmarkAllDisplayed.triggered.connect(self.unmark_all_displayed)
 
 
     def open_details(self):
@@ -471,6 +474,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # increments packet number for each captured packet
         self.packet_number += 1
+        self.find_duplicates(packet)
+
 
     # set background color for a row depending on the packet's protocol
     def set_background(self, row_number, red, green, blue):
@@ -729,11 +734,14 @@ class Window(window.Ui_MainWindow, QMainWindow):
          details_str = '\n'.join(details)
          clipboard.setText(details_str)
 
+    # gets all rows that have been selected
     def get_selected_rows(self):
         selected_indexes = self.captureList.selectionModel().selectedRows()
         selected_rows = [index.row() for index in selected_indexes]
         return selected_rows
 
+
+    # data class to keep track of a marked packet, its hash, and its previous colour prior to marking
     @dataclass
     class MarkedPacket:
         hash: int
@@ -741,52 +749,103 @@ class Window(window.Ui_MainWindow, QMainWindow):
         g: int
         b: int
     
+    # finds all duplicates, used only in marking
+    def find_duplicates(self, packet):
+        details = str.splitlines(packet.show(dump=True))
+        hashed = hashlib.sha256(''.join(details).encode('utf-8')).hexdigest()
+        if hashed not in self.seen:
+            self.seen.add(hashed)
+        else:
+            self.duplicates.add(hashed)
+        
+    # given a row, hash a packet using its encoded details
     def hash_packet(self, row):
         _, details = self.get_select_packet(row)
-        return ctypes.c_size_t(hash(''.join(details))).value
+        return hashlib.sha256(''.join(details).encode('utf-8')).hexdigest()
     
+    # on every filter, reapply markings to packets
     def reapply_markers(self):
         for row in range(self.captureList.rowCount()):
             if self.hash_packet(row) in self.marked_packets:
                 self.set_background(row, 0, 0, 0)
 
+    # returns row with a packet from a specific hash, used for duplicate packets
+    def get_rows_from_hash(self, hash):
+        rows = []
+        for row in range(self.captureList.rowCount()):
+            dup_hash = self.hash_packet(row)
+            if dup_hash in self.duplicates and dup_hash == hash:
+                rows.append(row)
+        return rows
+
+
     def marker(self, row):
         cell = self.captureList.item(row, 0)
         hashed_packet = self.hash_packet(row)
+        # check if packet is already marked
         if hashed_packet in self.marked_packets:
-            # check if packet is already marked
             # unmark by restoring to original color
             marked_packet = self.marked_packets[hashed_packet]
-            self.set_background(row, marked_packet.r, marked_packet.g, marked_packet.b)
+            # if this packet is a duplicate, we unmark all duplicates
+            if marked_packet.hash in self.duplicates:
+                duplicate_rows = self.get_rows_from_hash(marked_packet.hash)
+                for dup in duplicate_rows:
+                    self.set_background(dup, marked_packet.r, marked_packet.g, marked_packet.b)
+            else:
+                self.set_background(row, marked_packet.r, marked_packet.g, marked_packet.b)
             del self.marked_packets[marked_packet.hash]
         # mark packet if it hasn't been marked
         else:
             previous_color = cell.background().color()
             red, green, blue = (previous_color.red(), previous_color.green(), previous_color.blue())
             marked_packet = self.MarkedPacket(hashed_packet, red, green, blue)
-            self.set_background(row, 0, 0, 0)
+            # if this packet is a duplicate, we will mark all duplicates
+            if hashed_packet in self.duplicates:
+                duplicate_rows = self.get_rows_from_hash(hashed_packet)
+                for dup in duplicate_rows:
+                    self.set_background(dup, 0, 0, 0)
+            else:
+                self.set_background(row, 0, 0, 0)
             self.marked_packets[marked_packet.hash] = marked_packet
                 
-                
-
     # mark or unmark packet(s)
     def mark_packet(self):
         selected_rows = self.get_selected_rows()
+        local_duplicates = set()
         for row in selected_rows:
+            hash = self.hash_packet(row)
+            # if there are duplicates in your selected rows, then mark will only run once, which will mark all duplicates
+            if hash in local_duplicates:
+                continue
+            if hash in self.duplicates:
+                local_duplicates.add(hash)
             self.marker(row)
 
+    # mark all visible packets
     def mark_all_displayed(self):
+        local_duplicates = set()
         for row in range(self.captureList.rowCount()):
-            self.marker(row)
-
-    def next_marked_packet(self):
-        pass
-
-    def previous_marked_packet(self):
-        pass
-
-    
+            hash = self.hash_packet(row)
+            if hash not in self.marked_packets:
+                # if there are duplicates in your selected rows, the mark will only run once, which will mark all duplicates
+                if hash in local_duplicates:
+                    continue
+                if hash in self.duplicates:
+                    local_duplicates.add(hash)
+                self.marker(row)
         
+    def unmark_all_displayed(self):
+        local_duplicates = set()
+        for row in range(self.captureList.rowCount()):
+            hash = self.hash_packet(row)
+            if hash in self.marked_packets:
+                # if there are duplicates in your selected rows, the mark will only run once, which will mark all duplicates
+                if hash in local_duplicates:
+                    continue
+                if hash in self.duplicates:
+                    local_duplicates.add(hash)
+                self.marker(row)
+
     # use <ENTER> in filter box of the GUI to select filter
     def enter_keypress(self, key): # key refers to the key that was pressed
         # if the key pressed is the enter key
