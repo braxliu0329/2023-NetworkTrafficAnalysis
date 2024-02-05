@@ -369,11 +369,11 @@ class Window(window.Ui_MainWindow, QMainWindow):
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
             
             if self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "TCP":
-                self.set_background(row_number, 70, 105, 165)
+                self.set_background(row_number, 0, 51, 102)
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "UDP" or self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "UDP/DNS":
-                self.set_background(row_number, 0, 204, 102)
+                self.set_background(row_number, 0, 102, 51)
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "IGMP":
-                self.set_background(row_number, 178, 255, 102)
+                self.set_background(row_number, 102, 0, 102)
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "ICMP":
                 self.set_background(row_number, 0, 102, 102)
 
@@ -396,7 +396,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
             # The capture list is updated
             self.captureList.update()
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
-            self.set_background(row_number, 255, 102, 102)
+            self.set_background(row_number, 102, 0, 0)
 
         # Handles the case where the packet has an IPv6 layer
         elif packet.haslayer(IPv6):
@@ -416,7 +416,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
             self.captureList.update()
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
-            self.set_background(row_number, 255, 178, 102)
+            self.set_background(row_number, 102, 102, 0)
 
         # if the packet capture has been stopped
         if self.stopped_capture:
