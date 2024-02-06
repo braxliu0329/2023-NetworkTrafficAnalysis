@@ -13,7 +13,9 @@ class Sniffer:
         self.running = True
         self.ptc = ""
 
+        self.filtered_packets = []
         self.sniffed_packets = []
+        self.ignored_packets = []
 
     # Method ran when packet capture is initiated by user.
     def run_sniffer(self, start, window):
@@ -26,6 +28,8 @@ class Sniffer:
     # Method to reset the stored packets
     def reset(self):
         self.sniffed_packets = []
+        self.ignored_packets = []
+        self.filtered_packets = []
 
     # Method to change the amount of packets to capture.
     def set_sniff_amount(self, amount):

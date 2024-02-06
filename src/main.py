@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 import os.path
+import hashlib
 
 from PyQt5.Qt import Qt, QCompleter
 from PyQt5.QtCore import QSortFilterProxyModel, QUrl
@@ -13,10 +15,9 @@ from PyQt5.QtGui import QDesktopServices
 import webbrowser
 
 from pythonGUI.capture_analysis import plotting
-from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action
+from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action, message
 
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
-from pythonGUI.packetDetails import Ui_PacketDetails
 
 import pythonGUI.rc_icons as rc_icons
 
@@ -54,11 +55,21 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.show_in_hex = None
         self.show_in_bin = None
 
+        # create array which tracks currently marked packets
+        self.marked_packets = dict()
+        self.seen = set()
+        self.duplicates = set()
+
         # set open/save file and quit application function
-        self.actionOpen_Multi_Files.triggered.connect(self.open_multiple_file_operation)
-        self.actionSave.triggered.connect(self.save_file_operation)
-        self.actionSave_As_2.triggered.connect(self.save_as_file_operation)
-        self.actionExit.triggered.connect(self.quit_operation)
+        self.actionOpen_Multi_Files.triggered.connect(self.open_multiple_file)
+        self.actionOpen.triggered.connect(self.open_file)
+        self.actionLoadCapture.triggered.connect(self.open_file)
+        self.actionSaveCapture.triggered.connect(self.save_as_file)
+        self.actionNextPacket.triggered.connect(self.next_packet)
+        self.actionPreviousPacket.triggered.connect(self.previous_packet)
+        self.actionSave.triggered.connect(self.save_file)
+        self.actionSave_As_2.triggered.connect(self.save_as_file)
+        self.actionExit.triggered.connect(self.quit)
 
         # set the capture menu
         self.actionStart.triggered.connect(self.start_capture)
@@ -66,11 +77,11 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionPause.triggered.connect(self.pause_capture)
 
         # set the analysis menu
-        self.actionGraph.triggered.connect(self.graph_operation)
-        self.actionAttack_Analysis.triggered.connect(self.attack_analysis_operation)
+        self.actionGraph.triggered.connect(self.graph)
+        self.actionAttack_Analysis.triggered.connect(self.attack_analysis)
 
         # set the help menu
-        self.actionUse_Guide.triggered.connect(self.use_guide_operation)
+        self.actionUse_Guide.triggered.connect(self.use_guide)
 
         # set display filter
         self.filterBox.setEditable(True)
@@ -98,7 +109,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.captureList.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.captureList.verticalHeader().setVisible(False)
         self.captureList.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.captureList.cellClicked.connect(self.handle_clicked_row)
         self.captureList.cellClicked.connect(self.get_select_packet)
         self.captureList.cellClicked.connect(self.get_current_list_row)
         self.captureList.cellDoubleClicked.connect(self.handle_double_clicked_row)
@@ -109,18 +119,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # set graph window
         self.graph_window = None
         self.attack_analysis_window = None
-
-        # set data list
-        """self.data.horizontalHeader().setVisible(False)
-        self.data.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.data.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.data.resizeColumnsToContents()
-        self.data.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.data.customContextMenuRequested.connect(self.create_rightMenu)
-        self.actionTurnHex = QAction('Show hexadecimal data', self)
-        self.actionTurnHex.triggered.connect(self.operate_turn_hex)
-        self.actionTurnBin = QAction('Show binary data', self)
-        self.actionTurnBin.triggered.connect(self.operate_turn_bin)"""
 
         # start button pressed
         self.actionStartCapture.triggered.connect(self.start_capture)
@@ -134,12 +132,16 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # set status bar
         self.statusBar.showMessage('Ready for Capturing')
 
-
-    def open_details(self):
-        self.window = QMainWindow
-        self.ui = Ui_PacketDetails()
-        self.ui.setupUi(self.window)
-        self.window.show()
+        # set edit tool
+        self.actionCopy.triggered.connect(self.copy)
+        self.actionFindNextPacket.triggered.connect(self.next_packet)
+        self.actionFindPreviousPacket.triggered.connect(self.previous_packet)
+        self.actionMarkPacket.triggered.connect(self.mark_packet)
+        self.actionMarkAllDisplayed.triggered.connect(self.mark_all_displayed)
+        self.actionUnmarkAllDisplayed.triggered.connect(self.unmark_all_displayed)
+        self.actionIgnorePacket.triggered.connect(self.ignore_packet)
+        self.actionIgnoreAllDisplayed.triggered.connect(self.ignore_all_displayed)
+        self.actionUnignoreAllDisplayed.triggered.connect(self.unignore_all_displayed)
 
     # Helper function to get the current row of the capture list
     def get_current_list_row(self):
@@ -149,24 +151,30 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # Helper function to get the selected packet and its details from the capture list based on the row number
     def get_select_packet(self, row):
         item = self.captureList.item(row, 0)
-        selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(item.text()) - 1]
+        # if the filtered packets are empty, select the sniffed packets
+        if not self.GUI_actions.sniffer.filtered_packets:
+            selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(item.text()) - 1]
+        # otherwise show the filtered packets
+        else: 
+            selected_packet = self.GUI_actions.sniffer.filtered_packets[int(item.text()) - 1]
         details = str.splitlines(selected_packet.show(dump=True))
         return selected_packet, details
 
-    # if a row is clicked, then displays the packet's detail at the bottom
-    def handle_clicked_row(self, row):
-        # gets the first column of the clicked row which is the packet number
-        # item = self.captureList.item(row, 0)
-        # indexes the packet list to get the correct packet
-        # selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(item.text()) - 1]
-        selected_packet, details = self.get_select_packet(row)
-        self.detail.clear()
+    # select the next packet
+    def next_packet(self):
+        if self.captureList.rowCount() == 0:
+            return
+        else:
+            next_row = (self.get_current_list_row() + 1) % self.captureList.rowCount()
+            self.captureList.setCurrentCell(next_row, 0)
 
-        # displays the detailed view of the packet
-        # details = str.splitlines(selected_packet.show(dump=True))
-        self.display_packet_detail(details)
-
-        self.display_packet_data(selected_packet)
+    # select the previous packet
+    def previous_packet(self):
+        if self.captureList.rowCount() == 0:
+            return
+        else:
+            prev_row = (self.get_current_list_row() - 1) % self.captureList.rowCount()
+            self.captureList.setCurrentCell(prev_row, 0)
 
     # Puts the data of the packet into a tree structure to make it easier to read
     def display_packet_detail(self, detail):
@@ -185,10 +193,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
             else:
                 root_index_arr.append(' ')
 
-        # Create a tree structure to display the packet detail
-        for i in range(root_amount):
-            root_arr.append(QTreeWidgetItem(self.detail))
-            root_arr[i].setText(0, root_name[i])
+        
 
         temp_index = 0
         for i in range(len(detail)):
@@ -206,9 +211,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         length = len(self.subs)
         # Add the new subWindow to the subs list, which is used to keep track of all the subWindows
         self.subs.append(subWindow.SubWindow())
-        item = self.captureList.item(row, 0)
-        selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(item.text()) - 1]
-        details = str.splitlines(selected_packet.show(dump=True))
+        selected_packet, details = self.get_select_packet(row)
         # self.subs[length].parse_packet(selected_packet)
         self.subs[length].setWindowTitle("Packet #" + str(row + 1) + "  " + str(selected_packet.sprintf(
             "%Ether.type%"
@@ -217,10 +220,17 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.subs[length].display_packet_data(selected_packet)
         self.subs[length].display_packet_detail(details)
         self.subs[length].show()
+        
+    # open a single pcap file
+    def open_file(self):
+        self.actionStopCaputure.setEnabled(True)
+        self.stopped_capture = False
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open file", "", 'pcap (*.pcap);;All files (*)')
+        if file_name:
+            self.GUI_actions.read_pcap(str(file_name), mainWindow)
 
-
-    # opens pcap files and displays its content
-    def open_multiple_file_operation(self):
+    # opens pcap file(s) and displays its content
+    def open_multiple_file(self):
         self.actionStopCaputure.setEnabled(True)
         self.stopped_capture = False
         # gets the filename of the selected files
@@ -233,16 +243,21 @@ class Window(window.Ui_MainWindow, QMainWindow):
             temp += 1
 
     # saves a pcap file of the captured packets
-    def save_file_operation(self):
+    def save_file(self):
         file_name = QFileDialog.getSaveFileName(self, 'Save file', "", 'pcap (*.pcap);;All files (*)')
+        if file_name[0] == '':
+            return
         self.GUI_actions.write_pcap(str(os.path.basename(file_name[0])))
 
-    def save_as_file_operation(self):
+    # saves a pcap file of the captured packets as a new file
+    def save_as_file(self):
         file_name = QFileDialog.getSaveFileName(self, 'Save As', '', 'pcap (*.pcap);;All files (*)')
+        if file_name[0] == '':
+            return
         self.GUI_actions.write_pcap(str(file_name[0]))
 
     # closes the GUI window
-    def quit_operation(self):
+    def quit(self):
         self.close()
 
     # pauses the packet capturing, does not remove packets, and doesn't reset packet counter
@@ -256,6 +271,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
     # stops the packet capturing
     def stop_capture(self):
+        self.marked_packets.clear()
         self.actionStartCapture.setEnabled(True)
         self.actionPauseCapture.setEnabled(False)
         self.actionStopCaputure.setEnabled(False)
@@ -267,12 +283,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.packet_number = 1
         # resets captured packets
         self.GUI_actions.sniffer.reset()
-
-        # clear detail and data box
-        """self.detail.clear()
-        self.detail.update()
-        self.data.clear()
-        self.data.update()"""
 
     # method to start sniffer, ran as thread so packets are displayed dynamically
     def start_capture_thread(self):
@@ -294,21 +304,21 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.capture_thread.start()
 
     # open the graph subwindow
-    def graph_operation(self):
+    def graph(self):
         data = self.GUI_actions.get_sniffed_packets()
         self.graph_window = graph_window_action.GraphWindow(data)
 
         self.graph_window.show()
 
     # open the attack analysis subwindow
-    def attack_analysis_operation(self):
+    def attack_analysis(self):
         data = self.GUI_actions.get_sniffed_packets()
 
         self.attack_analysis_window = attack_analysis_action.AttackAnalysisWindow(data, self, self.flaggedIPs)
 
         self.attack_analysis_window.show()
 
-    def use_guide_operation(self):
+    def use_guide(self):
         # project_root = os.path.abspath(os.path.dirname(__file__))
         # file_path = f"file://{project_root}/help_resource/index.html"
         # webbrowser.open(file_path)
@@ -324,7 +334,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # displays each packet
         for packet in filtered_packets:
             self.display_packet(packet)
-
+        self.reapply_markers()
+        
     # in order to use PyQts build in sorting function for tables with integers,
     # need to store integers using this custom item class which allows integer comparison
     class TableItemInt(QTableWidgetItem):
@@ -366,13 +377,14 @@ class Window(window.Ui_MainWindow, QMainWindow):
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
             
             if self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "TCP":
-                self.set_background(row_number, 70, 105, 165)
+                self.set_background(row_number, 0, 51, 102)
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "UDP" or self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "UDP/DNS":
-                self.set_background(row_number, 0, 204, 102)
+                self.set_background(row_number, 0, 102, 51)
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "IGMP":
-                self.set_background(row_number, 178, 255, 102)
+                self.set_background(row_number, 102, 0, 102)
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "ICMP":
                 self.set_background(row_number, 0, 102, 102)
+
 
         # Handles the case where the packet has an ARP layer
         elif packet.haslayer(ARP):
@@ -392,7 +404,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
             # The capture list is updated
             self.captureList.update()
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
-            self.set_background(row_number, 255, 102, 102)
+            self.set_background(row_number, 102, 0, 0)
 
         # Handles the case where the packet has an IPv6 layer
         elif packet.haslayer(IPv6):
@@ -412,7 +424,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
             self.captureList.update()
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
-            self.set_background(row_number, 255, 178, 102)
+            self.set_background(row_number, 102, 102, 0)
 
         # if the packet capture has been stopped
         if self.stopped_capture:
@@ -429,6 +441,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # increments packet number for each captured packet
         self.packet_number += 1
+        self.find_duplicates(packet)
 
     # set background color for a row depending on the packet's protocol
     def set_background(self, row_number, red, green, blue):
@@ -678,6 +691,201 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.filterBox.pFilterModel.setFilterKeyColumn(column)
         super(QComboBox, self.filterBox).setModelColumn(column)
 
+    # copies selected packet details to clipboard
+    def copy(self):
+        if self.captureList.rowCount() == 0:
+            return
+        row = self.get_current_list_row()
+        _, details = self.get_select_packet(row)
+        clipboard = QApplication.clipboard()
+        clipboard.clear()
+        details_str = '\n'.join(details)
+        clipboard.setText(details_str)
+
+    # gets all rows that have been selected
+    def get_selected_rows(self):
+        selected_indexes = self.captureList.selectionModel().selectedRows()
+        selected_rows = [index.row() for index in selected_indexes]
+        return selected_rows
+
+
+    # data class to keep track of a marked packet, its hash, and its previous colour prior to marking
+    @dataclass
+    class MarkedPacket:
+        hash: int
+        r: int
+        g: int
+        b: int
+        ignored: bool
+        marked: bool
+    
+    # finds all duplicates, used only in marking
+    def find_duplicates(self, packet):
+        details = str.splitlines(packet.show(dump=True))
+        hashed = hashlib.sha256(''.join(details).encode('utf-8')).hexdigest()
+        if hashed not in self.seen:
+            self.seen.add(hashed)
+        else:
+            self.duplicates.add(hashed)
+        
+    # given a row, hash a packet using its encoded details
+    def hash_packet(self, row):
+        _, details = self.get_select_packet(row)
+        return hashlib.sha256(''.join(details).encode('utf-8')).hexdigest()
+    
+    # on every filter, reapply markings to packets
+    def reapply_markers(self):
+        for row in range(self.captureList.rowCount()):
+            hashed_packet = self.hash_packet(row)
+            if self.hash_packet(row) in self.marked_packets:
+                if self.marked_packets[hashed_packet].ignored:
+                    self.set_background(row, 255, 255, 255)
+                else:
+                    self.set_background(row, 0, 0, 0)
+
+    # returns row with a packet from a specific hash, used for duplicate packets
+    def get_rows_from_hash(self, hash):
+        rows = []
+        for row in range(self.captureList.rowCount()):
+            dup_hash = self.hash_packet(row)
+            if dup_hash in self.duplicates and dup_hash == hash:
+                rows.append(row)
+        return rows
+
+    # create a message box warning user of a marking conflict
+    def mark_and_ignore_alert(self):
+        msgBox = message.MarkWaring(self)
+        msgBox.exec_()
+
+    # logic for marking a packet, as either a packet of interest or ignoring it
+    def marker(self, row, ignore, mark):
+        cell = self.captureList.item(row, 0)
+        hashed_packet = self.hash_packet(row)
+        # check if packet is already marked
+        if hashed_packet in self.marked_packets:
+            # unmark by restoring to original color
+            marked_packet = self.marked_packets[hashed_packet]
+            # if we try to mark and ignored packet, or ignore a marked packet, we launch a message box warning us
+            if (ignore and marked_packet.marked) or (marked_packet.ignored and mark):
+                self.mark_and_ignore_alert()
+                return
+            # if this packet is a duplicate, we unmark all duplicates
+            if marked_packet.hash in self.duplicates:
+                duplicate_rows = self.get_rows_from_hash(marked_packet.hash)
+                for dup in duplicate_rows:
+                    self.set_background(dup, marked_packet.r, marked_packet.g, marked_packet.b)
+                    if ignore:
+                        packet, _ = self.get_select_packet(dup)
+                        self.GUI_actions.sniffer.ignored_packets.append(packet)
+            else:
+                self.set_background(row, marked_packet.r, marked_packet.g, marked_packet.b)
+                if ignore:
+                    packet, _ = self.get_select_packet(row)
+                    self.GUI_actions.sniffer.ignored_packets.append(packet)
+            del self.marked_packets[marked_packet.hash]
+        # mark packet if it hasn't been marked
+        else:
+            previous_color = cell.background().color()
+            red, green, blue = (previous_color.red(), previous_color.green(), previous_color.blue())
+            marked_packet = self.MarkedPacket(hashed_packet, red, green, blue, False, True)
+            # if this packet is a duplicate, we will mark all duplicates
+            if hashed_packet in self.duplicates:
+                duplicate_rows = self.get_rows_from_hash(hashed_packet)
+                if ignore:
+                    marked_packet.ignored = True
+                    marked_packet.marked = False
+                for dup in duplicate_rows:
+                    if ignore:
+                        self.set_background(dup, 255, 255, 255)
+                        packet, _ = self.get_select_packet(row)
+                        self.GUI_actions.sniffer.ignored_packets.append(packet)
+                    else:
+                        self.set_background(dup, 0, 0, 0)
+            else:
+                if ignore:
+                    packet, _ = self.get_select_packet(row)
+                    self.GUI_actions.sniffer.ignored_packets.append(packet)
+                    marked_packet.ignored = True
+                    self.set_background(row, 255, 255, 255)
+                else:
+                    self.set_background(row, 0, 0, 0)
+            self.marked_packets[marked_packet.hash] = marked_packet
+                
+    # mark or unmark packet(s)
+    def mark_packet(self):
+        selected_rows = self.get_selected_rows()
+        local_duplicates = set()
+        for row in selected_rows:
+            hash = self.hash_packet(row)
+            # if there are duplicates in your selected rows, then mark will only run once, which will mark all duplicates
+            if hash in local_duplicates:
+                continue
+            if hash in self.duplicates:
+                local_duplicates.add(hash)
+            self.marker(row, False, True)
+
+    # mark all visible packets
+    def mark_all_displayed(self):
+        local_duplicates = set()
+        for row in range(self.captureList.rowCount()):
+            hash = self.hash_packet(row)
+            if hash not in self.marked_packets:
+                # if there are duplicates in your selected rows, the mark will only run once, which will mark all duplicates
+                if hash in local_duplicates:
+                    continue
+                if hash in self.duplicates:
+                    local_duplicates.add(hash)
+                self.marker(row, False, True)
+        
+    # unmark all visible packets
+    def unmark_all_displayed(self):
+        local_duplicates = set()
+        for row in range(self.captureList.rowCount()):
+            hash = self.hash_packet(row)
+            if hash in self.marked_packets:
+                # if there are duplicates in your selected rows, the mark will only run once, which will mark all duplicates
+                if hash in local_duplicates:
+                    continue
+                if hash in self.duplicates:
+                    local_duplicates.add(hash)
+                self.marker(row, False, True)
+
+    # mark a packet or packets as ignored, or unmark it as such
+    def ignore_packet(self):
+        selected_rows = self.get_selected_rows()
+        local_duplicates = set()
+        for row in selected_rows:
+            hash = self.hash_packet(row)
+            if hash in local_duplicates:
+                continue
+            if hash in self.duplicates:
+                local_duplicates.add(hash)
+            self.marker(row, True, False)
+
+    # ignores all visible packets
+    def ignore_all_displayed(self):
+        local_duplicates = set()
+        for row in range(self.captureList.rowCount()):
+            hash = self.hash_packet(row)
+            if hash not in self.marked_packets:
+                if hash in local_duplicates:
+                    continue
+                if hash in self.duplicates:
+                    local_duplicates.add(hash)
+                self.marker(row, True, False)
+
+    # removes all markings that say a packet is ignored for visible packets
+    def unignore_all_displayed(self):
+        local_duplicates = set()
+        for row in range(self.captureList.rowCount()):
+            hash = self.hash_packet(row)
+            if hash in self.marked_packets:
+                if hash in local_duplicates:
+                    continue
+                if hash in self.duplicates:
+                    local_duplicates.add(hash)
+                self.marker(row, True, False)
+
     # use <ENTER> in filter box of the GUI to select filter
     def enter_keypress(self, key): # key refers to the key that was pressed
         # if the key pressed is the enter key
@@ -719,5 +927,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainWindow = Window()
+    app.setStyle('Fusion')
     mainWindow.show()
     sys.exit(app.exec_())
