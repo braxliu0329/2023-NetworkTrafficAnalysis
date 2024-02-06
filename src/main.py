@@ -66,7 +66,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionLoadCapture.triggered.connect(self.open_file)
         self.actionSaveCapture.triggered.connect(self.save_as_file)
         self.actionNextPacket.triggered.connect(self.next_packet)
-        self.actionPreviousPacket.triggered.connect(self.previous_packet_opertaion)
+        self.actionPreviousPacket.triggered.connect(self.previous_packet)
         self.actionSave.triggered.connect(self.save_file)
         self.actionSave_As_2.triggered.connect(self.save_as_file)
         self.actionExit.triggered.connect(self.quit)
@@ -135,7 +135,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # set edit tool
         self.actionCopy.triggered.connect(self.copy)
         self.actionFindNextPacket.triggered.connect(self.next_packet)
-        self.actionFindPreviousPacket.triggered.connect(self.previous_packet_opertaion)
+        self.actionFindPreviousPacket.triggered.connect(self.previous_packet)
         self.actionMarkPacket.triggered.connect(self.mark_packet)
         self.actionMarkAllDisplayed.triggered.connect(self.mark_all_displayed)
         self.actionUnmarkAllDisplayed.triggered.connect(self.unmark_all_displayed)
@@ -162,15 +162,21 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
     # select the next packet
     def next_packet(self):
-        next_row = (self.get_current_list_row() + 1) % self.captureList.rowCount()
-        self.captureList.setCurrentCell(next_row, 0)
-        self.handle_clicked_row(next_row)
+        if self.captureList.rowCount() == 0:
+            return
+        else:
+            next_row = (self.get_current_list_row() + 1) % self.captureList.rowCount()
+            self.captureList.setCurrentCell(next_row, 0)
+            self.handle_clicked_row(next_row)
 
     # select the previous packet
-    def previous_packet_opertaion(self):
-        prev_row = (self.get_current_list_row() - 1) % self.captureList.rowCount()
-        self.captureList.setCurrentCell(prev_row, 0)
-        self.handle_clicked_row(prev_row)
+    def previous_packet(self):
+        if self.captureList.rowCount() == 0:
+            return
+        else:
+            prev_row = (self.get_current_list_row() - 1) % self.captureList.rowCount()
+            self.captureList.setCurrentCell(prev_row, 0)
+            self.handle_clicked_row(prev_row)
 
     # Puts the data of the packet into a tree structure to make it easier to read
     def display_packet_detail(self, detail):
