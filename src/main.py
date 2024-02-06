@@ -245,11 +245,15 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # saves a pcap file of the captured packets
     def save_file(self):
         file_name = QFileDialog.getSaveFileName(self, 'Save file', "", 'pcap (*.pcap);;All files (*)')
+        if file_name[0] == '':
+            return
         self.GUI_actions.write_pcap(str(os.path.basename(file_name[0])))
 
     # saves a pcap file of the captured packets as a new file
     def save_as_file(self):
         file_name = QFileDialog.getSaveFileName(self, 'Save As', '', 'pcap (*.pcap);;All files (*)')
+        if file_name[0] == '':
+            return
         self.GUI_actions.write_pcap(str(file_name[0]))
 
     # closes the GUI window
