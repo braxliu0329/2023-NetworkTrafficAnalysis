@@ -167,7 +167,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         else:
             next_row = (self.get_current_list_row() + 1) % self.captureList.rowCount()
             self.captureList.setCurrentCell(next_row, 0)
-            self.handle_clicked_row(next_row)
 
     # select the previous packet
     def previous_packet(self):
@@ -176,7 +175,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         else:
             prev_row = (self.get_current_list_row() - 1) % self.captureList.rowCount()
             self.captureList.setCurrentCell(prev_row, 0)
-            self.handle_clicked_row(prev_row)
 
     # Puts the data of the packet into a tree structure to make it easier to read
     def display_packet_detail(self, detail):
