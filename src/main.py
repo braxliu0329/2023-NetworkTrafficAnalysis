@@ -691,12 +691,14 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
     # copies selected packet details to clipboard
     def copy(self):
-         row = self.get_current_list_row()
-         _, details = self.get_select_packet(row)
-         clipboard = QApplication.clipboard()
-         clipboard.clear()
-         details_str = '\n'.join(details)
-         clipboard.setText(details_str)
+        if self.captureList.rowCount() == 0:
+            return
+        row = self.get_current_list_row()
+        _, details = self.get_select_packet(row)
+        clipboard = QApplication.clipboard()
+        clipboard.clear()
+        details_str = '\n'.join(details)
+        clipboard.setText(details_str)
 
     # gets all rows that have been selected
     def get_selected_rows(self):
