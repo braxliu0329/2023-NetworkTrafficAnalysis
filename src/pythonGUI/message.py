@@ -3,8 +3,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class MarkWaring(QtWidgets.QMessageBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle('Marking Warning')
-        self.setText('You are trying to mark an ignored packet, or ignore a marked one')
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
         brush.setStyle(QtCore.Qt.SolidPattern)
