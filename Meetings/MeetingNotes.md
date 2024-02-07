@@ -129,3 +129,17 @@ Others Present: Oliver (Mentor)
  - Joe will finish adding install instructions for pcap and look into a new attack 
  - Tony will continue looking into new attack methods
  - Ani will continue working on the GUI
+
+## Client Meeting 31/01/2024 ##
+Group Members Present: Tomos, Tony, Joe  
+Others Present: Louis Goodland (Client)
+### The Minimum Viable Product
+  - The current state of the new GUI was showcased
+  - The documentation of the code was displayed
+### Client Communication
+  - The next meeting was provisionally scheduled for Wednesday 14th 12:00
+  - Weekly update emails will be sent to the client
+### Next Steps
+  - Tomos will start work on the GO CLI implementation
+  - Joe and Tony will add new attack method analyses
+  - Ani will polish and finish the GUI
