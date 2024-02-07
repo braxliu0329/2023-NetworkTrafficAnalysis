@@ -143,3 +143,20 @@ Others Present: Louis Goodland (Client)
   - Tomos will start work on the GO CLI implementation
   - Joe and Tony will add new attack method analyses
   - Ani will polish and finish the GUI
+
+## Group Mentor Meeting 07/02/2024
+ Group Members Present: Ani, Tomos, Tony
+ Others Present: Oliver (Mentor)
+### Rankings and Feedback
+ - Rankings have gone up - we are currently 10th
+ - The Readme structure can be changed - only one bullet point per user
+### Progress
+ - Tomos has begun working on the GO CLI Implementation
+ - Ani is working on the final aspects of the GUI
+ - Tony has implemented a new attack analysis method
+### Next Steps
+ - An email will be sent to the client updating him on this week's progress
+ - Ani will finish up the GUI
+ - Tony and Joe will continue adding more attack analyses
+ - Tomos will look into setting up continuous development
+
