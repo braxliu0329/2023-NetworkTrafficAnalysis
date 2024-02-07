@@ -730,8 +730,12 @@ class Window(window.Ui_MainWindow, QMainWindow):
         
     # given a row, hash a packet using its encoded details
     def hash_packet(self, row):
-        _, details = self.get_select_packet(row)
-        return hashlib.sha256(''.join(details).encode('utf-8')).hexdigest()
+        packet, details = self.get_select_packet(row)
+        # append the time to the packet details, thus ensuring packets with the same
+        # details aren't considered duplicates (A duplicate should be seen as two packets
+        # that are virtually indistinguishable, not two packets with the same "details")
+        tag = (str(packet.time) + ''.join(details)).encode('utf-8')
+        return hashlib.sha256(tag).hexdigest()
     
     # on every filter, reapply markings to packets
     def reapply_markers(self):
