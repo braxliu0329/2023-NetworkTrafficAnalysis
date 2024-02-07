@@ -33,10 +33,9 @@
 
 ## User Stories
   1. As the Synoptix information technology apartment, I want an automated system for monitoring and analyzing clients' private networks, so that I can check if data is being stolen or abused. My primary goal is to safeguard the network from potential malicious attacks.
-  2. As a Synoptix client, I want my network to be carefully analysed for potential threats, so that, in the case that the program detects an ongoing attack, the security is further escalated and IT is notified. I would like to use the program on our testing network in a passive or active way: 
-     - The program will passively monitor the network to automatically identify any ongoing network attacks that we are not aware of.
-     - I will actively scan our network using the program if we suspect there is some form of ongoing attack.
-  3. As a network engineer, I want a useful network analysis tool with an intuitive GUI, so that I can effectively use the interface to be able to dynamically capture, filter and sort packets. My primary goal is to be able to monitor and report suspicious packets within a network to direct investigations into the network's security.
+  2. As a Synoptix client, I want my network to be carefully analysed for potential threats, so that, in the case that the program detects an ongoing attack, the security is further escalated and IT is notified. I would like to use the program on our testing network in a passive way, the program will passively  monitor the network to automatically identify any ongoing network attacks that we are not aware of
+  3. As a Synoptix client, I want my network to be carefully analysed for potential threats, so that, in the case that the program detects an ongoing attack, the security is further escalated and IT is notified. I would like to use the program on our testing network in a active way, I will actively scan our network using the program if we suspect there is  some form of ongoing attack.
+  4. As a network engineer, I want a useful network analysis tool with an intuitive GUI, so that I can effectively use the interface to be able to dynamically capture, filter and sort packets. My primary goal is to be able to monitor and report suspicious packets within a network to direct investigations into the network's security.
 
 ## Minimum Viable Product Requirements  
  - The capabilities and features of the existing solution are preserved.
