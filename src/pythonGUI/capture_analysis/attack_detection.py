@@ -22,6 +22,7 @@ class AttackDetection:
     # initialise attack detection variables
     def __init__(self, data, flagged_IPs):
         # initialise all flagged ip addresses as empty
+        self.udp_suspicious = None
         self.arp_suspicious_addresses = None
         self.icmp_suspicious = None
         self.dns_response_suspicious = None
@@ -30,7 +31,6 @@ class AttackDetection:
         self.http_suspicious = None
         self.tcp_suspicious_addresses = None
         self.tcp_scanning_suspicious = None
-        self.udp_suspicious_addresses = None
 
         # initialise quarantined packets as empty
         self.quarantined_packets = None
@@ -507,6 +507,7 @@ class AttackDetection:
         self.udp_suspicious = []
         # create an empty canvas to store data points
         canvas = EmbeddedCanvas()
+
         # dataframe with only UDP packets
         udp_packets = self.dataframe[self.dataframe['Protocol'] == 'UDP']
         # if there are no UDP packets, return nothing as there can be no udp flood attacks
@@ -565,7 +566,7 @@ class AttackDetection:
                 if address not in attack_sus_list:
                     attack_sus_list.append(address)
 
-            return pps_table
+        return pps_table
 
     # Runs all established attack detections
     def run_all_detection(self, threshold):
@@ -577,6 +578,7 @@ class AttackDetection:
             self.icmp_flood_detect(100)
             self.http_attack(5)
             self.dns_request_response_detect(20)
+            self.udp_flood_detect(100)
         else:
             self.tcp_syn_flood_detect()
             self.tcp_connect_scanning_detect(threshold)
@@ -585,3 +587,4 @@ class AttackDetection:
             self.icmp_flood_detect(threshold)
             self.http_attack(threshold)
             self.dns_request_response_detect(threshold)
+            self.udp_flood_detect(threshold)
