@@ -40,21 +40,18 @@ class MyTestCase(unittest.TestCase):
         attack_false_detect.udp_flood_detect(100)
         # obtain the suspicious addresses from the attack and store them in a list
         false_suspicious_addresses = attack_false_detect.udp_suspicious
-        print(false_suspicious_addresses)
 
         # execute the udp flood detection to test the method work correctly, providing a long enough threshold
         # detect the suspicious address
         attack_detect.udp_flood_detect(100)
         # obtain the suspicious addresses from the attack and store them in a new list
         suspicious_addresses = attack_detect.udp_suspicious
-        print(suspicious_addresses)
 
         # execute the udp flood detection to test the method works correctly, providing a threshold that should be too
         # high to detect the suspicious address
         attack_detect.udp_flood_detect(20000)
         # obtain the suspicious addresses from the attack and store them in a new list
         suspicious_addresses_wthreshold = attack_detect.udp_suspicious
-        print(suspicious_addresses_wthreshold)
 
         # ensure that the method does not incur any false positives for clean packets
         self.assertFalse(false_suspicious_addresses,
@@ -188,21 +185,18 @@ class MyTestCase(unittest.TestCase):
         attack_false_detect.icmp_flood_detect(100)
         # obtain the suspicious addresses from the attack and store them in a list
         false_suspicious_addresses = attack_false_detect.tcp_scanning_suspicious
-        print(false_suspicious_addresses)
 
         # execute the icmp flood detection to test the method works correctly, providing a low enough threshold to
         # detect the suspicious address
         attack_detect.icmp_flood_detect(100)
         # obtain the suspicious addresses from the attack and store them in a new list
         suspicious_addresses = attack_detect.icmp_suspicious
-        print(suspicious_addresses)
 
         # execute the icmp flood detection to test the method works correctly, providing a threshold that should be too
         # high to detect the suspicious address
         attack_detect.icmp_flood_detect(10000)
         # obtain the suspicious addresses from the attack and store them in a new list
         suspicious_addresses_wthreshold = attack_detect.icmp_suspicious
-        print(suspicious_addresses_wthreshold)
 
         # ensure that the method does not incur any false positives for clean packets
         self.assertFalse(false_suspicious_addresses,
@@ -228,21 +222,18 @@ class MyTestCase(unittest.TestCase):
         attack_false_detect.http_attack(5)
         # obtain the suspicious addresses from the attack and store them in a list
         false_suspicious_addresses = attack_false_detect.http_suspicious
-        print(false_suspicious_addresses)
 
         # execute the http flood detection to test the method works correctly, providing a low enough threshold to
         # detect the suspicious address
         attack_detect.http_attack(5)
         # obtain the suspicious addresses from the attack and store them in a new list
         suspicious_addresses = attack_detect.http_suspicious
-        print(suspicious_addresses)
 
         # execute the http flood detection to test the method works correctly, providing a threshold that should be too
         # high to detect the suspicious address
         attack_detect.http_attack(500)
         # obtain the suspicious addresses from the attack and store them in a new list
         suspicious_addresses_wthreshold = attack_detect.http_suspicious
-        print(suspicious_addresses_wthreshold)
 
         # ensure that the method does not incur any false positives for clean packets
         self.assertFalse(false_suspicious_addresses,

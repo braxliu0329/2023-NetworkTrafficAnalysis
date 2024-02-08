@@ -516,6 +516,7 @@ class AttackDetection:
         
         # removes any duplicated addresses
         udp_addresses = udp_packets['SourceIP'].unique()
+
         # create the packets per second table using the calc_pps function. This will also populate the suspicious list
         # with all udp addresses that have a pps above the provided threshold
         pps_table = self.calc_pps(udp_addresses, udp_packets, self.udp_suspicious, threshold)
