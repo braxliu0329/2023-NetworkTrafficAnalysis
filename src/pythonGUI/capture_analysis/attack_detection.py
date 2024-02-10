@@ -6,7 +6,7 @@ import scapy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from pythonGUI.capture_analysis import dataframe_create
+from src.pythonGUI.capture_analysis import dataframe_create
 
 
 # small object used to create embedded graphs onto GUI
@@ -22,6 +22,7 @@ class AttackDetection:
     # initialise attack detection variables
     def __init__(self, data, flagged_IPs):
         # initialise all flagged ip addresses as empty
+        self.ssl_stripping_suspicious_address = None
         self.arp_suspicious_addresses = None
         self.icmp_suspicious = None
         self.dns_response_suspicious = None
@@ -499,6 +500,20 @@ class AttackDetection:
 
         # Returns both graphs
         return [canvas, canvas2]
+
+    def ssl_stripping(self):
+        # create canvas
+        canvas = EmbeddedCanvas(self)
+
+        # initialises suspicious addresses address lists
+        self.ssl_stripping_suspicious_address = []
+
+        # check for HTTP traffic on port 443
+        for index, row in self.dataframe.iterrows():
+            if row['Protocol'].lower() == 'http' and row['Port'] == 443:
+                self.ssl_stripping_suspicious_address.append(row['URL'])
+
+        return self.ssl_stripping_suspicious_address
 
     def calc_pps(self, suspicious_addresses, packets, attack_sus_list, threshold):
         # dictionary of the addresses and their packets per second

@@ -1,0 +1,30 @@
+from scapy.all import *
+from scapy.layers.http import HTTPRequest
+from scapy.layers.inet import IP, TCP
+
+def generate_ssl_stripping_pcap(file_name="ssl_stripping.pcap"):
+    packets = []
+
+    # source ip address and destination ip address
+    src_ip = "192.168.1.100"
+    dst_ip = "192.168.1.1"
+
+    # Create simulated HTTP traffic on port 443
+    # Create 5 packets
+    for i in range(5):
+        packet = (IP(src=src_ip, dst=dst_ip) /
+                  TCP(sport=12345, dport=443) /
+                  HTTPRequest(
+                      Method="GET",
+                      Host="example.com",
+                      Path="/",
+                  ))
+        packets.append(packet)
+
+    # 将生成的数据包写入PCAP文件
+    wrpcap(file_name, packets)
+
+    print(f"Generated PCAP file {file_name} containing simulated SSL stripping traffic.")
+
+# 调用函数生成PCAP文件
+generate_ssl_stripping_pcap()
