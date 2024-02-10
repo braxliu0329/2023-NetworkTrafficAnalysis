@@ -1,17 +1,22 @@
 import './App.css';
+import {
+  BrowserRouter,
+  Routes,
+  Route
+} from 'react-router-dom';
+import Home from './pages/Home';
+import IPv4 from './pages/IPV4Analysis';
 
 function App() {
   return (
-    <div className="container">
-      <h1>Packet Analyzer</h1>
-      <div className="options">
-        <div className="option">Protocol Analysis</div>
-        <div className="option">IPv4 Analysis</div>
-        <div className="option">IPv6 Analysis</div>
-        <div className="option">MAC Analysis</div>
-        <div className="option">Source Analysis</div>
-        <div className="option">Destination Analysis</div>
-      </div>
+    <div className="App">
+      <BrowserRouter>
+        <Routes>
+          <Route index element={<Home />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/ipv4analysis" element={<IPv4 />} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }

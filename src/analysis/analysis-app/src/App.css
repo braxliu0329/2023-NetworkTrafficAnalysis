@@ -6,24 +6,50 @@ body {
 .container {
   color: #ffffff;
   padding: 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .options {
   display: flex;
+  flex: 1; /* Option column takes as much space as it needs */
+}
+
+.options-column {
+  display: flex;
   flex-direction: column; /* Arrange options in a single column */
-  align-items: flex-start; /* Center-align options */
-  margin-top: 20px;
 }
 
-.option {
-  background-color: #3d2645; /* Dark purple */
-  padding: 20px;
-  border-radius: 5px;
-  text-align: center;
-  cursor: pointer;
-  margin-bottom: 10px; /* Add some space between options */
+.options-list {
+  list-style-type: none; /* Remove default bullets */
+  padding: 0;
+  margin: 0;
 }
 
-.option:hover {
-  background-color: #5c3c6d; /* Lighter purple on hover */
+.options-list li {
+  color: #ffffff; /* Set text color of options */
+  margin-bottom: 5px; /* Add some space between options */
+  position: relative;
+}
+
+.options-list li::before {
+  content: '•'; /* Use a bullet point character */
+  color: #8a4d76; /* Set the color of the bullet point */
+  position: absolute;
+  left: -20px; /* Adjust the position of the bullet point */
+}
+
+.description {
+  max-width: 400px;
+  margin-left: 20px;
+}
+
+.description h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.description p {
+  font-size: 16px;
+  line-height: 1.5;
 }
