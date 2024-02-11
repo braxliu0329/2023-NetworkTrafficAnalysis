@@ -22,6 +22,7 @@ class AttackDetection:
     # initialise attack detection variables
     def __init__(self, data, flagged_IPs):
         # initialise all flagged ip addresses as empty
+        self.udp_suspicious = None
         self.arp_suspicious_addresses = None
         self.icmp_suspicious = None
         self.dns_response_suspicious = None
@@ -500,6 +501,38 @@ class AttackDetection:
         # Returns both graphs
         return [canvas, canvas2]
 
+        # -------------Below are new attack methods----------------
+    def udp_flood_detect(self, threshold):
+        # initialise udp suspicious addresses
+        self.udp_suspicious = []
+        # create an empty canvas to store data points
+        canvas = EmbeddedCanvas()
+
+        # dataframe with only UDP packets
+        udp_packets = self.dataframe[self.dataframe['Protocol'] == 'UDP']
+        # if there are no UDP packets, return nothing as there can be no udp flood attacks
+        if udp_packets.empty:
+            return None
+        
+        # removes any duplicated addresses
+        udp_addresses = udp_packets['SourceIP'].unique()
+
+        # create the packets per second table using the calc_pps function. This will also populate the suspicious list
+        # with all udp addresses that have a pps above the provided threshold
+        pps_table = self.calc_pps(udp_addresses, udp_packets, self.udp_suspicious, threshold)
+
+        # creates dataframe from dictionary
+        pps_dataframe = pd.DataFrame.from_dict(pps_table)
+
+        # creates graph from dataframe
+        pps_graph = pps_dataframe.plot(ax=canvas.axes, kind='barh', x="Address", legend=False)
+        pps_graph.set(title="UDP Flood Detection", xlabel="Packets Per Second")
+        pps_graph.locator_params(axis="x", integer=True, tight=True)
+        pps_graph.axvline(threshold, color='r', linestyle='--')
+
+        # return the created graph to be represented on the GUI
+        return canvas
+
     def calc_pps(self, suspicious_addresses, packets, attack_sus_list, threshold):
         # dictionary of the addresses and their packets per second
         pps_table = {'Address': [],
@@ -534,7 +567,7 @@ class AttackDetection:
                 if address not in attack_sus_list:
                     attack_sus_list.append(address)
 
-            return pps_table
+        return pps_table
 
     # Runs all established attack detections
     def run_all_detection(self, threshold):
@@ -546,6 +579,7 @@ class AttackDetection:
             self.icmp_flood_detect(100)
             self.http_attack(5)
             self.dns_request_response_detect(20)
+            self.udp_flood_detect(100)
         else:
             self.tcp_syn_flood_detect()
             self.tcp_connect_scanning_detect(threshold)
@@ -554,3 +588,4 @@ class AttackDetection:
             self.icmp_flood_detect(threshold)
             self.http_attack(threshold)
             self.dns_request_response_detect(threshold)
+            self.udp_flood_detect(threshold)
