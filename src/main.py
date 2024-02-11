@@ -723,7 +723,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         selected_rows = [index.row() for index in selected_indexes]
         return selected_rows
 
-
     # data class to keep track of a marked packet, its hash, and its previous colour prior to marking
     @dataclass
     class MarkedPacket:
