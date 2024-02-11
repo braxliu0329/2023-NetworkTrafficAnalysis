@@ -10,8 +10,8 @@ def generate_ssl_stripping_pcap(file_name="ssl_stripping.pcap"):
     dst_ip = "192.168.1.1"
 
     # Create simulated HTTP traffic on port 443
-    # Create 5 packets
-    for i in range(5):
+    # Create 1000 packets
+    for i in range(1000):
         packet = (IP(src=src_ip, dst=dst_ip) /
                   TCP(sport=12345, dport=443) /
                   HTTPRequest(

@@ -21,7 +21,10 @@ class DataframeCreate:
 
 
     def create_data(self, packets):
-        data = {"Number": [], "Time": [], "SourceMac": [], "DestMac": [], "IP_Version": [], "SourceIP": [], "DestIP": [], "Protocol": [], "TCP_Flags" : [], "op" : [], "hwsrc" : [], "ICMP_Type": [], "DNS_Type": [], "raw": []}
+        data = {"Number": [], "Time": [], "SourceMac": [], "DestMac": [], "IP_Version": [],
+                "SourceIP": [], "DestIP": [], "Protocol": [], "TCP_Flags" : [], "op" : [],
+                "hwsrc" : [], "ICMP_Type": [], "DNS_Type": [], "raw": [],
+                "SourcePort": [], "DestinationPort": []}
         packet_number = 1
         for packet in packets:
             data["Number"].append(packet_number)
@@ -59,14 +62,19 @@ class DataframeCreate:
                 data["IP_Version"].append(None)
 
             if packet.haslayer(TCP):
-                data["TCP_Flags"].append(packet[TCP].flags)
+                tcp_layer = packet[TCP]
+                data["TCP_Flags"].append(tcp_layer.flags)
+                data["DestPort"].append(tcp_layer.dport)
+
                 if packet.haslayer(Raw):
                     data["raw"].append(packet[Raw].load)
                 else:
                     data["raw"].append(None)
             else:
+                tcp_layer = packet[TCP]
                 data["TCP_Flags"].append(None)
                 data["raw"].append(None)
+                data["DestPort"].append(None)
 
             if packet.haslayer(ICMP):
                 data["ICMP_Type"].append(packet[ICMP].type)

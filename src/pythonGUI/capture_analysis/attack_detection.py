@@ -510,10 +510,24 @@ class AttackDetection:
 
         # check for HTTP traffic on port 443
         for index, row in self.dataframe.iterrows():
-            if row['Protocol'].lower() == 'http' and row['Port'] == 443:
+            if row['Protocol'] == 'TCP' and row['DestPort'] == 443:
                 self.ssl_stripping_suspicious_address.append(row['URL'])
 
-        return self.ssl_stripping_suspicious_address
+        http_packets = pd.DataFrame(self.dataframe[self.dataframe['Protocol'] == 'TCP'
+                                                   and self.dataframe['DestPort'] == 443])
+        if http_packets.empty:
+            return None
+
+        # create a dataframe from the list of suspicious addresses
+        diff_addresses = pd.DataFrame(self.ssl_stripping_suspicious_address, columns=["suspicious URLs"])
+        # count the number of each url
+        count_URL = diff_addresses["suspicious URLs"].value_counts().rename.axis('URL').reset_index(number="Counts")
+
+        # creates graph from dataframe
+        ssl_tripping_graph =count_URL.plot(ax=canvas.axes, kind='barh', x='URL', legend=False)
+        ssl_tripping_graph.set_title("SSL Stripping suspicious URLs", xlabel="Count number", ylabel="URL")
+
+        return canvas
 
     def calc_pps(self, suspicious_addresses, packets, attack_sus_list, threshold):
         # dictionary of the addresses and their packets per second
