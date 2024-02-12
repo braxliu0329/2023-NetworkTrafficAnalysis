@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import networkx as nx
+import json
 from scapy.layers.dns import DNS
 from scapy.layers.inet import IP, TCP, UDP
 from scapy.layers.inet6 import IPv6
@@ -33,8 +34,28 @@ class Plotting:
         ipv4_addresses = self.data_frame[self.data_frame["IP_Version"] == "IPv4"]
         # uses connections between source ip and destination ip to form edges
         network = nx.from_pandas_edgelist(ipv4_addresses, source='SourceIP', target='DestIP')
+        nodes = []
+        links = []
+        for n in network.nodes():
+            nodes.append({
+                "id": n,
+                "height": 1,
+                "size": 24,
+                "color": "rgb(77, 205, 187)"
+            })
+        for e in network.edges():
+            links.append({
+                "source": e[0],
+                "target": e[1],
+                "distance": 1
+            })
+        data = {
+            "nodes": nodes,
+            "links": links
+        }
+        with open('ipv4.json', 'a+') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
         nx.draw_circular(network, with_labels=True)
-
         canvas = FigureCanvas(fig)
         return canvas
 

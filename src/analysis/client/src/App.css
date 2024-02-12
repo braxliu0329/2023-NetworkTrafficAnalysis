@@ -1,23 +1,15 @@
 body {
   background-color: #1c1c1c; /* Set the background color of the entire page to black */
   margin: 0; /* Remove default body margin */
-}
-
-.container {
-  color: #ffffff;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
+  display: flex; /* Use flexbox layout for the body */
 }
 
 .options {
-  display: flex;
-  flex: 1; /* Option column takes as much space as it needs */
-}
-
-.options-column {
+  color: #ffffff;
+  padding: 20px;
   display: flex;
   flex-direction: column; /* Arrange options in a single column */
+  align-items: flex-start; /* Align options to the start of the container */
 }
 
 .options-list {
@@ -29,19 +21,18 @@ body {
 .options-list li {
   color: #ffffff; /* Set text color of options */
   margin-bottom: 5px; /* Add some space between options */
-  position: relative;
 }
 
 .options-list li::before {
   content: '•'; /* Use a bullet point character */
   color: #8a4d76; /* Set the color of the bullet point */
-  position: absolute;
-  left: -20px; /* Adjust the position of the bullet point */
+  margin-right: 5px; /* Add some space between bullet point and text */
 }
 
 .description {
+  color: #ffffff;
   max-width: 400px;
-  margin-left: 20px;
+  padding: 20px;
 }
 
 .description h2 {
@@ -53,3 +44,5 @@ body {
   font-size: 16px;
   line-height: 1.5;
 }
+
+

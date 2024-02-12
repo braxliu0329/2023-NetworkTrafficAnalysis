@@ -1,16 +1,14 @@
-function Home() {
+import { Link } from "react-router-dom";
+
+  function Home() {
     return (
       <div className="container">
         <div className="options">
           <div className="options-column">
             <h1>NTAnalyzer</h1>
             <ul className="options-list">
-              <li>Protocol Analysis</li>
-              <li>IPv4 Analysis</li>
-              <li>IPv6 Analysis</li>
-              <li>MAC Analysis</li>
-              <li>Source Analysis</li>
-              <li>Destination Analysis</li>
+              <li><Link to="/packetanalysis">Packet Analysis</Link></li>
+              <li><Link to="/attackanalysis">Attack Analysis</Link></li>
             </ul>
           </div>
         </div>
