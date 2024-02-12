@@ -64,7 +64,8 @@ class DataframeCreate:
             if packet.haslayer(TCP):
                 tcp_layer = packet[TCP]
                 data["TCP_Flags"].append(tcp_layer.flags)
-                data["DestPort"].append(tcp_layer.dport)
+                data["SourcePort"].append(tcp_layer.sport)
+                data["DestinationPort"].append(tcp_layer.dport)
 
                 if packet.haslayer(Raw):
                     data["raw"].append(packet[Raw].load)
