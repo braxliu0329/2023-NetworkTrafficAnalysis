@@ -1,12 +1,11 @@
 import { ResponsiveBar } from '@nivo/bar'
 
-
-
 interface FrequencyGraphProps {
     data: any[]
+    index: string
 };
 
-const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data }) => {
+const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
     const getColor = (bar: any) => {
         const colorMap: { [key: string]: string} = {
             'TCP': '#003366',
@@ -14,21 +13,31 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data }) => {
             'UDP/DNS': '#006633',
             'IGMP': '#660066',
             'ICMP': '#006666',
+            'ICMPv6': '#006666',
             'ARP': '#660000',
             'IPv6': '#666600'
         };
         if (colorMap.hasOwnProperty(bar.indexValue)) {
             return colorMap[bar.indexValue];
         }
-        return 'Grey'
+        return '#e79a3f'
+    }
+    let legendOffsetY = -50;
+    if (index === "source" || index === "dest") {
+        legendOffsetY = -300;
+    }
+    let marginL = 60;
+    if (index === "source" || index === "dest") {
+        marginL = 500
     }
     return (
         <ResponsiveBar
             data={data}
+            isInteractive={false}
             keys={['frequency']}
-            indexBy="protocol"
+            indexBy={index}
             layout="horizontal"
-            margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
+            margin={{ top: 50, right: 130, bottom: 50, left: marginL }}
             padding={0.3}
             colors={getColor}
             borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
@@ -43,9 +52,9 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data }) => {
                 tickRotation: 0,
             }}
             axisLeft={{
-                legend: "Protocol",
+                legend: index,
                 legendPosition: "middle",
-                legendOffset: -50,
+                legendOffset: legendOffsetY,
                 tickSize: 5,
                 tickPadding: 5,
                 tickRotation: 0,
@@ -68,7 +77,7 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data }) => {
                     }
                 }
             }}
-            legends={[
+            legends={index !== "source" && index != "dest" ? [
                 {
                 dataFrom: 'indexes',
                 anchor: 'bottom-right',
@@ -92,7 +101,7 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data }) => {
                     },
                 ],
                 },
-            ]}
+            ] : []}
             animate={true}
     />
     );

@@ -7,6 +7,8 @@ import IPv6An from './pages/IPv6An';
 import MACAn from './pages/MACAn';
 import FrequencyAn from './pages/FrequencyAn';
 import ProtocolFrequencyAn from './pages/ProtocolFrequencyAn';
+import SourceFrequencyAn from './pages/SourceFrequencyAn';
+import DestFrequencyAn from './pages/DestFrequencyAn';
 
 
 export const ENDPOINT = "http://localhost:4000";
@@ -24,7 +26,9 @@ function App() {
             <Route path="/sourcedestanalysis/ipv6" element={<IPv6An />} />
             <Route path="/sourcedestanalysis/mac" element={<MACAn />} />
             <Route path="/frequencyanalysis" element={<FrequencyAn />} />
-            <Route path="/frequencyanalysis/protocol" element={<ProtocolFrequencyAn />}/>
+            <Route path="/frequencyanalysis/protocol" element={<ProtocolFrequencyAn />} />
+            <Route path="/frequencyanalysis/source" element={<SourceFrequencyAn />} />
+            <Route path="/frequencyanalysis/dest" element={<DestFrequencyAn />} />
             <Route path="/attackanalysis" element={<AttackAn />} />
         </Routes>
       </BrowserRouter>

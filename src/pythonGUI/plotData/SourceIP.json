@@ -1,0 +1,26 @@
+[
+    {
+        "source": "2001:630:e4:4220:b511:1ee4:af7d:8301",
+        "frequency": 8
+    },
+    {
+        "source": "fe80::6487:4816:d4d1:5a21",
+        "frequency": 8
+    },
+    {
+        "source": "2603:1026:c06:6f::2",
+        "frequency": 6
+    },
+    {
+        "source": "fe80::208:e3ff:feff:ffc4",
+        "frequency": 4
+    },
+    {
+        "source": "fe80::e9ce:8d0d:2522:37bb",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:b60f:f7c7:8912:e12b",
+        "frequency": 1
+    }
+]

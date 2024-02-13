@@ -1,0 +1,18 @@
+[
+    {
+        "dest": "2603:1026:c06:6f::2",
+        "frequency": 8
+    },
+    {
+        "dest": "ff02::16",
+        "frequency": 8
+    },
+    {
+        "dest": "2001:630:e4:4220:b511:1ee4:af7d:8301",
+        "frequency": 6
+    },
+    {
+        "dest": "ff02::1",
+        "frequency": 6
+    }
+]
