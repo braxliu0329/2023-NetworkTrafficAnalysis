@@ -1,25 +1,23 @@
 import { NodeTooltipProps, ResponsiveNetwork } from '@nivo/network';
 
-interface Node {
+
+interface Nodes {
     id: any
-    height: Number
     size: Number
-    color: string
-}
+};
 
 interface Link {
     source: string
     target: string
     distance: Number
-}
+};
 
 interface NetworkGraphsProps {
     data: {
-        nodes: Node[];
+        nodes: Nodes[];
         links: Link[];
-    }
-}
-
+    };
+};
 
 const NetworkGraph: React.FC<NetworkGraphsProps> = ({data}) => {
     return (
@@ -30,21 +28,21 @@ const NetworkGraph: React.FC<NetworkGraphsProps> = ({data}) => {
             linkColor="#62a0ea"
             centeringStrength={0.3}
             repulsivity={6}
-            nodeSize={(n: any) =>n.size}
+            nodeSize={24}
             activeNodeSize={(n: any)=>1.5*n.size}
             nodeColor="#613583"
-            nodeBorderWidth={1}
+            nodeBorderWidth={3}
             nodeBorderColor={{
                 from: 'color',
                 modifiers: [
                     [
-                        'darker',
+                        'brighter',
                         0.8
                     ]
                 ]
             }}
-            linkThickness={(n: any)=>2+2*n.target.data.height}
-            nodeTooltip={({ node } :NodeTooltipProps<Node>) => <div>{node.id}</div>}
+            linkThickness={3}
+            nodeTooltip={({ node } :NodeTooltipProps<Nodes>) => <div>{node.id}</div>}
     />
     );
 }

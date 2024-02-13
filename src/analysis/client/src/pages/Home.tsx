@@ -7,7 +7,8 @@ import { Link } from "react-router-dom";
           <div className="options-column">
             <h1>NTAnalyzer</h1>
             <ul className="options-list">
-              <li><Link to="/packetanalysis">Packet Analysis</Link></li>
+              <li><Link to="/sourcedestanalysis">Source/Destination Analysis</Link></li>
+              <li><Link to="/frequencyanalysis">Frequency Analysis</Link></li>
               <li><Link to="/attackanalysis">Attack Analysis</Link></li>
             </ul>
           </div>

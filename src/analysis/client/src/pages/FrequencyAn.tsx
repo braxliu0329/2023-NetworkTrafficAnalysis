@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 
-function PacketAn() {
+function FrequencyAn() {
     return (
         <div className="container">
             <div className="options">
             <div className="options-column">
-                <h1>Packet Analysis</h1>
+                <h1>Frequency Analysis</h1>
                 <ul className="options-list">
-                    <li><Link to="/packetanalysis/ipv4">IPv4 Analysis</Link></li>
+                    <li><Link to="/frequencyanalysis/protocol">Protocol Frequency Analysis</Link></li>
                 </ul>
             </div>
             </div>
@@ -15,4 +15,4 @@ function PacketAn() {
     );
 }
 
-export default PacketAn
+export default FrequencyAn;

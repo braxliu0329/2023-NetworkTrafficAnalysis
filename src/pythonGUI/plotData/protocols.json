@@ -1,0 +1,7 @@
+[
+    {
+        "protocol" : "TCP",
+        "protocolColor": "hsl(294, 70%, 50%)",
+        "frequency": 120
+    }
+]

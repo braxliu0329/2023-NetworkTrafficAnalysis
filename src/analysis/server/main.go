@@ -8,6 +8,21 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
+type Nodes struct {
+	Id string `json:"id"`
+}
+
+type Links struct {
+	Source   string `json:"source"`
+	Target   string `json:"target"`
+	Distance int    `json:"distance"`
+}
+
+type Network struct {
+	Nodes []Nodes `json:"nodes"`
+	Links []Links `json:"links"`
+}
+
 func main() {
 	fmt.Println("")
 	app := fiber.New()

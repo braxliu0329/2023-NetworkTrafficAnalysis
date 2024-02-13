@@ -1,10 +1,10 @@
 import NetworkGraph from '../components/NetworkGraph'
-import data from '../../../../pythonGUI/plotData/ipv4.json'
+import data from '../../../../pythonGUI/plotData/ipv6.json'
 
-function IPv4An() {
+function IPv6An() {
     return (
         <div className="Analysis">
-            <h1>IPv4 Analysis</h1>
+            <h1>IPv6 Analysis</h1>
             <div style={{height:400}}>
                 <NetworkGraph data={data}/>
             </div>
@@ -12,4 +12,4 @@ function IPv4An() {
     );
 }
 
-export default IPv4An;
+export default IPv6An;
