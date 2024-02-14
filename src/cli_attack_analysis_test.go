@@ -30,9 +30,9 @@ func sliceEqual(s []string, t []string) bool {
 // test the TCP Flood detection for the CLI tool is working as expected
 func TestTcpFlood(t *testing.T) {
 	// detect an attack using a pcap file without tcp flood attacks
-	attackFalseDetect := tcpSynFloodDetect("dns")
+	attackFalseDetect := tcpSynFloodDetect("test_pcaps/dns")
 	// detect an attack using a pcap file with a tcp flood attack
-	attackDetect := tcpSynFloodDetect("SYN")
+	attackDetect := tcpSynFloodDetect("test_pcaps/SYN")
 
 	// expected suspicious address
 	knownSuspicious := []string{"10.128.0.2"}
@@ -59,11 +59,11 @@ func TestTcpFlood(t *testing.T) {
 // test the TCP Connect Scanning detection for the CLI tool is working as expected
 func TestTcpConnectScanningFlood(t *testing.T) {
 	// detect an attack using a pcap file without tcp flood attacks
-	attackFalseDetect := tcpConnectScanDetect("dns", 100)
+	attackFalseDetect := tcpConnectScanDetect("test_pcaps/dns", 100)
 	// detect an attack using a high threshold
-	attackDetectThreshold := tcpConnectScanDetect("SYN", 10000)
+	attackDetectThreshold := tcpConnectScanDetect("test_pcaps/SYN", 10000)
 	// detect an attack using a pcap file with a tcp flood attack
-	attackDetect := tcpConnectScanDetect("SYN", 100)
+	attackDetect := tcpConnectScanDetect("test_pcaps/SYN", 100)
 
 	// expected suspicious address
 	knownSuspicious := []string{"10.128.0.2"}
