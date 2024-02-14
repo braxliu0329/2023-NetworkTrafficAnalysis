@@ -161,7 +161,8 @@ Others Present: Louis Goodland (Client)
  - Tomos will look into setting up continuous development
 
 ## Client Meeting 14/02/2024
-Group Members Present: Tomos, Ani
+Group Members Present: Tomos, Ani, Tony
+Group Members Absent: Joe
 Others Present: Louis Goodland (Client)
 ### Progress
  - Ani has continued work on the GUI - to fix and improve the graphs from the existing GUI, a local react page has been made to dynamically display attack analyses.
@@ -169,8 +170,8 @@ Others Present: Louis Goodland (Client)
  - Joe has been working on DNS amplification detection
 ### Feedback
  - The CLI analysis tool should be more of a "packet disector" than a packet analysis tool
- - GUI feedback
-![image](https://github.com/spe-uob/2023-NetworkTrafficAnalysis/assets/123552121/0738a737-a676-4c8a-8234-dd580618fa14)
+ - GUI feedback:
+ ![image](https://github.com/spe-uob/2023-NetworkTrafficAnalysis/assets/123552121/0738a737-a676-4c8a-8234-dd580618fa14)
 ### Next Steps
  - Tomos will continue working on the CLI implementation in Go
  - Ani will continue working on the react side of the GUI
