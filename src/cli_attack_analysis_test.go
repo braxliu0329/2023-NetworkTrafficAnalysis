@@ -86,9 +86,9 @@ func TestTcpConnectScanningFlood(t *testing.T) {
 // test the ARP poison detection for the CLI tool is working as expected
 func TestARPPoison(t *testing.T) {
 	// detect an attack using a pcap file without arp poisoning attacks
-	attackFalseDetect := arpPoisonDetect("dns")
+	attackFalseDetect := arpPoisonDetect("test_pcaps/dns")
 	// detect an attack using a pcap file with arp poisoning attacks
-	attackDetect := arpPoisonDetect("arp-poisoning")
+	attackDetect := arpPoisonDetect("test_pcaps/arp-poisoning")
 
 	// expected suspicious address
 	knownSuspicious := []string{"192.168.1.1", "192.168.1.254"}

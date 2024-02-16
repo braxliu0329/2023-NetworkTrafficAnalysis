@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
+	"net"
 	"sort"
 	"time"
 )
@@ -29,6 +31,12 @@ type TCPPacketAddress struct {
 	Destination gopacket.Endpoint
 	TcpPacket   *layers.TCP
 	Packet      gopacket.Packet
+}
+
+// MACAddress struct to pair mac addresses and ip addresses
+type MACAddress struct {
+	MAC     net.HardwareAddr
+	Address []byte
 }
 
 func main() {
@@ -74,6 +82,32 @@ func getTCP(packets []gopacket.Packet) []TCPPacketAddress {
 
 	// return found tcp layers
 	return tcpPackets
+}
+
+// getETH extracts all Ethernet packet layers from a slice of packets
+func getETH(packets []gopacket.Packet) []MACAddress {
+	// slice to return tcp packets
+	var ethPackets []MACAddress
+	// *threaded* loop through all packets
+	for _, packet := range packets {
+		// assign a variable to the TCP layer if it exists. If it doesn't exist, move on.
+		if ethLayer := packet.Layer(layers.LayerTypeEthernet); ethLayer != nil {
+			// if it has an ipv4 layer, get its ip
+			if ipLayer := packet.Layer(layers.LayerTypeIPv4); ipLayer != nil {
+				// get the ipv4 layer to obtain ip address
+				ip, _ := ipLayer.(*layers.IPv4)
+			} else {
+
+			}
+
+			// get the actual tcp data from the layer, will not return an error as tcp status should have been checked
+			eth, _ := ethLayer.(*layers.Ethernet)
+			// add the tcp layer and address to the slice
+			ethPackets = append(ethPackets, MACAddress{eth.SrcMAC, ip.SrcIP})
+		}
+	}
+	// return found tcp layers
+	return ethPackets
 }
 
 // getTCPAddressData uses a slice of TCP packets to collate data for each address to be returned as a slice
@@ -269,10 +303,36 @@ func tcpConnectScanDetect(file string, threshold int) []string {
 	return suspiciousAddresses
 }
 
+// see if a MACAddress appears in a slice related to more than one IP
+func containsMac(macAddresses []MACAddress, addr MACAddress) bool {
+	// loop through all structs
+	for _, address := range macAddresses {
+		// mac found
+		if address.MAC.String() == addr.MAC.String() && !bytes.Equal(address.Address, addr.Address) {
+			return true
+		}
+	}
+	// mac not found
+	return false
+}
+
 // using the name of a pcap file, returns a slice containing any suspicious addresses
 func arpPoisonDetect(file string) []string {
+	// get packets from a pcap file
+	packets := getPackets(file)
+	// get a list of mac addresses and their associated IPs
+	macAddresses := getETH(packets)
+
 	// slices to contain suspicious and attacked addresses
 	var suspiciousAddresses []string
+
+	// if the mac address appears more than once,it is associated to more than one IP and is therefore suspicious
+	for _, address := range macAddresses {
+		// check if the addresses without this address contains this mac address
+		if containsMac(macAddresses, address) {
+			suspiciousAddresses = append(suspiciousAddresses, address.MAC.String())
+		}
+	}
 
 	// return the suspicious and attacked addresses as a pair
 	return suspiciousAddresses
