@@ -72,7 +72,6 @@ class DataframeCreate:
                 else:
                     data["raw"].append(None)
             else:
-                tcp_layer = packet[TCP]
                 data["TCP_Flags"].append(None)
                 data["raw"].append(None)
                 data["DestPort"].append(None)
@@ -86,8 +85,6 @@ class DataframeCreate:
                 data["DNS_Type"].append(packet[DNS].qr)
             else:
                 data["DNS_Type"].append(None)
-
-
 
             packet_number +=1
 

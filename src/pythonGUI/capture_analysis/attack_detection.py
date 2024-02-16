@@ -506,26 +506,35 @@ class AttackDetection:
         canvas = EmbeddedCanvas(self)
 
         # initialises suspicious addresses address lists
-        self.ssl_stripping_suspicious_address = []
+        self.ssl_stripping_suspicious_source_address = []
+        self.ssl_stripping_suspicious_destination_address = []
 
-        # check for HTTP traffic on port 443
+        # check for HTTP traffic on port 443, suppose to be HTTPS rather than HTTP
         for index, row in self.dataframe.iterrows():
-            if row['Protocol'] == 'TCP' and row['DestPort'] == 443:
-                self.ssl_stripping_suspicious_address.append(row['URL'])
+            if row['Protocol'] == 'TCP' and row['DestinationPort'] == 443:
+                # append tuple of ([SourceIP],[DestinationIP]) in to list
+                self.ssl_stripping_suspicious_source_address.append(row['SourceIP'])
+                self.ssl_stripping_suspicious_destination_address.append(row['DestinationIP'])
 
-        http_packets = pd.DataFrame(self.dataframe[self.dataframe['Protocol'] == 'TCP'
-                                                   and self.dataframe['DestPort'] == 443])
+        http_packets = self.dataframe[(self.dataframe['Protocol'] == 'TCP') and (self.dataframe['DestinationPort'] == 443)]
         if http_packets.empty:
             return None
 
-        # create a dataframe from the list of suspicious addresses
-        diff_addresses = pd.DataFrame(self.ssl_stripping_suspicious_address, columns=["suspicious URLs"])
-        # count the number of each url
-        count_URL = diff_addresses["suspicious URLs"].value_counts().rename.axis('URL').reset_index(number="Counts")
+        # Create dataframes from the lists of suspicious addresses
+        source_addresses_df = pd.DataFrame(self.ssl_stripping_suspicious_source_address, columns=["Suspicious Source IPs"])
+        destination_addresses_df = pd.DataFrame(self.ssl_stripping_suspicious_destination_address,
+                                                columns=["Suspicious Destination IPs"])
 
-        # creates graph from dataframe
-        ssl_tripping_graph =count_URL.plot(ax=canvas.axes, kind='barh', x='URL', legend=False)
-        ssl_tripping_graph.set_title("SSL Stripping suspicious URLs", xlabel="Count number", ylabel="URL")
+        # Count the number of occurrences for each IP
+        source_counts = source_addresses_df["Suspicious Source IPs"].value_counts().rename_axis('Source IP').reset_index(
+            name="Counts")
+        destination_counts = destination_addresses_df["Suspicious Destination IPs"].value_counts().rename_axis(
+            'Destination IP').reset_index(name="Counts")
+
+        # Creates graphs from dataframes
+        # For Source IPs
+        source_graph = source_counts.plot(ax=canvas.axes, kind='barh', x='Source IP', y='Counts', legend=False)
+        source_graph.set_title("SSL Stripping Suspicious Source IPs", xlabel="Count number", ylabel="Source IP")
 
         return canvas
 

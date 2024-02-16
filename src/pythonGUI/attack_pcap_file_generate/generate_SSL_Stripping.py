@@ -21,10 +21,10 @@ def generate_ssl_stripping_pcap(file_name="ssl_stripping.pcap"):
                   ))
         packets.append(packet)
 
-    # 将生成的数据包写入PCAP文件
+    # Write the generated packets into a PCAP file
     wrpcap(file_name, packets)
 
     print(f"Generated PCAP file {file_name} containing simulated SSL stripping traffic.")
 
-# 调用函数生成PCAP文件
+# Invoke the function to generate the PCAP file
 generate_ssl_stripping_pcap()
