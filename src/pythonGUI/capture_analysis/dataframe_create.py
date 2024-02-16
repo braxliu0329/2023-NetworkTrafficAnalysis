@@ -66,15 +66,15 @@ class DataframeCreate:
                 data["TCP_Flags"].append(tcp_layer.flags)
                 data["SourcePort"].append(tcp_layer.sport)
                 data["DestinationPort"].append(tcp_layer.dport)
-
-                if packet.haslayer(Raw):
-                    data["raw"].append(packet[Raw].load)
-                else:
-                    data["raw"].append(None)
             else:
                 data["TCP_Flags"].append(None)
+                data["SourcePort"].append(None) # add None for packets without TCP layer
+                data["DestinationPort"].append(None)
+
+            if packet.haslayer(Raw):
+                data["raw"].append(packet[Raw].load)
+            else:
                 data["raw"].append(None)
-                data["DestPort"].append(None)
 
             if packet.haslayer(ICMP):
                 data["ICMP_Type"].append(packet[ICMP].type)

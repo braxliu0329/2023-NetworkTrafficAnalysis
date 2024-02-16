@@ -512,11 +512,11 @@ class AttackDetection:
         # check for HTTP traffic on port 443, suppose to be HTTPS rather than HTTP
         for index, row in self.dataframe.iterrows():
             if row['Protocol'] == 'TCP' and row['DestinationPort'] == 443:
-                # append tuple of ([SourceIP],[DestinationIP]) in to list
-                self.ssl_stripping_suspicious_source_address.append(row['SourceIP'])
-                self.ssl_stripping_suspicious_destination_address.append(row['DestinationIP'])
 
-        http_packets = self.dataframe[(self.dataframe['Protocol'] == 'TCP') and (self.dataframe['DestinationPort'] == 443)]
+                self.ssl_stripping_suspicious_source_address.append(row['SourceIP'])
+                self.ssl_stripping_suspicious_destination_address.append(row['DestIP'])
+
+        http_packets = self.dataframe[(self.dataframe['Protocol'] == 'TCP') & (self.dataframe['DestinationPort'] == 443)]
         if http_packets.empty:
             return None
 
@@ -533,8 +533,8 @@ class AttackDetection:
 
         # Creates graphs from dataframes
         # For Source IPs
-        source_graph = source_counts.plot(ax=canvas.axes, kind='barh', x='Source IP', y='Counts', legend=False)
-        source_graph.set_title("SSL Stripping Suspicious Source IPs", xlabel="Count number", ylabel="Source IP")
+        # source_graph = source_counts.plot(ax=canvas.axes, kind='barh', x='Source IP', y='Counts', legend=False)
+        # source_graph.set_title("SSL Stripping Suspicious Source IPs", xlabel="Count number", ylabel="Source IP")
 
         return canvas
 
