@@ -25,7 +25,7 @@ class MyTestCase(unittest.TestCase):
         read_packets = self.actions.get_sniffed_packets()
         # define the method to detect attacks using the sniffed packets
         return attack_detection.AttackDetection(read_packets, [])
-
+ 
     def test_ssl_stripping(self):
         attack_false_detect = self.setUpAttackDetection("SYN")
         attack_detect = self.setUpAttackDetection("ssl_stripping")
@@ -55,6 +55,44 @@ class MyTestCase(unittest.TestCase):
                          "The SSL_Stripping Attack Analysis has identified a suspicious address as an attacked address")
         self.assertNotIn(known_destination, suspicious_source_address,
                          "The SSL_Stripping Attack Analysis has identified an attacked address as a suspicious address")
+        
+    def test_udp_flood(self):
+        # set up an attack detection using a pcap file without udp flood attacks
+        attack_false_detect = self.setUpAttackDetection("dns")
+
+        # set up an attack detection using a pcap file with udp flood attacks
+        attack_detect = self.setUpAttackDetection("udp_flood")
+
+        # expected suspicious address
+        known_sus = '123.123.123.123'
+
+        # execute the udp detection on a file that shouldn't flag any suspicion
+        attack_false_detect.udp_flood_detect(100)
+        # obtain the suspicious addresses from the attack and store them in a list
+        false_suspicious_addresses = attack_false_detect.udp_suspicious
+
+        # execute the udp flood detection to test the method work correctly, providing a long enough threshold
+        # detect the suspicious address
+        attack_detect.udp_flood_detect(100)
+        # obtain the suspicious addresses from the attack and store them in a new list
+        suspicious_addresses = attack_detect.udp_suspicious
+
+        # execute the udp flood detection to test the method works correctly, providing a threshold that should be too
+        # high to detect the suspicious address
+        attack_detect.udp_flood_detect(20000)
+        # obtain the suspicious addresses from the attack and store them in a new list
+        suspicious_addresses_wthreshold = attack_detect.udp_suspicious
+
+        # ensure that the method does not incur any false positives for clean packets
+        self.assertFalse(false_suspicious_addresses,
+                         "the udp flood analysis has detected false suspicious addresses")
+        # Tests whether the known suspicious address appeared in the correct lists
+        self.assertIn(known_sus, suspicious_addresses,
+                      "The UDP Flood Analysis does not contain exactly all expected suspicious addresses")
+        # Assert that the new suspicious address list is empty as expected
+        self.assertNotIn(known_sus, suspicious_addresses_wthreshold,
+                         "The UDP Flood Analysis has detected an unexpected suspicious address given a high threshold")
+
     def test_tcp_flood(self):
         # set up an attack detection using a pcap file without tcp flood attacks
         attack_false_detect = self.setUpAttackDetection("dns")
