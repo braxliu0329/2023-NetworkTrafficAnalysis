@@ -107,11 +107,11 @@ func TestARPPoison(t *testing.T) {
 // test the ICMP Flood detection for the CLI tool is working as expected
 func TestIcmpFlood(t *testing.T) {
 	// detect an attack using a pcap file without icmp flood attacks
-	attackFalseDetect := icmpFloodDetect("dns", 100)
+	attackFalseDetect := icmpFloodDetect("test_pcaps/dns", 100)
 	// detect an attack using a high threshold
-	attackDetectThreshold := icmpFloodDetect("icmp-ping", 10000)
+	attackDetectThreshold := icmpFloodDetect("test_pcaps/icmp-ping", 10000)
 	// detect an attack using a pcap file with an icmp flood attack
-	attackDetect := icmpFloodDetect("icmp-ping", 100)
+	attackDetect := icmpFloodDetect("test_pcaps/icmp-ping", 100)
 
 	// expected suspicious address
 	knownSuspicious := []string{"10.0.0.2"}

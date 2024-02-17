@@ -5,6 +5,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
+	"math"
 	"net"
 	"sort"
 	"time"
@@ -37,6 +38,12 @@ type TCPPacketAddress struct {
 type MACAddress struct {
 	MAC net.HardwareAddr
 	IP  net.IP
+}
+
+// SourceTime struct to store a source IP with the packet's timestamp
+type SourceTime struct {
+	Source    net.IP
+	TimeStamp time.Time
 }
 
 func main() {
@@ -84,8 +91,8 @@ func getTCP(packets []gopacket.Packet) []TCPPacketAddress {
 	return tcpPackets
 }
 
-// getETH extracts all Ethernet packet layers from a slice of packets
-func getETH(packets []gopacket.Packet) []MACAddress {
+// getMAC gets a slice of mac addresses and associated IPs from all Ethernet Packets
+func getMAC(packets []gopacket.Packet) []MACAddress {
 	// slice to return tcp packets
 	var ethPackets []MACAddress
 	// *threaded* loop through all packets
@@ -96,24 +103,7 @@ func getETH(packets []gopacket.Packet) []MACAddress {
 			eth, _ := ethLayer.(*layers.Ethernet)
 
 			// struct to store the mac address details
-			mac := MACAddress{eth.SrcMAC, nil}
-
-			// if it has an ipv4 layer, get its ip
-			if ipLayer := packet.Layer(layers.LayerTypeIPv4); ipLayer != nil {
-				// get the ipv4 layer to obtain ip address
-				ip, _ := ipLayer.(*layers.IPv4)
-				// update the running mac details with the IP as an IP and bytes
-				mac.IP = ip.SrcIP
-			} else {
-				// if it doesn't have an ipv4 layer, check for ARP
-				if arpLayer := packet.Layer(layers.LayerTypeARP); arpLayer != nil {
-					// get the arp layer
-					arp, _ := arpLayer.(*layers.ARP)
-					// add the IP only as bytes to the mac details
-					mac.IP = arp.SourceProtAddress
-				}
-			}
-
+			mac := MACAddress{eth.SrcMAC, getIP(packet)}
 			// add the tcp layer and address to the slice
 			ethPackets = append(ethPackets, mac)
 		}
@@ -263,6 +253,27 @@ func contains(strings []string, word string) bool {
 	return false
 }
 
+// get the IP address of a packet
+func getIP(packet gopacket.Packet) net.IP {
+	// if it has an ipv4 layer, get its ip
+	if ipLayer := packet.Layer(layers.LayerTypeIPv4); ipLayer != nil {
+		// get the ipv4 layer to obtain ip address
+		ip, _ := ipLayer.(*layers.IPv4)
+		// update the running mac details with the IP as an IP and bytes
+		return ip.SrcIP
+	} else {
+		// if it doesn't have an ipv4 layer, check for ARP
+		if arpLayer := packet.Layer(layers.LayerTypeARP); arpLayer != nil {
+			// get the arp layer
+			arp, _ := arpLayer.(*layers.ARP)
+			// add the IP only as bytes to the mac details
+			return arp.SourceProtAddress
+		}
+	}
+	// no IP found
+	return nil
+}
+
 // using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
 func tcpConnectScanDetect(file string, threshold int) []string {
 	// constant time interval to determine how long a packet can send less SYN packets than the threshold
@@ -333,7 +344,7 @@ func arpPoisonDetect(file string) []string {
 	// get packets from a pcap file
 	packets := getPackets(file)
 	// get a list of mac addresses and their associated IPs
-	macAddresses := getETH(packets)
+	macAddresses := getMAC(packets)
 
 	// slices to contain suspicious and attacked addresses
 	var suspiciousAddresses []string
@@ -354,16 +365,114 @@ func arpPoisonDetect(file string) []string {
 	return suspiciousAddresses
 }
 
-// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
-func icmpFloodDetect(file string, threshold int) []string {
+// gets all icmp echo packets from a slice of packets
+func getICMP(packets []gopacket.Packet) []SourceTime {
+	// slice to store found icmp echo packets
+	var icmpPackets []SourceTime
+	// loop through all provided packets
+	for _, packet := range packets {
+		// check if it has an icmp echo layer
+		if icmpLayer := packet.Layer(layers.LayerTypeICMPv4); icmpLayer != nil {
+			// add the icmp echo layer to return slice
+			icmpPackets = append(icmpPackets, SourceTime{getIP(packet), packet.Metadata().Timestamp})
+		}
+	}
+	return icmpPackets
+}
+
+// TODO: using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
+func icmpFloodDetect(file string, threshold float64) []string {
+	// get packets from a pcap file
+	packets := getPackets(file)
+	// get all ICMP echo packets
+	icmpPackets := getICMP(packets)
+
 	// slices to contain suspicious and attacked addresses
 	var suspiciousAddresses []string
+
+	// collate addresses and their packets
+	for _, packet := range icmpPackets {
+		// check the address for the packet exists
+		if packet.Source != nil {
+			// IP to search
+			ip := packet.Source.String()
+			// set this packet to seen
+			packet.Source = nil
+
+			// minimum and maximum time, and count to calculate packets per second
+			start := packet.TimeStamp
+			end := packet.TimeStamp
+			var count float64 = 1
+
+			// slice of timestamps with this address
+			var times []time.Time
+			times = append(times, packet.TimeStamp)
+
+			// loop through all other packets
+			for _, icmpPacket := range icmpPackets {
+				// if the address matches, update time and count
+				if icmpPacket.Source.String() == ip {
+					// remove the packet if it is an outlier
+					// update start or end time
+					if icmpPacket.TimeStamp.Before(start) {
+						start = icmpPacket.TimeStamp
+					} else if icmpPacket.TimeStamp.After(end) {
+						end = icmpPacket.TimeStamp
+					}
+					// increment count
+					count++
+					// mark ip as counted
+					icmpPacket.Source = nil
+					// addd this time to times
+					times = append(times, icmpPacket.TimeStamp)
+				}
+			}
+
+			// get the mean
+			var sum float64 = 0
+			for _, t := range times {
+				sum += t.Sub(start).Seconds()
+			}
+			mean := sum / count
+
+			// get the sum of square differences to the mean
+			var squareDifference float64 = 0
+			for _, t := range times {
+				squareDifference += (t.Sub(start).Seconds() - mean) * (t.Sub(start).Seconds() - mean)
+			}
+			std := math.Sqrt(squareDifference / (count - 1))
+
+			var timesNoOutliers []time.Time
+
+			// remove outliers
+			for _, t := range times {
+				if t.Sub(start).Seconds() <= mean+(3*std) {
+					timesNoOutliers = append(timesNoOutliers, t)
+				}
+			}
+
+			// get the difference between the first and last packets in no outliers
+			outCount := len(times)
+			sort.Slice(times, func(i, j int) bool {
+				return times[i].Before(times[j])
+			})
+			difference := times[outCount-1].Sub(times[0]).Seconds()
+
+			// get the pps
+			pps := float64(outCount) / difference
+
+			// if pps is above the threshold, mark the address as suspicious
+			if pps > threshold {
+				suspiciousAddresses = append(suspiciousAddresses, ip)
+			}
+		}
+	}
 
 	// return the suspicious and attacked addresses as a pair
 	return suspiciousAddresses
 }
 
-// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
+// TODO: using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
 func httpFloodDetect(file string, threshold int) []string {
 	// slices to contain suspicious and attacked addresses
 	var suspiciousAddresses []string
@@ -372,7 +481,7 @@ func httpFloodDetect(file string, threshold int) []string {
 	return suspiciousAddresses
 }
 
-// using the name of a pcap file and a given threshold, returns lists containing any suspicious and suspected attacked addresses
+// TODO: using the name of a pcap file and a given threshold, returns lists containing any suspicious and suspected attacked addresses
 func dnsRequestResponse(file string, threshold int) Report {
 	// slices to contain suspicious and attacked addresses
 	var suspiciousAddresses []string
