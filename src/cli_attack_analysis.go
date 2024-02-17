@@ -33,10 +33,10 @@ type TCPPacketAddress struct {
 	Packet      gopacket.Packet
 }
 
-// MACAddress struct to pair mac addresses and ip addresses
+// MACAddress struct to pair mac addresses and ip addresses as an endpoint and bytes
 type MACAddress struct {
-	MAC     net.HardwareAddr
-	Address []byte
+	MAC net.HardwareAddr
+	IP  net.IP
 }
 
 func main() {
@@ -92,18 +92,30 @@ func getETH(packets []gopacket.Packet) []MACAddress {
 	for _, packet := range packets {
 		// assign a variable to the TCP layer if it exists. If it doesn't exist, move on.
 		if ethLayer := packet.Layer(layers.LayerTypeEthernet); ethLayer != nil {
+			// get the actual tcp data from the layer, will not return an error as eth status should have been checked
+			eth, _ := ethLayer.(*layers.Ethernet)
+
+			// struct to store the mac address details
+			mac := MACAddress{eth.SrcMAC, nil}
+
 			// if it has an ipv4 layer, get its ip
 			if ipLayer := packet.Layer(layers.LayerTypeIPv4); ipLayer != nil {
 				// get the ipv4 layer to obtain ip address
 				ip, _ := ipLayer.(*layers.IPv4)
+				// update the running mac details with the IP as an IP and bytes
+				mac.IP = ip.SrcIP
 			} else {
-
+				// if it doesn't have an ipv4 layer, check for ARP
+				if arpLayer := packet.Layer(layers.LayerTypeARP); arpLayer != nil {
+					// get the arp layer
+					arp, _ := arpLayer.(*layers.ARP)
+					// add the IP only as bytes to the mac details
+					mac.IP = arp.SourceProtAddress
+				}
 			}
 
-			// get the actual tcp data from the layer, will not return an error as tcp status should have been checked
-			eth, _ := ethLayer.(*layers.Ethernet)
 			// add the tcp layer and address to the slice
-			ethPackets = append(ethPackets, MACAddress{eth.SrcMAC, ip.SrcIP})
+			ethPackets = append(ethPackets, mac)
 		}
 	}
 	// return found tcp layers
@@ -308,7 +320,7 @@ func containsMac(macAddresses []MACAddress, addr MACAddress) bool {
 	// loop through all structs
 	for _, address := range macAddresses {
 		// mac found
-		if address.MAC.String() == addr.MAC.String() && !bytes.Equal(address.Address, addr.Address) {
+		if address.MAC.String() == addr.MAC.String() && !bytes.Equal(address.IP, addr.IP) {
 			return true
 		}
 	}
@@ -330,7 +342,11 @@ func arpPoisonDetect(file string) []string {
 	for _, address := range macAddresses {
 		// check if the addresses without this address contains this mac address
 		if containsMac(macAddresses, address) {
-			suspiciousAddresses = append(suspiciousAddresses, address.MAC.String())
+			// check the address isn't already marked
+			if !contains(suspiciousAddresses, address.IP.String()) {
+				// mark IP address as suspicious
+				suspiciousAddresses = append(suspiciousAddresses, address.IP.String())
+			}
 		}
 	}
 
