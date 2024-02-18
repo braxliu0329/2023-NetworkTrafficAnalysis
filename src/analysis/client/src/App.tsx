@@ -9,6 +9,7 @@ import FrequencyAn from './pages/FrequencyAn';
 import ProtocolFrequencyAn from './pages/ProtocolFrequencyAn';
 import SourceFrequencyAn from './pages/SourceFrequencyAn';
 import DestFrequencyAn from './pages/DestFrequencyAn';
+import ArpPoision from './pages/ArpPoison';
 
 
 export const ENDPOINT = "http://localhost:4000";
@@ -30,6 +31,7 @@ function App() {
             <Route path="/frequencyanalysis/source" element={<SourceFrequencyAn />} />
             <Route path="/frequencyanalysis/dest" element={<DestFrequencyAn />} />
             <Route path="/attackanalysis" element={<AttackAn />} />
+            <Route path="/attackanalysis/arppoison" element={<ArpPoision />} />
         </Routes>
       </BrowserRouter>
       </div>

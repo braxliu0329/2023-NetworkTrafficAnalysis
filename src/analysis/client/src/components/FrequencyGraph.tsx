@@ -23,11 +23,11 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
         return '#e79a3f'
     }
     let legendOffsetY = -50;
-    if (index === "source" || index === "dest") {
+    if (index === "source" || index === "dest" || index === "mac") {
         legendOffsetY = -300;
     }
     let marginL = 60;
-    if (index === "source" || index === "dest") {
+    if (index === "source" || index === "dest" || index === "mac") {
         marginL = 500
     }
     return (
