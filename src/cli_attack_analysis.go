@@ -11,6 +11,13 @@ import (
 	"time"
 )
 
+// Stage enum to store the status of tcp connections
+const (
+	syn       = iota
+	synack    = iota
+	connected = iota
+)
+
 // Report struct to contain slices of suspicious and attacked addresses
 type Report struct {
 	suspicious []string
@@ -34,6 +41,14 @@ type TCPPacketAddress struct {
 	Packet      gopacket.Packet
 }
 
+// TCPConnection struct to store details and status of the stage of tcp addresses
+type TCPConnection struct {
+	Source      gopacket.Endpoint
+	Destination gopacket.Endpoint
+	TcpPacket   *layers.TCP
+	Stage       int
+}
+
 // MACAddress struct to pair mac addresses and ip addresses as an endpoint and bytes
 type MACAddress struct {
 	MAC net.HardwareAddr
@@ -44,6 +59,15 @@ type MACAddress struct {
 type SourceTime struct {
 	Source    net.IP
 	TimeStamp time.Time
+}
+
+// DNSPacketAddress struct to pair dns packets with their Source and Destination, also stores if it is a response
+type DNSPacketAddress struct {
+	Source      gopacket.Endpoint
+	Destination gopacket.Endpoint
+	DnsPacket   *layers.DNS
+	Packet      gopacket.Packet
+	Response    bool
 }
 
 func main() {
@@ -380,24 +404,19 @@ func getICMP(packets []gopacket.Packet) []SourceTime {
 	return icmpPackets
 }
 
-// TODO: using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
-func icmpFloodDetect(file string, threshold float64) []string {
-	// get packets from a pcap file
-	packets := getPackets(file)
-	// get all ICMP echo packets
-	icmpPackets := getICMP(packets)
-
-	// slices to contain suspicious and attacked addresses
+// return all addresses with pps greater than the given threshold
+func testPPS(packets []SourceTime, threshold float64) []string {
+	// slice to store suspicious addresses
 	var suspiciousAddresses []string
 
 	// collate addresses and their packets
-	for _, packet := range icmpPackets {
+	for i, packet := range packets {
 		// check the address for the packet exists
 		if packet.Source != nil {
 			// IP to search
 			ip := packet.Source.String()
 			// set this packet to seen
-			packet.Source = nil
+			packets[i].Source = nil
 
 			// minimum and maximum time, and count to calculate packets per second
 			start := packet.TimeStamp
@@ -409,7 +428,7 @@ func icmpFloodDetect(file string, threshold float64) []string {
 			times = append(times, packet.TimeStamp)
 
 			// loop through all other packets
-			for _, icmpPacket := range icmpPackets {
+			for j, icmpPacket := range packets {
 				// if the address matches, update time and count
 				if icmpPacket.Source.String() == ip {
 					// remove the packet if it is an outlier
@@ -422,7 +441,7 @@ func icmpFloodDetect(file string, threshold float64) []string {
 					// increment count
 					count++
 					// mark ip as counted
-					icmpPacket.Source = nil
+					packets[j].Source = nil
 					// addd this time to times
 					times = append(times, icmpPacket.TimeStamp)
 				}
@@ -467,26 +486,144 @@ func icmpFloodDetect(file string, threshold float64) []string {
 			}
 		}
 	}
-
-	// return the suspicious and attacked addresses as a pair
 	return suspiciousAddresses
+}
+
+// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
+func icmpFloodDetect(file string, threshold float64) []string {
+	// get packets from a pcap file
+	packets := getPackets(file)
+	// get all ICMP echo packets
+	icmpPackets := getICMP(packets)
+
+	// return the suspicious addresses as a pair
+	return testPPS(icmpPackets, threshold)
+}
+
+// getTCPConnected uses a slice of TCPPacketAddress and returns all addresses with an established tcp connection
+func getTCPConnected(packets []TCPPacketAddress) []TCPPacketAddress {
+	// connected addresses
+	var connectedPackets []TCPPacketAddress
+	// slice to contain syn addresses
+	var synPackets []TCPConnection
+
+	// loop through addresses
+	for _, packet := range packets {
+		// adds packets to synPackets
+		if packet.TcpPacket.SYN && !packet.TcpPacket.ACK {
+			synPackets = append(synPackets, TCPConnection{packet.Source, packet.Destination, packet.TcpPacket, syn})
+			// if syn-ack is found, check if the packet addresses link up
+		} else if packet.TcpPacket.SYN && packet.TcpPacket.ACK {
+			// loop through found syn packets
+			for i, synPacket := range synPackets {
+				// if they match up, progress the stage of the connection
+				if synPacket.Source.String() == packet.Destination.String() && synPacket.Destination.String() == packet.Source.String() {
+					synPackets[i].Stage = synack
+				}
+			}
+			// if ack is found, check if the syn-ack was previously found
+		} else if packet.TcpPacket.ACK {
+			// loop through found syn packets
+			for i, synPacket := range synPackets {
+				// if the ack is found and the addresses match up, progress to connected
+				if synPacket.Source.String() == packet.Destination.String() && synPacket.Destination.String() == packet.Source.String() && synPacket.Stage == synack {
+					synPackets[i].Stage = connected
+					// add the packet to connected packets
+					connectedPackets = append(connectedPackets, packet)
+				}
+			}
+		}
+	}
+
+	return connectedPackets
 }
 
 // TODO: using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
-func httpFloodDetect(file string, threshold int) []string {
-	// slices to contain suspicious and attacked addresses
-	var suspiciousAddresses []string
+func httpFloodDetect(file string, threshold float64) []string {
+	// get packets from a pcap file
+	packets := getPackets(file)
+	// extract all TCP layers
+	tcpPackets := getTCP(packets)
+	// return nil if no packets found
+	if tcpPackets == nil {
+		return nil
+	}
+
+	// get all tcp connected packets
+	connectedPackets := getTCPConnected(tcpPackets)
+	// if no connections found, return nil
+	if connectedPackets == nil {
+		return nil
+	}
+
+	// check if connected packets are GET or POST requests
+	//var requestPackets []TCPPacketAddress
+	// loop through connected packets
+
+	// convert between packet address and time source
+	var packetTimes []SourceTime
+	for _, packet := range connectedPackets {
+		packetTimes = append(packetTimes, SourceTime{getIP(packet.Packet), packet.Packet.Metadata().Timestamp})
+	}
+	// get the pps
+	suspiciousAddresses := testPPS(packetTimes, threshold)
 
 	// return the suspicious and attacked addresses as a pair
 	return suspiciousAddresses
 }
 
+// getDNS extracts all DNS packet layers from a slice of packets
+func getDNS(packets []gopacket.Packet) []DNSPacketAddress {
+	// slice to return tcp packets
+	var dnsPackets []DNSPacketAddress
+	// *threaded* loop through all packets
+	for _, packet := range packets {
+		// assign a variable to the TCP layer if it exists. If it doesn't exist, move on.
+		if dnsLayer := packet.Layer(layers.LayerTypeDNS); dnsLayer != nil {
+			// get the actual tcp data from the layer, will not return an error as tcp status should have been checked
+			dns, _ := dnsLayer.(*layers.DNS)
+			// get the source and destination of the packet
+			source := packet.NetworkLayer().NetworkFlow().Src()
+			dest := packet.NetworkLayer().NetworkFlow().Dst()
+			// add the tcp layer and address to the slice
+			dnsPackets = append(dnsPackets, DNSPacketAddress{source, dest, dns, packet, dns.QR})
+		}
+	}
+
+	// return found tcp layers
+	return dnsPackets
+}
+
 // TODO: using the name of a pcap file and a given threshold, returns lists containing any suspicious and suspected attacked addresses
-func dnsRequestResponse(file string, threshold int) Report {
-	// slices to contain suspicious and attacked addresses
-	var suspiciousAddresses []string
-	var attackedAddresses []string
+func dnsRequestResponse(file string, threshold float64) Report {
+	// get packets from a pcap file
+	packets := getPackets(file)
+	// extract all TCP layers
+	dnsPackets := getDNS(packets)
+	// return nil if no packets found
+	if dnsPackets == nil {
+		return Report{nil, nil}
+	}
+
+	// slices to contain request and response times
+	var requestTimes []SourceTime
+	var responseTimes []SourceTime
+
+	// populate request and response times
+	for _, packet := range dnsPackets {
+		// if the packet is a response, add it to the response slice
+		if packet.Response {
+			responseTimes = append(responseTimes, SourceTime{getIP(packet.Packet), packet.Packet.Metadata().Timestamp})
+			// the packet is a request
+		} else {
+			requestTimes = append(requestTimes, SourceTime{getIP(packet.Packet), packet.Packet.Metadata().Timestamp})
+		}
+	}
+
+	// get all suspicious request and response addresses using testPPS
+	requestAddresses := testPPS(requestTimes, threshold)
+	responseAddresses := testPPS(responseTimes, threshold)
 
 	// return the suspicious and attacked addresses as a pair
-	return Report{suspicious: suspiciousAddresses, attacked: attackedAddresses}
+	return Report{suspicious: requestAddresses, attacked: responseAddresses}
 }

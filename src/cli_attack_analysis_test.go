@@ -134,14 +134,14 @@ func TestIcmpFlood(t *testing.T) {
 // test the HTTP Flood detection for the CLI tool is working as expected
 func TestHttpFlood(t *testing.T) {
 	// detect an attack using a pcap file without http flood attacks
-	attackFalseDetect := httpFloodDetect("dns", 5)
+	attackFalseDetect := httpFloodDetect("test_pcaps/dns", 5)
 	// detect an attack using a high threshold
-	attackDetectThreshold := httpFloodDetect("http-flood", 500)
+	attackDetectThreshold := httpFloodDetect("test_pcaps/http-flood", 500)
 	// detect an attack using a pcap file with an icmp flood attack
-	attackDetect := httpFloodDetect("http-flood", 5)
+	attackDetect := httpFloodDetect("test_pcaps/http-flood", 5)
 
 	// expected suspicious address
-	knownSuspicious := []string{"10.0.0.2"}
+	knownSuspicious := []string{"10.128.0.2"}
 
 	// ensure that the method does not incur any false positives
 	if len(attackFalseDetect) > 0 {
