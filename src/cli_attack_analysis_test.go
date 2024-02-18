@@ -161,11 +161,11 @@ func TestHttpFlood(t *testing.T) {
 // test the DNS Request Response detection for the CLI tool is working as expected
 func TestDns(t *testing.T) {
 	// detect an attack using a pcap file without http flood attacks
-	attackFalseDetect := dnsRequestResponse("http-flood", 20)
+	attackFalseDetect := dnsRequestResponse("test_pcaps/http-flood", 20)
 	// detect an attack using a high threshold
-	attackDetectThreshold := dnsRequestResponse("dns", 500)
+	attackDetectThreshold := dnsRequestResponse("test_pcaps/dns", 500)
 	// detect an attack using a pcap file with an icmp flood attack
-	attackDetect := dnsRequestResponse("dns", 20)
+	attackDetect := dnsRequestResponse("test_pcaps/dns", 20)
 
 	// expected suspicious addresses
 	knownRequestSuspicious := []string{"207.86.6.174"}
@@ -181,7 +181,7 @@ func TestDns(t *testing.T) {
 	}
 
 	// tests whether the known suspicious addresses appeared in the correct list
-	if !(sliceEqual(attackDetect.attacked, knownResponseSuspicious) && sliceEqual(attackDetect.suspicious, knownResponseSuspicious)) {
+	if !(sliceEqual(attackDetect.attacked, knownResponseSuspicious) && sliceEqual(attackDetect.suspicious, knownRequestSuspicious)) {
 		t.Fatalf("Expected suspicious addresses %v, got %v instead", Report{knownRequestSuspicious, knownResponseSuspicious}, attackDetect)
 	}
 }
