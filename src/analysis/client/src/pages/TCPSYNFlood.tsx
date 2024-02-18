@@ -1,12 +1,12 @@
-import FrequencyGraph from "../components/FrequencyGraph";
-import data from "../../../../pythonGUI/plotData/arp.json";
+import TCPFrequencyGraph from "../components/TCPFrequencyGraph";
+import data from "../../../../pythonGUI/plotData/tcpsyn.json";
 
-function ArpPoision() {
+function TCPSYNFlood() {
     return (
         <div className="analysis">
-            <h1 className="title">Arp Poisoning</h1>
+            <h1 className="title">TCP SYN Flooding</h1>
             <div style={{ height: 400, width:1000, margin: "auto" }}>
-                <FrequencyGraph data={data.data} index="mac"/>
+                <TCPFrequencyGraph data={data.data}/>
             </div>
             <div style={{ textAlign: "center", maxWidth: 600, margin: "auto" }}>
                 <p>{data.suspicious}</p>
@@ -16,4 +16,4 @@ function ArpPoision() {
     );
 }
 
-export default ArpPoision;
+export default TCPSYNFlood;

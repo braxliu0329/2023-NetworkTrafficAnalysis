@@ -24,11 +24,11 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
     }
     let legendOffsetY = -50;
     if (index === "source" || index === "dest" || index === "mac") {
-        legendOffsetY = -300;
+        legendOffsetY = -200;
     }
     let marginL = 60;
     if (index === "source" || index === "dest" || index === "mac") {
-        marginL = 500
+        marginL = 300
     }
     return (
         <ResponsiveBar

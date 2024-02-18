@@ -10,6 +10,7 @@ import ProtocolFrequencyAn from './pages/ProtocolFrequencyAn';
 import SourceFrequencyAn from './pages/SourceFrequencyAn';
 import DestFrequencyAn from './pages/DestFrequencyAn';
 import ArpPoision from './pages/ArpPoison';
+import TCPSYNFlood from './pages/TCPSYNFlood';
 
 
 export const ENDPOINT = "http://localhost:4000";
@@ -32,6 +33,7 @@ function App() {
             <Route path="/frequencyanalysis/dest" element={<DestFrequencyAn />} />
             <Route path="/attackanalysis" element={<AttackAn />} />
             <Route path="/attackanalysis/arppoison" element={<ArpPoision />} />
+            <Route path="/attackanalysis/tcpsynflood" element={<TCPSYNFlood /> } />
         </Routes>
       </BrowserRouter>
       </div>
