@@ -1,14 +1,6 @@
 [
     {
-        "protocol": "UDP",
-        "frequency": 14
-    },
-    {
-        "protocol": "0",
+        "protocol": "ARP",
         "frequency": 8
-    },
-    {
-        "protocol": "ICMPv6",
-        "frequency": 6
     }
 ]

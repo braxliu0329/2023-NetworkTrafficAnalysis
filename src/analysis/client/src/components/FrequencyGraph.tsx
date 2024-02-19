@@ -23,18 +23,26 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
         return '#e79a3f'
     }
     let legendOffsetY = -50;
-    if (index === "source" || index === "dest" || index === "mac") {
-        legendOffsetY = -200;
-    }
     let marginL = 60;
-    if (index === "source" || index === "dest" || index === "mac") {
+    if (index === "source" || index === "dest" || index === "address") {
+        legendOffsetY = -250;
         marginL = 300
+    }
+    if (index === "mac") {
+        legendOffsetY = -150
+        marginL = 155
+    }
+    let key = "frequency"
+    let legend = "Frequency"
+    if (index === "address") {
+        key = "rate"
+        legend = "SYN sending rate (packets/sec)"
     }
     return (
         <ResponsiveBar
             data={data}
             isInteractive={false}
-            keys={['frequency']}
+            keys={[key]}
             indexBy={index}
             layout="horizontal"
             margin={{ top: 50, right: 130, bottom: 50, left: marginL }}
@@ -44,7 +52,7 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
             axisTop={null}
             axisRight={null}
             axisBottom={{
-                legend: "Frequency",
+                legend: key,
                 legendPosition: "middle",
                 legendOffset: 36,
                 tickSize: 5,

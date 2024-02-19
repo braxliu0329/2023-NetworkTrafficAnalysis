@@ -1,3 +1,4 @@
+import json
 from PyQt5.QtGui import QFont
 
 from PyQt5.QtWidgets import *
@@ -41,10 +42,9 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
     def tcp_syn_flood_detect(self):
         # gets graph canvas from calling attack detection method
-        canvas = self.attack_detect.tcp_syn_flood_detect()
+        canvas, syn_addresses = self.attack_detect.tcp_syn_flood_detect()
         suspicious = self.attack_detect.tcp_suspicious_addresses
         attacked = self.attack_detect.attacked_addresses
-
         # creates main widget and layout
         central = QWidget()
         layout = QVBoxLayout()
@@ -97,6 +97,22 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         self.setCentralWidget(central)
         central.setLayout(layout)
+        data = {
+            "suspicious": suspicious_text,
+            "attacked": attacked_text,
+            "explanation": explanation_text,
+            "data": []
+        }
+        for i in range(syn_addresses.shape[0]):
+            data["data"].append({
+                "address": syn_addresses.loc[i, "Address"],
+                "sendsSYN": int(syn_addresses.loc[i, "SendsSYN"]),
+                "receivesSYN": int(syn_addresses.loc[i, "ReceivesSYN"]),
+                "sendSYNACK" : int(syn_addresses.loc[i, "SendsSYN-ACK"]),
+                "receivesSYNACK": int(syn_addresses.loc[i, "ReceivesSYN-ACK"])
+            })
+        with open("src/pythonGUI/plotData/tcpsyn.json", "w+") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
 
 
     def tcp_scanning_detect(self):
@@ -106,7 +122,7 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         else:
             threshold = int(threshold)
 
-        canvas = self.attack_detect.tcp_connect_scanning_detect(threshold)
+        canvas, syn_rate = self.attack_detect.tcp_connect_scanning_detect(threshold)
         suspicious = self.attack_detect.tcp_scanning_suspicious
 
         central = QWidget()
@@ -150,6 +166,21 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         self.setCentralWidget(central)
         central.setLayout(layout)
+        data = {
+            "suspicious": suspicious_text,
+            "explanation": explanation_text,
+            "data": []
+        }
+        addresses = syn_rate["Address"]
+        rates = syn_rate["SYN_rate"]
+        for i in range(len(addresses)):
+            data["data"].append({
+                "address": addresses[i],
+                "rate": rates[i]
+            })
+        with open("src/pythonGUI/plotData/tcpscan.json", "w+") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
 
     def dos_detect(self):
         threshold = self.threshold_input.text()
@@ -195,12 +226,13 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         central.setLayout(layout)
 
     def arp_poison_detect(self):
-        canvas = self.attack_detect.arp_poison_detect()
+        canvas, mac_addr_fre = self.attack_detect.arp_poison_detect()
         suspicious = self.attack_detect.arp_suspicious_addresses
-
         central = QWidget()
         layout = QVBoxLayout()
-
+        
+        mac_addr = mac_addr_fre['MAC_addresses']
+        frequency = mac_addr_fre['Frequency']
         suspicious_text = ""
         if canvas is None:
             suspicious_text = "No ARP packets present, no suspicious addresses detected"
@@ -219,10 +251,20 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         explain_label = QLabel("\nExplanation:")
         explain_label.setFont(QFont('Arial', 12))
-
         explanation_text = "These addresses were marked because the MAC addresses they originated from are associated " \
                            "with more than one IP address, which is erroneous and indicative of ARP Poisoning."
-
+        data = {
+            "data": [],
+            "suspicious": suspicious_text,
+            "explanation": explanation_text
+        }
+        for i in range(len(mac_addr)):
+            data["data"].append({
+                "mac": mac_addr[i],
+                "frequency": frequency[i]
+            })
+        with open ("src/pythonGUI/plotData/arp.json", "w+") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
         explanation_label = QLabel(explanation_text)
         explanation_label.setFont(QFont('Arial', 10))
         explanation_label.setWordWrap(True)

@@ -1,12 +1,12 @@
-import TCPFrequencyGraph from "../components/TCPFrequencyGraph";
-import data from "../../../../pythonGUI/plotData/tcpsyn.json";
+import data from "../../../../pythonGUI/plotData/tcpscan.json";
+import FrequencyGraph from "../components/FrequencyGraph";
 
-function TCPSYNFlood() {
+function TCPScan() {
     return (
         <div className="analysis">
-            <h1 className="title">TCP SYN Flooding</h1>
+            <h1 className="title">TCP Connect Scanning</h1>
             <div style={{ height: 400, width:1000, margin: "auto" }}>
-                <TCPFrequencyGraph data={data.data}/>
+                <FrequencyGraph data={data.data} index={"address"}/>
             </div>
             <div style={{ textAlign: "center", maxWidth: 600, margin: "auto" }}>
                 <p><b>{data.suspicious}</b></p>
@@ -16,4 +16,4 @@ function TCPSYNFlood() {
     );
 }
 
-export default TCPSYNFlood;
+export default TCPScan;

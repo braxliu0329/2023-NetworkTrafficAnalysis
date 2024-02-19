@@ -109,7 +109,7 @@ class AttackDetection:
                 if address not in self.tcp_suspicious_addresses:
                     self.tcp_suspicious_addresses.append(address)
         # return the plotted graph
-        return canvas
+        return canvas, syn_addresses
 
     def tcp_connect_scanning_detect(self, threshold):
         # create an empty canvas to store data points
@@ -217,9 +217,8 @@ class AttackDetection:
                             tcp_connection_count[src_ip] = 0
                             tcp_connection_time[src_ip] = r['Time']
                     tcp_connection_count[src_ip] += 1
-
         # return the dataframe to be displayed
-        return canvas
+        return canvas, syn_rate
 
     def arp_poison_detect(self):
         # initialise arp suspicious addresses
@@ -291,7 +290,7 @@ class AttackDetection:
                 self.suspicious_addresses.append(address)
 
         # return the canvas to graphically display the suspicious addresses
-        return canvas
+        return canvas, mac_freq_table
 
     # Simple detection to see if pps are above a threshold
     def threshold_dos_detect(self, threshold):

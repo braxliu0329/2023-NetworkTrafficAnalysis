@@ -9,6 +9,7 @@ function AttackAn() {
                 <ul className="options-list">
                     <li><Link to="/attackanalysis/arppoison">Arp Poisoning</Link></li>
                     <li><Link to="/attackanalysis/tcpsynflood">TCP SYN Flooding</Link></li>
+                    <li><Link to="/attackanalysis/tcpconnscan">TCP Connect Scanning</Link></li>
                 </ul>
             </div>
             </div>

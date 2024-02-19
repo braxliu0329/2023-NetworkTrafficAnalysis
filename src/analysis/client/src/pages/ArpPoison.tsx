@@ -9,7 +9,7 @@ function ArpPoision() {
                 <FrequencyGraph data={data.data} index="mac"/>
             </div>
             <div style={{ textAlign: "center", maxWidth: 600, margin: "auto" }}>
-                <p>{data.suspicious}</p>
+                <p><b>{data.suspicious}</b></p>
                 <p>{data.explanation}</p>
             </div>
         </div>

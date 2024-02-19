@@ -17,15 +17,15 @@ const TCPFrequencyGraph: React.FC<BarGraphProps> = ({ data }) => {
         address: item.address,
         'Sends SYN': item.sendsSYN,
         'Receives SYN': item.receivesSYN,
-        'Send SYNACK': item.sendSYNACK,
-        'Receives SYNACK': item.receivesSYNACK,
+        'Send SYN/ACK': item.sendSYNACK,
+        'Receives SYN/ACK': item.receivesSYNACK,
     }));
 
     return (
             <ResponsiveBar
                 data={formattedData}
                 isInteractive={false}
-                keys={['Sends SYN', 'Receives SYN', 'Send SYNACK', 'Receives SYNACK']}
+                keys={['Sends SYN', 'Receives SYN', 'Send SYN/ACK', 'Receives SYN/ACK']}
                 indexBy="address"
                 margin={{ top: 50, right: 160, bottom: 50, left: 150 }}
                 padding={0.3}
