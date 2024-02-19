@@ -36,7 +36,7 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
     let legend = "Frequency"
     if (index === "address") {
         key = "rate"
-        legend = "SYN sending rate (packets/sec)"
+        legend = "Rate (packets/sec)"
     }
     return (
         <ResponsiveBar
