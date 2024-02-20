@@ -189,7 +189,7 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         else:
             threshold = int(threshold)
 
-        canvas = self.attack_detect.threshold_dos_detect(threshold)
+        canvas, pps_table = self.attack_detect.threshold_dos_detect(threshold)
         suspicious = self.attack_detect.dos_suspicious_addresses
 
         central = QWidget()
@@ -224,6 +224,20 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         self.setCentralWidget(central)
         central.setLayout(layout)
+        data = {
+            "suspicious": suspicious_text,
+            "explanation": "These addresses are sending a greater amount of traffic then the threshold and therefore are marked as suspicious.",
+            "data": []
+        }
+        addresses = pps_table["Address"]
+        pps = pps_table["PPS"]
+        for i in range(len(addresses)):
+            data["data"].append({
+                "address": addresses[i],
+                "rate": pps[i]
+            })
+        with open("src/pythonGUI/plotData/dos.json", "w+") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
 
     def arp_poison_detect(self):
         canvas, mac_addr_fre = self.attack_detect.arp_poison_detect()
@@ -335,7 +349,7 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
             threshold = 5
         else:
             threshold = int(threshold)
-        canvas = self.attack_detect.http_attack(threshold)
+        canvas, pps_dataframe = self.attack_detect.http_attack(threshold)
         suspicious = self.attack_detect.http_suspicious
 
         central = QWidget()
@@ -378,7 +392,19 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         self.setCentralWidget(central)
         central.setLayout(layout)
-
+        data = {
+            "suspicious": suspicious_text,
+            "explanation": explanation_text,
+            "data": []
+        }
+        for i in range(pps_dataframe.shape[0]):
+            data["data"].append({
+                "address": pps_dataframe.loc[i, "Address"],
+                "rate": int(pps_dataframe.loc[i, "PPS"]) 
+            })
+        with open("src/pythonGUI/plotData/httpflood.json", "w+") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+        
     def dns_flood_detect(self):
         threshold = self.threshold_input.text()
         if threshold == '':

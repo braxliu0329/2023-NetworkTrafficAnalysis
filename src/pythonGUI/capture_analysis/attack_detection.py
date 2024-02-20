@@ -343,7 +343,7 @@ class AttackDetection:
                     self.suspicious_addresses.append(address["Address"])
 
         # return the dataframe to be graphically represented
-        return canvas
+        return canvas, pps_table
 
     def icmp_flood_detect(self, threshold):
         # initialise icmp suspicious addresses
@@ -448,8 +448,7 @@ class AttackDetection:
         pps_graph.set(title="HTTP Request Flood Detection", xlabel="Packets Per Second")
         pps_graph.locator_params(axis="x", integer=True, tight=True)
         pps_graph.axvline(threshold, color='r', linestyle='--')
-
-        return canvas
+        return canvas, pps_dataframe
 
     def dns_request_response_detect(self, threshold):
         canvas = EmbeddedCanvas()

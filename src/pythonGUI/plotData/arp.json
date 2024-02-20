@@ -1,7 +1,39 @@
 {
     "data": [
         {
-            "mac": "00:1f:f3:3c:e1:13",
+            "mac": "4e:06:37:ec:6d:bb",
+            "frequency": 1
+        },
+        {
+            "mac": "5a:ed:fa:6c:df:f0",
+            "frequency": 1
+        },
+        {
+            "mac": "60:e3:2b:4a:7d:6a",
+            "frequency": 1
+        },
+        {
+            "mac": "ba:e2:fd:df:3b:58",
+            "frequency": 1
+        },
+        {
+            "mac": "6c:7e:67:c2:3d:12",
+            "frequency": 1
+        },
+        {
+            "mac": "fa:77:f6:fb:56:29",
+            "frequency": 1
+        },
+        {
+            "mac": "66:25:a8:60:73:ae",
+            "frequency": 1
+        },
+        {
+            "mac": "5a:cb:b4:8d:75:85",
+            "frequency": 1
+        },
+        {
+            "mac": "b2:1c:54:de:c4:03",
             "frequency": 1
         }
     ],

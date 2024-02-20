@@ -1,0 +1,110 @@
+{
+    "suspicious": "Suspicious addresses: 2a00:1450:4009:823::200e, 2a00:1450:4009:819::2001",
+    "explanation": "These addresses are sending a greater amount of traffic then the threshold and therefore are marked as suspicious.",
+    "data": [
+        {
+            "address": "fe80::6487:4816:d4d1:5a21",
+            "rate": 0
+        },
+        {
+            "address": "fe80::208:e3ff:feff:ffc4",
+            "rate": 0
+        },
+        {
+            "address": "172.23.190.49",
+            "rate": 1
+        },
+        {
+            "address": "2001:630:e4:4220:e574:df18:a3e5:e484",
+            "rate": 0
+        },
+        {
+            "address": "2001:630:e4:4220:bd0e:7450:8e40:b59e",
+            "rate": 0
+        },
+        {
+            "address": "172.21.1.237",
+            "rate": 0
+        },
+        {
+            "address": "137.222.0.36",
+            "rate": 1
+        },
+        {
+            "address": "2001:630:e4:4220:facb:f413:86d9:1e28",
+            "rate": 38
+        },
+        {
+            "address": "34.120.208.123",
+            "rate": 51
+        },
+        {
+            "address": "2a00:1450:4009:80a::200e",
+            "rate": 61
+        },
+        {
+            "address": "2a00:1450:4009:819::2003",
+            "rate": 1
+        },
+        {
+            "address": "2a00:1450:4009:826::200a",
+            "rate": 9
+        },
+        {
+            "address": "2a00:1450:4009:826::2016",
+            "rate": 30
+        },
+        {
+            "address": "2a00:1450:4009:827::2003",
+            "rate": 25
+        },
+        {
+            "address": "2607:f8b0:4020:2::9",
+            "rate": 38
+        },
+        {
+            "address": "2a00:1450:4009:815::200a",
+            "rate": 9
+        },
+        {
+            "address": "2a00:1450:4009:826::2001",
+            "rate": 39
+        },
+        {
+            "address": "2a00:1450:4009:827::200e",
+            "rate": 82
+        },
+        {
+            "address": "2a00:1450:4009:816::200a",
+            "rate": 81
+        },
+        {
+            "address": "2a00:1450:4009:823::200e",
+            "rate": 268
+        },
+        {
+            "address": "2a00:1450:4009:821::200e",
+            "rate": 175
+        },
+        {
+            "address": "2a00:1450:4009:822::2003",
+            "rate": 115
+        },
+        {
+            "address": "2a00:1450:4009:819::2001",
+            "rate": 497
+        },
+        {
+            "address": "2620:11a:a02e::18",
+            "rate": 118
+        },
+        {
+            "address": "2a00:1450:4009:822::2016",
+            "rate": 159
+        },
+        {
+            "address": "52.168.117.171",
+            "rate": 25
+        }
+    ]
+}
