@@ -52,7 +52,7 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
             axisTop={null}
             axisRight={null}
             axisBottom={{
-                legend: key,
+                legend: legend,
                 legendPosition: "middle",
                 legendOffset: 36,
                 tickSize: 5,
@@ -85,7 +85,7 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
                     }
                 }
             }}
-            legends={index !== "source" && index != "dest" ? [
+            legends={index !== "source" && index != "dest" && index !== "address" && index !== "mac" ? [
                 {
                 dataFrom: 'indexes',
                 anchor: 'bottom-right',

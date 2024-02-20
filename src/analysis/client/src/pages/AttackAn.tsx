@@ -11,6 +11,7 @@ function AttackAn() {
                     <li><Link to="/attackanalysis/tcpsynflood">TCP SYN Flooding</Link></li>
                     <li><Link to="/attackanalysis/tcpconnscan">TCP Connect Scanning</Link></li>
                     <li><Link to="/attackanalysis/dosdetect">DoS Detection</Link></li>
+                    <li><Link to="/attackanalysis/httpflood">HTTP Flood Detection</Link></li>
                 </ul>
             </div>
             </div>

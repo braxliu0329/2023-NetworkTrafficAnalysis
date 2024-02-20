@@ -13,6 +13,7 @@ import ArpPoision from './pages/ArpPoison';
 import TCPSYNFlood from './pages/TCPSYNFlood';
 import TCPScan from './pages/TCPScan';
 import DOSDetect from './pages/DOSDetect';
+import HTTPFlood from './pages/HTTPFlood';
 
 
 export const ENDPOINT = "http://localhost:4000";
@@ -38,6 +39,7 @@ function App() {
             <Route path="/attackanalysis/tcpsynflood" element={<TCPSYNFlood /> } />
             <Route path="/attackanalysis/tcpconnscan" element={<TCPScan />}/>
             <Route path="/attackanalysis/dosdetect" element={<DOSDetect />} />
+            <Route path="/attackanalysis/httpflood" element={<HTTPFlood />} />
         </Routes>
       </BrowserRouter>
       </div>

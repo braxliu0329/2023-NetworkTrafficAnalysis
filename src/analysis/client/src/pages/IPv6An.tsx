@@ -5,7 +5,7 @@ function IPv6An() {
     return (
         <div className="Analysis">
             <h1>IPv6 Analysis</h1>
-            <div style={{height:400}}>
+            <div style={{height:500, width:1000}}>
                 <NetworkGraph data={data}/>
             </div>
         </div>
