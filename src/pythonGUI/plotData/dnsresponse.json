@@ -1,0 +1,10 @@
+{
+    "suspicious": "DNS Request suspicious addresses: 207.86.6.174\nDNS Response suspicious addresses: 205.94.14.222",
+    "explanation": "These addresses were marked because the DNS packets sent from these addresses are over too high a frequency. ",
+    "data": [
+        {
+            "address": "205.94.14.222",
+            "rate": 23
+        }
+    ]
+}

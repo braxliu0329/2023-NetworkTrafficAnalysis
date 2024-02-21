@@ -114,7 +114,6 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         with open("src/pythonGUI/plotData/tcpsyn.json", "w+") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
-
     def tcp_scanning_detect(self):
         threshold = self.threshold_input.text()
         if threshold == '':
@@ -180,7 +179,6 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
             })
         with open("src/pythonGUI/plotData/tcpscan.json", "w+") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
-
 
     def dos_detect(self):
         threshold = self.threshold_input.text()
@@ -411,7 +409,7 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
             threshold = 20
         else:
             threshold = int(threshold)
-        canvases = self.attack_detect.dns_request_response_detect(threshold)
+        canvases, pps_res, pps_req = self.attack_detect.dns_request_response_detect(threshold)
 
         central = QWidget()
         layout = QVBoxLayout()
@@ -477,6 +475,32 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         self.setCentralWidget(central)
         central.setLayout(layout)
+        res_data = {
+            "suspicious": suspicious_text,
+            "explanation": explanation_text,
+            "data": []
+        }
+        req_data = {
+            "data": []
+        }
+        res_addr = pps_res["Address"]
+        res_pps = pps_res["PPS"]
+        for i in range(len(res_addr)):
+            res_data["data"].append({
+                "address": res_addr[i],
+                "rate": res_pps[i]
+            })
+        req_addr = pps_req["Address"]
+        req_pps = pps_req["PPS"]
+        for i in range(len(req_addr)):
+            req_data["data"].append({
+                "address": req_addr[i],
+                "rate": req_pps[i]
+            })
+        with open("src/pythonGUI/plotData/dnsresponse.json", "w+") as f:
+            json.dump(res_data, f, ensure_ascii=False, indent=4)
+        with open("src/pythonGUI/plotData/dnsrequest.json", "w+") as f:
+            json.dump(req_data, f, ensure_ascii=False, indent=4)
 
     def run_all_detect(self):
         threshold = self.threshold_input.text()

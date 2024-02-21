@@ -472,10 +472,10 @@ class AttackDetection:
         dns_response_addresses = dns_responses['SourceIP'].unique()
 
         # Calculates packets per second for dns requests
-        pps_table = self.calc_pps(dns_request_addresses, dns_requests, self.dns_request_suspicious, threshold)
+        pps_table_req = self.calc_pps(dns_request_addresses, dns_requests, self.dns_request_suspicious, threshold)
 
         # creates dataframe from dictionary
-        pps_dataframe = pd.DataFrame.from_dict(pps_table)
+        pps_dataframe = pd.DataFrame.from_dict(pps_table_req)
 
         # creates graph from dataframe
         pps_graph = pps_dataframe.plot(ax=canvas.axes, kind='barh', x="Address", legend=False)
@@ -484,10 +484,10 @@ class AttackDetection:
         pps_graph.axvline(threshold, color='r', linestyle='--')
 
         # Calculates packets per second for dns_responses
-        pps_table = self.calc_pps(dns_response_addresses, dns_responses, self.dns_response_suspicious, threshold)
+        pps_table_res = self.calc_pps(dns_response_addresses, dns_responses, self.dns_response_suspicious, threshold)
 
         # creates dataframe from dictionary
-        pps2_dataframe = pd.DataFrame.from_dict(pps_table)
+        pps2_dataframe = pd.DataFrame.from_dict(pps_table_res)
 
         # creates graph from dataframe
         pps2_graph = pps2_dataframe.plot(ax=canvas2.axes, kind='barh', x="Address", legend=False)
@@ -496,7 +496,7 @@ class AttackDetection:
         pps2_graph.axvline(threshold, color='r', linestyle='--')
 
         # Returns both graphs
-        return [canvas, canvas2]
+        return [canvas, canvas2], pps_table_res, pps_table_req
 
     def calc_pps(self, suspicious_addresses, packets, attack_sus_list, threshold):
         # dictionary of the addresses and their packets per second

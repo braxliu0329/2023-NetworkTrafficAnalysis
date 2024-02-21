@@ -19,7 +19,7 @@ interface NetworkGraphsProps {
     };
 };
 
-const NetworkGraph: React.FC<NetworkGraphsProps> = ({data}) => {
+const NetworkGraph: React.FC<NetworkGraphsProps> = ({data}) => { 
     return (
         <ResponsiveNetwork
             data={data}
@@ -42,7 +42,6 @@ const NetworkGraph: React.FC<NetworkGraphsProps> = ({data}) => {
                 ]
             }}
             linkThickness={3}
-            
             nodeTooltip={({ node } :NodeTooltipProps<Nodes>) => <div>{node.id}</div>}
     />
     );
