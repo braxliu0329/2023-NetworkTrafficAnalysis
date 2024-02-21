@@ -51,6 +51,8 @@ class Ui_MainWindow(object):
         self.actionrunAll.setObjectName("actionrunALL")
         self.actionFlagged = QtWidgets.QAction(MainWindow)
         self.actionFlagged.setObjectName("actionFlagged")
+        self.actionUDP_Flood = QtWidgets.QAction(MainWindow)
+        self.actionUDP_Flood.setObjectName("actionUDP_Flood")
         self.toolBar.addAction(self.actionTCPSYN)
         self.toolBar.addAction(self.actionTCPscan)
         self.toolBar.addAction(self.actionDOS)
@@ -60,6 +62,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionDNS)
         self.toolBar.addAction(self.actionrunAll)
         self.toolBar.addAction(self.actionFlagged)
+        self.toolBar.addAction(self.actionUDP_Flood)
 
 
         spacer = QtWidgets.QWidget(MainWindow)
@@ -96,3 +99,4 @@ class Ui_MainWindow(object):
         self.actionDNS.setText(_translate("MainWindow", "DNS Flood"))
         self.actionrunAll.setText(_translate("MainWindow", "Run all tests"))
         self.actionFlagged.setText(_translate("MainWindow", "Flagged Addr"))
+        self.actionUDP_Flood.setText(_translate("MainWindow", "UDP Flood"))

@@ -27,8 +27,6 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         self.actionDNS.triggered.connect(self.dns_flood_detect)
         self.actionrunAll.triggered.connect(self.run_all_detect)
         self.actionFlagged.triggered.connect(self.display_flagged_addr)
-
-
         self.imported_IPs = []
 
     # when subwindow is closed save suspicious addresses to mainwindow and then close
