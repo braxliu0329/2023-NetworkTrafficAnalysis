@@ -12,7 +12,13 @@ function IPv4An() {
     }, [data]);
     return (
         <div className="Analysis">
-            <h1>IPv4 Analysis</h1>
+            <h1 className="title">IPv4 Analysis</h1>
+            <div>
+                <p>
+                    This is a visualisation of different IPv4 nodes. Every node is a different address.
+                    Every edge between a node means that these two addresses have communicated with each other.
+                </p>
+            </div>
             <div style={{height:chartHeight}}>
                 <NetworkGraph data={data}/>
             </div>

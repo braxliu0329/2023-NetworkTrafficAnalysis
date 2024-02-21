@@ -15,6 +15,7 @@ import TCPScan from './pages/TCPScan';
 import DOSDetect from './pages/DOSDetect';
 import HTTPFlood from './pages/HTTPFlood';
 import DNSFlood from './pages/DNSFlood';
+import ICMPFlood from './pages/ICMPFlood';
 
 
 export const ENDPOINT = "http://localhost:4000";
@@ -42,6 +43,7 @@ function App() {
             <Route path="/attackanalysis/dosdetect" element={<DOSDetect />} />
             <Route path="/attackanalysis/httpflood" element={<HTTPFlood />} />
             <Route path="/attackanalysis/dnsflood" element={<DNSFlood />} />
+            <Route path="/attackanalysis/icmpflood" element={<ICMPFlood />} />
         </Routes>
       </BrowserRouter>
       </div>

@@ -373,7 +373,7 @@ class AttackDetection:
         pps_graph.axvline(threshold, color='r', linestyle='--')
 
         # return the created graph to be represented on the GUI
-        return canvas
+        return canvas, pps_dataframe
 
     def http_attack(self, threshold):
         self.http_suspicious = []
