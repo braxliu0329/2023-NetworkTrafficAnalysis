@@ -22,6 +22,7 @@ class AttackDetection:
     # initialise attack detection variables
     def __init__(self, data, flagged_IPs):
         # initialise all flagged ip addresses as empty
+        self.ssl_stripping_suspicious_address = None
         self.udp_suspicious = None
         self.arp_suspicious_addresses = None
         self.icmp_suspicious = None
@@ -501,7 +502,43 @@ class AttackDetection:
         # Returns both graphs
         return [canvas, canvas2]
 
+
         # -------------Below are new attack methods----------------
+    def ssl_stripping(self):
+        # create canvas
+        canvas = EmbeddedCanvas(self)
+
+        # initialises suspicious addresses address lists
+        self.ssl_stripping_suspicious_source_address = []
+        self.ssl_stripping_suspicious_destination_address = []
+
+        # check for HTTP traffic on port 443, suppose to be HTTPS rather than HTTP
+        for index, row in self.dataframe.iterrows():
+            if row['Protocol'] == 'TCP' and row['DestinationPort'] == 443:
+
+                self.ssl_stripping_suspicious_source_address.append(row['SourceIP'])
+                self.ssl_stripping_suspicious_destination_address.append(row['DestIP'])
+
+        http_packets = self.dataframe[(self.dataframe['Protocol'] == 'TCP') & (self.dataframe['DestinationPort'] == 443)]
+        if http_packets.empty:
+            return None
+
+        # Create dataframes from the lists of suspicious addresses
+        source_addresses_df = pd.DataFrame(self.ssl_stripping_suspicious_source_address, columns=["Suspicious Source IPs"])
+        destination_addresses_df = pd.DataFrame(self.ssl_stripping_suspicious_destination_address,
+                                                columns=["Suspicious Destination IPs"])
+
+        # Count the number of occurrences for each IP
+        source_counts = source_addresses_df["Suspicious Source IPs"].value_counts().rename_axis('Source IP').reset_index(
+            name="Counts")
+        destination_counts = destination_addresses_df["Suspicious Destination IPs"].value_counts().rename_axis(
+            'Destination IP').reset_index(name="Counts")
+
+        # Creates graphs from dataframes
+        # For Source IPs
+        # source_graph = source_counts.plot(ax=canvas.axes, kind='barh', x='Source IP', y='Counts', legend=False)
+        # source_graph.set_title("SSL Stripping Suspicious Source IPs", xlabel="Count number", ylabel="Source IP")
+
     def udp_flood_detect(self, threshold):
         # initialise udp suspicious addresses
         self.udp_suspicious = []
