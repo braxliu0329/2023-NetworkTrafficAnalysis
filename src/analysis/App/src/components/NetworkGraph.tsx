@@ -19,6 +19,8 @@ interface NetworkGraphsProps {
     };
 };
 
+// Defines a network chart that is used to visualise nodes and
+// communication between said nodes in a network
 const NetworkGraph: React.FC<NetworkGraphsProps> = ({data}) => { 
     return (
         <ResponsiveNetwork

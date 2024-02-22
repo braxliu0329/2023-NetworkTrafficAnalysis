@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 function MACAn() {
     const [chartHeight, setChartHeight] = useState<number | string>('auto');
-
+    // Sets heights based on number of nodes in network
     useEffect(() => {
         const numNodes = data.nodes.length;
         const calculatedHeight = numNodes * 50; 

@@ -11,6 +11,7 @@ interface SidebarProps {
   pages: Page[];
 }
 
+// Defines an adapted nav that functions as a sidebar
 const Sidebar: React.FC<SidebarProps> = ({ pages }) => {
   return (
     <nav className="sidebar">

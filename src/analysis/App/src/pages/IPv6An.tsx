@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 function IPv6An() {
     const [chartHeight, setChartHeight] = useState<number | string>('auto');
-
+    // Sets heights based on number of nodes in network
     useEffect(() => {
         const numNodes = data.nodes.length;
         let calculatedHeight = 400;

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 
 function DNSFlood() {
     const [chartHeight, setChartHeight] = useState<number | string>('auto');
-
+    // Sets heights based on number of addresses
     useEffect(() => {
         const numEntries = resdata.data.length;
         let calculatedHeight = 400;

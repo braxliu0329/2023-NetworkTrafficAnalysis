@@ -12,7 +12,10 @@ interface BarGraphProps {
     data: BarData[];
 }
 
+// The TCP/SYN attack is visualised using a unique grouped data bar chart,
+// so it's best to have it in a separate component
 const TCPFrequencyGraph: React.FC<BarGraphProps> = ({ data }) => {
+    // Formats the JSON fields to be readable
     const formattedData = data.map(item => ({
         address: item.address,
         'Sends SYN': item.sendsSYN,

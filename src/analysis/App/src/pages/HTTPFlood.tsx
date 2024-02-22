@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 function HTTPFlood() {
     const [chartHeight, setChartHeight] = useState<number | string>('auto');
-
+    // Sets heights based on number of addresses
     useEffect(() => {
         const numEntries = data.data.length;
         let calculatedHeight = 400;

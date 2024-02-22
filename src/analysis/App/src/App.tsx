@@ -19,6 +19,7 @@ import DNSFlood from './pages/DNSFlood';
 import ICMPFlood from './pages/ICMPFlood';
 import { Page } from './components/Sidebar';
 
+// Define paths and titles for use in the sidebar
 const pages: Page[] = [
   { title: 'Home', path: '/home' },
   { title: 'Source / Destination Analysis', path: '/sourcedestanalysis', children: [

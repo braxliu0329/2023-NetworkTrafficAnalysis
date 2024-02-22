@@ -5,7 +5,9 @@ interface FrequencyGraphProps {
     index: string
 };
 
+// Defines a graph that generates a horizontal bar chart for frequencies
 const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
+    // Maps a protocol to a color
     const getColor = (bar: any) => {
         const colorMap: { [key: string]: string} = {
             'TCP': '#003366',
@@ -24,6 +26,7 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
     }
     let legendOffsetY = -80;
     let marginL = 85;
+    // Change margins so that there is no clipping issues 
     if (index === "source" || index === "dest" || index === "address") {
         legendOffsetY = -250;
         marginL = 300
@@ -85,6 +88,7 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
                     }
                 }
             }}
+            // Only use a legend for a protocol frequency analysis
             legends={index !== "source" && index != "dest" && index !== "address" && index !== "mac" ? [
                 {
                 dataFrom: 'indexes',
