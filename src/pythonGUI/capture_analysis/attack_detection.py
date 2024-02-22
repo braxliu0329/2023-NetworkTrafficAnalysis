@@ -53,9 +53,6 @@ class AttackDetection:
                 self.suspicious_addresses.append(ip)
 
     def tcp_syn_flood_detect(self):
-        # creates canvas
-        canvas = EmbeddedCanvas(self)
-
         # initialises suspicious address lists
         self.tcp_suspicious_addresses = []
         self.attacked_addresses = []
@@ -91,12 +88,6 @@ class AttackDetection:
                                   axis=1).reset_index()
         syn_addresses.columns = ['Address', 'SendsSYN', 'ReceivesSYN', 'SendsSYN-ACK', 'ReceivesSYN-ACK']
         syn_addresses = syn_addresses.replace(np.nan, 0)
-
-        # plots graph with these values
-        tcpsyn_graph = syn_addresses.plot(ax=canvas.axes, x="Address",
-                                          y=["SendsSYN", "ReceivesSYN", "SendsSYN-ACK", "ReceivesSYN-ACK"], kind="barh")
-        tcpsyn_graph.set(title="TCP SYN Flood", xlabel="Packets")
-
         for index, row in syn_addresses.iterrows():
             address = row['Address']
             # add to attacked addresses if receives more SYN packets than SYN-ACK packets sent back
@@ -109,11 +100,9 @@ class AttackDetection:
                 if address not in self.tcp_suspicious_addresses:
                     self.tcp_suspicious_addresses.append(address)
         # return the plotted graph
-        return canvas, syn_addresses
+        return syn_addresses
 
     def tcp_connect_scanning_detect(self, threshold):
-        # create an empty canvas to store data points
-        canvas = EmbeddedCanvas()
         # initialise suspicious addresses as an empty list
         self.tcp_scanning_suspicious = []
         # Sets interval time
@@ -177,15 +166,9 @@ class AttackDetection:
         # if this dataframe is empty, return None as a tcp connect attack is unfeasible
         if syn_rate_df.empty:
             return None
-        # create the graph to display the data points
-        tcp_con_graph = syn_rate_df.plot(ax=canvas.axes, x="Address", kind='barh', legend=False)
-        tcp_con_graph.axvline(threshold, color='r', linestyle='--')
-        tcp_con_graph.set(xlabel="SYN sending rate (packets/sec)")
-
         # initialise lists to contain the tcp connection count and time
         tcp_connection_count = {}
         tcp_connection_time = {}
-
         # The detection requires two steps to be suspicious:
         # 1. If the address sends SYN flags without receiving SYN-ACK packets
         # 2. If the same address sends more SYN packets than the threshold within the time interval
@@ -218,7 +201,7 @@ class AttackDetection:
                             tcp_connection_time[src_ip] = r['Time']
                     tcp_connection_count[src_ip] += 1
         # return the dataframe to be displayed
-        return canvas, syn_rate
+        return syn_rate
 
     def arp_poison_detect(self):
         # initialise arp suspicious addresses

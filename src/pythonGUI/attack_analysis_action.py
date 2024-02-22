@@ -42,61 +42,28 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
     def tcp_syn_flood_detect(self):
         # gets graph canvas from calling attack detection method
-        canvas, syn_addresses = self.attack_detect.tcp_syn_flood_detect()
+        syn_addresses = self.attack_detect.tcp_syn_flood_detect()
         suspicious = self.attack_detect.tcp_suspicious_addresses
         attacked = self.attack_detect.attacked_addresses
-        # creates main widget and layout
-        central = QWidget()
-        layout = QVBoxLayout()
+       
+        if not suspicious:
+            suspicious_text = "No suspicious addresses detected"
+        elif suspicious:
+            suspicious_text = "Suspicious addresses: "
+            suspicious_addresses = ', '.join(suspicious)
+            suspicious_text = suspicious_text + suspicious_addresses
 
-        suspicious_text = ""
-        attacked_text = ""
-
-        # if no graph is created then no packets were present
-        if canvas is None:
-            suspicious_text = "No TCP SYN or SYN-ACK packets present, no suspicious addresses detected"
-        else:
-            if not suspicious:
-                suspicious_text = "No suspicious addresses detected"
-            elif suspicious:
-                suspicious_text = "Suspicious addresses: "
-                suspicious_addresses = ', '.join(suspicious)
-                suspicious_text = suspicious_text + suspicious_addresses
-
-            if not attacked:
-                attacked_text = "No attacked addresses detected"
-            elif attacked:
-                attacked_text = "Suspected Attacked addresses: "
-                attacked_addresses = ', '.join(attacked)
-                attacked_text = attacked_text + attacked_addresses
-
-        suspicious_label = QLabel(suspicious_text + "\n" + attacked_text)
-        suspicious_label.setFont(QFont('Arial', 15))
-
+        if not attacked:
+            attacked_text = "No attacked addresses detected"
+        elif attacked:
+            attacked_text = "Suspected Attacked addresses: "
+            attacked_addresses = ', '.join(attacked)
+            attacked_text = attacked_text + attacked_addresses
         explanation_text = "The suspicious addresses were marked because these addresses send a greater amount of " \
                            "SYN requests than it does receive SYN-ACK responses back, suggesting it is overloading a" \
                            "system. \nThe attacked addresses were marked because these addresses receive a greater " \
                            "amount of SYN requests than it sends SYN-ACK responses back, which is indicative that " \
                            "these addresses are being overwhelmed by SYN requests and cant response fast enough. "
-
-        explain_label = QLabel("\nExplanation:")
-        explain_label.setFont(QFont('Arial', 12))
-
-        explanation_label = QLabel(explanation_text)
-        explanation_label.setFont(QFont('Arial', 10))
-        explanation_label.setWordWrap(True)
-
-
-        layout.addWidget(canvas)
-        layout.addWidget(suspicious_label)
-
-        if canvas is not None:
-            layout.addWidget(explain_label)
-            layout.addWidget(explanation_label)
-            layout.addStretch()
-
-        self.setCentralWidget(central)
-        central.setLayout(layout)
         if not syn_addresses.empty:
             data = {
                 "suspicious": suspicious_text,
@@ -122,27 +89,17 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         else:
             threshold = int(threshold)
 
-        canvas, syn_rate = self.attack_detect.tcp_connect_scanning_detect(threshold)
+        syn_rate = self.attack_detect.tcp_connect_scanning_detect(threshold)
         suspicious = self.attack_detect.tcp_scanning_suspicious
 
-        central = QWidget()
-        layout = QVBoxLayout()
-
         suspicious_text = ""
-        if canvas is None:
-            suspicious_text = "No TCP (SYN) packets present, no suspicious addresses detected"
-        else:
-            if not suspicious:
-                suspicious_text = "No suspicious addresses detected"
-            elif suspicious:
-                suspicious_text = "Suspicious addresses: "
-                suspicious_addresses = ', '.join(suspicious)
-                suspicious_text = suspicious_text + suspicious_addresses
+        if not suspicious:
+            suspicious_text = "No suspicious addresses detected"
+        elif suspicious:
+            suspicious_text = "Suspicious addresses: "
+            suspicious_addresses = ', '.join(suspicious)
+            suspicious_text = suspicious_text + suspicious_addresses
 
-
-
-        explain_label = QLabel("\nExplanation:")
-        explain_label.setFont(QFont('Arial', 12))
 
         explanation_text = "Addresses are marked as suspicious if the address sends SYN flags without receiving " \
                            "SYN-ACK packets and if the same address sends more SYN packets than the threshold within " \
@@ -156,16 +113,6 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         suspicious_label.setFont(QFont('Arial', 15))
         suspicious_label.setWordWrap(True)
 
-        layout.addWidget(canvas)
-        layout.addWidget(suspicious_label)
-
-        if canvas is not None:
-            layout.addWidget(explain_label)
-            layout.addWidget(explanation_label)
-            layout.addStretch()
-
-        self.setCentralWidget(central)
-        central.setLayout(layout)
         if syn_rate:
             data = {
                 "suspicious": suspicious_text,

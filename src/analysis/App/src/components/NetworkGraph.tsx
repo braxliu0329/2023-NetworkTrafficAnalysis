@@ -27,7 +27,7 @@ const NetworkGraph: React.FC<NetworkGraphsProps> = ({data}) => {
             linkDistance={(e: any) => e.distance}
             linkColor="#62a0ea"
             centeringStrength={0.3}
-            repulsivity={6}
+            repulsivity={10}
             nodeSize={24}
             activeNodeSize={(n: any)=>1.5*n.size}
             nodeColor="#613583"

@@ -1,26 +1,18 @@
 [
     {
-        "protocol": "UDP",
-        "frequency": 3698
-    },
-    {
         "protocol": "TCP",
-        "frequency": 388
+        "frequency": 2058
     },
     {
         "protocol": "UDP/DNS",
-        "frequency": 77
+        "frequency": 111
     },
     {
-        "protocol": "ICMPv6",
-        "frequency": 73
-    },
-    {
-        "protocol": "0",
-        "frequency": 49
+        "protocol": "UDP",
+        "frequency": 35
     },
     {
         "protocol": "ARP",
-        "frequency": 27
+        "frequency": 13
     }
 ]
