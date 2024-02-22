@@ -397,7 +397,6 @@ class SubWindow(sub.Ui_MainWindow, QMainWindow):
                 root_index_arr.append(i)
             else:
                 root_index_arr.append(' ')
-        print(self.packet.layers())
         self.tree_section = root_amount
         self.add_packet_summary(root_name, root_amount)
         for i in range(root_amount):
@@ -406,7 +405,6 @@ class SubWindow(sub.Ui_MainWindow, QMainWindow):
             self.info.setSelectionMode(QTreeWidget.MultiSelection)
             root_arr.append(self.tree_dict[name])
             root_arr[i].setText(0, root_name[i])
-            # print(name + " : " + str(self.tree_dict[name]))
 
         temp_index = 0
         for i in range(len(detail)):
@@ -450,7 +448,6 @@ class SubWindow(sub.Ui_MainWindow, QMainWindow):
     def display_packet_data(self, packet):
         self.packet = packet
         self.length = len(packet)
-        print(self.length)
         packet_data = bytes(packet)
         hex_data = hex_packet_data(packet_data)
         datas = hex_data.split(' --- ')
@@ -485,12 +482,10 @@ class SubWindow(sub.Ui_MainWindow, QMainWindow):
             self.data.setVerticalHeaderLabels(labels)
             current_row = 0
             while current_row < int(row_number):
-                # print(str(hex_datas[current_row]))
                 hex_data_current = hex_datas[current_row]
                 hex_data_current_split = hex_data_current.split(' ')
                 text_data_current = text_datas[current_row]
                 text_data_current_split = text_data_current.split(' ')
-                # print(hex_data_current_split)
                 hex_data_helper = 0
                 text_data_helper = 0
                 while hex_data_helper < 16:
@@ -501,7 +496,6 @@ class SubWindow(sub.Ui_MainWindow, QMainWindow):
                     hex_data_helper += 1
                     text_data_helper += 1
                 current_row += 1
-                # print(current_row)
         except:
             return
             # return

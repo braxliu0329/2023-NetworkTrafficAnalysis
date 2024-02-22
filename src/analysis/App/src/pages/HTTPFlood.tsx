@@ -8,7 +8,7 @@ function HTTPFlood() {
     useEffect(() => {
         const numEntries = data.data.length;
         let calculatedHeight = 400;
-        if (numEntries > 5) {
+        if (numEntries > 20) {
             calculatedHeight = numEntries * 25;
         }
         setChartHeight(calculatedHeight);

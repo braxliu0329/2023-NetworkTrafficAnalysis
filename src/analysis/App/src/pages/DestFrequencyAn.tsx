@@ -8,8 +8,8 @@ function DestFrequencyAn() {
     useEffect(() => {
         const numEntries = data.length;
         let calculatedHeight = 400;
-        if (numEntries > 5) {
-            calculatedHeight = numEntries * 25;
+        if (numEntries > 20) {
+            calculatedHeight = numEntries * 20;
         }
         setChartHeight(calculatedHeight);
     }, [data]);

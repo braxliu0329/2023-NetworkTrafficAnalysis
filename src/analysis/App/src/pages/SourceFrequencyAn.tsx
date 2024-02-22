@@ -6,8 +6,11 @@ function SourceFrequencyAn() {
     const [chartHeight, setChartHeight] = useState<number | string>('auto');
 
     useEffect(() => {
-        const numNodes = data.length;
-        const calculatedHeight = numNodes * 20; 
+        const numEntries = data.length;
+        let calculatedHeight = 400;
+        if (numEntries > 20) {
+            calculatedHeight = numEntries * 20;
+        }
         setChartHeight(calculatedHeight);
     }, [data]);
     return (

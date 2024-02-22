@@ -7,13 +7,24 @@ function IPv6An() {
 
     useEffect(() => {
         const numNodes = data.nodes.length;
-        const calculatedHeight = numNodes * 20; 
+        let calculatedHeight = 400;
+        if (numNodes > 10) {
+            calculatedHeight = numNodes * 20;
+        }
         setChartHeight(calculatedHeight);
     }, [data]);
     return (
         <div className="Analysis">
             <h1 className='title'>IPv6 Analysis</h1>
-            <div style={{height:chartHeight, width:chartHeight}}>
+            <div className='description'>
+                <p>This is a visualisation of different IPv6 nodes. Every node is a different address.</p>
+                <p>Every edge between a node means that these two addresses have communicated with each other.</p>
+                <p>These graphs are undirected, so it is not indicated whether a node is the receiver, sender, or both.</p>
+                <p>Hovering over a node will display its address. A link is indicative of if a connection between these </p>
+                <p>addresses has been made, not the number of times they have communicated.</p>
+                <p>These graphs can grow quite large, so scrolling may be needed.</p>
+            </div>
+            <div style={{height:chartHeight}}>
                 <NetworkGraph data={data}/>
             </div>
         </div>
