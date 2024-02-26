@@ -60,9 +60,9 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionICMP)
         self.toolBar.addAction(self.actionHTTP_Flood)
         self.toolBar.addAction(self.actionDNS)
+        self.toolBar.addAction(self.actionUDP_Flood)
         self.toolBar.addAction(self.actionrunAll)
         self.toolBar.addAction(self.actionFlagged)
-        self.toolBar.addAction(self.actionUDP_Flood)
 
 
         spacer = QtWidgets.QWidget(MainWindow)
