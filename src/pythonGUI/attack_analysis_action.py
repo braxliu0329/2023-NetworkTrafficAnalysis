@@ -7,6 +7,7 @@ from pythonGUI.capture_analysis import attack_detection as attacking
 from pythonGUI.capture_analysis import plotting
 from pythonGUI import attack_analysis_window
 
+
 class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
     def __init__(self, data, main_window, flagged_IPs):
         super(AttackAnalysisWindow, self).__init__()
@@ -25,6 +26,8 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         self.actionICMP.triggered.connect(self.icmp_flood_detect)
         self.actionHTTP_Flood.triggered.connect(self.http_flood_detect)
         self.actionDNS.triggered.connect(self.dns_flood_detect)
+        self.actionUDP_Flood.triggered.connect(self.udp_flood_detect)
+
         self.actionrunAll.triggered.connect(self.run_all_detect)
         self.actionFlagged.triggered.connect(self.display_flagged_addr)
         self.imported_IPs = []
@@ -35,7 +38,6 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
             if address not in self.parent.flaggedIPs:
                 self.parent.flaggedIPs.append(address)
         event.accept()
-
 
     def tcp_syn_flood_detect(self):
         # gets graph canvas from calling attack detection method
@@ -84,7 +86,6 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         explanation_label.setFont(QFont('Arial', 10))
         explanation_label.setWordWrap(True)
 
-
         layout.addWidget(canvas)
         layout.addWidget(suspicious_label)
 
@@ -95,7 +96,6 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         self.setCentralWidget(central)
         central.setLayout(layout)
-
 
     def tcp_scanning_detect(self):
         threshold = self.threshold_input.text()
@@ -120,8 +120,6 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
                 suspicious_text = "Suspicious addresses: "
                 suspicious_addresses = ', '.join(suspicious)
                 suspicious_text = suspicious_text + suspicious_addresses
-
-
 
         explain_label = QLabel("\nExplanation:")
         explain_label.setFont(QFont('Arial', 12))
@@ -408,6 +406,64 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         self.setCentralWidget(central)
         central.setLayout(layout)
 
+    def udp_flood_detect(self):
+        # Retrieve the threshold value from the input field. If it's empty, use a default value of 100.
+        threshold = self.threshold_input.text()
+        if threshold == '':
+            threshold = 100
+        else:
+            threshold = int(threshold)
+
+        canvas = self.attack_detect.udp_flood_detect(threshold)
+        suspicious = self.attack_detect.udp_suspicious
+
+        # Initialize the central widget and layout for displaying the results.
+        central = QWidget()
+        layout = QVBoxLayout()
+
+        suspicious_text = ""
+
+        # If no canvas is returned, it implies no UDP packets were detected.
+        if canvas is None:
+            suspicious_text = "No UDP packets present, no suspicious addresses detected"
+        else:
+            # If there are no suspicious addresses, update the text accordingly.
+            if not suspicious:
+                suspicious_text = "No suspicious addresses detected"
+            else:
+                # If there are suspicious addresses, compile them into a string for display.
+                suspicious_text = "Suspicious addresses: " + ', '.join(suspicious)
+
+        # Create a label to display the suspicious addresses or the status message.
+        suspicious_label = QLabel(suspicious_text)
+        suspicious_label.setFont(QFont('Arial',15))
+        suspicious_label.setWordWrap(True)
+
+        explain_label = QLabel("\nExplanation:")
+        explain_label.setFont(QFont('Arial', 12))
+
+        # Set the explanatory text describing why addresses were marked suspicious.
+        explanation_text = "These addresses were marked because the UDP packets sent from these addresses are" \
+                           "\nover a too high frequency"
+
+        # Create a label for the explanatory text.
+        explanation_label = QLabel(explanation_text)
+        explanation_label.setFont(QFont('Arial', 12))
+        explanation_label.setWordWrap(True)
+
+        # Add the labels to the layout. If a canvas is present, it should also be added to the layout.
+        layout.addWidget(canvas)
+        layout.addWidget(suspicious_label)
+        layout.addStretch()
+
+        if canvas is not None:
+            layout.addWidget(explanation_label)
+            layout.addWidget(explanation_label)
+            layout.addStretch()
+
+        self.setCentralWidget(central)
+        central.setLayout(layout)
+
     def run_all_detect(self):
         threshold = self.threshold_input.text()
         if threshold == '':
@@ -419,7 +475,6 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         central = QWidget()
         layout = QVBoxLayout()
-
 
         dns_suspicious = self.attack_detect.dns_request_suspicious + self.attack_detect.dns_response_suspicious
 
@@ -501,7 +556,6 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         file = open(file_name[0], 'r')
 
         lines = file.read().splitlines()
-
 
         for line in lines:
             imported_ips.append(str(line))
