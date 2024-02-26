@@ -1,0 +1,24 @@
+import { Link } from "react-router-dom";
+
+function AttackAn() {
+    return (
+        <div className="container">
+            <div className="options">
+            <div className="options-column">
+                <h1>Attack Analysis</h1>
+                <ul className="options-list">
+                    <li><Link to="/attackanalysis/arppoison">Arp Poisoning</Link></li>
+                    <li><Link to="/attackanalysis/tcpsynflood">TCP SYN Flooding</Link></li>
+                    <li><Link to="/attackanalysis/tcpconnscan">TCP Connect Scanning</Link></li>
+                    <li><Link to="/attackanalysis/dosdetect">DoS Detection</Link></li>
+                    <li><Link to="/attackanalysis/httpflood">HTTP Flood Detection</Link></li>
+                    <li><Link to="/attackanalysis/dnsflood">DNS Flood Detection</Link></li>
+                    <li><Link to="/attackanalysis/icmpflood">ICMP Flood Detection</Link></li>
+                </ul>
+            </div>
+            </div>
+        </div>
+    );
+}
+
+export default AttackAn;

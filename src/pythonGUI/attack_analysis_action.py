@@ -1,3 +1,4 @@
+import json
 from PyQt5.QtGui import QFont
 
 from PyQt5.QtWidgets import *
@@ -41,63 +42,45 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
     def tcp_syn_flood_detect(self):
         # gets graph canvas from calling attack detection method
-        canvas = self.attack_detect.tcp_syn_flood_detect()
+        syn_addresses = self.attack_detect.tcp_syn_flood_detect()
         suspicious = self.attack_detect.tcp_suspicious_addresses
         attacked = self.attack_detect.attacked_addresses
+       
+        if not suspicious:
+            suspicious_text = "No suspicious addresses detected"
+        elif suspicious:
+            suspicious_text = "Suspicious addresses: "
+            suspicious_addresses = ', '.join(suspicious)
+            suspicious_text = suspicious_text + suspicious_addresses
 
-        # creates main widget and layout
-        central = QWidget()
-        layout = QVBoxLayout()
-
-        suspicious_text = ""
-        attacked_text = ""
-
-        # if no graph is created then no packets were present
-        if canvas is None:
-            suspicious_text = "No TCP SYN or SYN-ACK packets present, no suspicious addresses detected"
-        else:
-            if not suspicious:
-                suspicious_text = "No suspicious addresses detected"
-            elif suspicious:
-                suspicious_text = "Suspicious addresses: "
-                suspicious_addresses = ', '.join(suspicious)
-                suspicious_text = suspicious_text + suspicious_addresses
-
-            if not attacked:
-                attacked_text = "No attacked addresses detected"
-            elif attacked:
-                attacked_text = "Suspected Attacked addresses: "
-                attacked_addresses = ', '.join(attacked)
-                attacked_text = attacked_text + attacked_addresses
-
-        suspicious_label = QLabel(suspicious_text + "\n" + attacked_text)
-        suspicious_label.setFont(QFont('Arial', 15))
-
+        if not attacked:
+            attacked_text = "No attacked addresses detected"
+        elif attacked:
+            attacked_text = "Suspected Attacked addresses: "
+            attacked_addresses = ', '.join(attacked)
+            attacked_text = attacked_text + attacked_addresses
         explanation_text = "The suspicious addresses were marked because these addresses send a greater amount of " \
                            "SYN requests than it does receive SYN-ACK responses back, suggesting it is overloading a" \
                            "system. \nThe attacked addresses were marked because these addresses receive a greater " \
                            "amount of SYN requests than it sends SYN-ACK responses back, which is indicative that " \
                            "these addresses are being overwhelmed by SYN requests and cant response fast enough. "
-
-        explain_label = QLabel("\nExplanation:")
-        explain_label.setFont(QFont('Arial', 12))
-
-        explanation_label = QLabel(explanation_text)
-        explanation_label.setFont(QFont('Arial', 10))
-        explanation_label.setWordWrap(True)
-
-
-        layout.addWidget(canvas)
-        layout.addWidget(suspicious_label)
-
-        if canvas is not None:
-            layout.addWidget(explain_label)
-            layout.addWidget(explanation_label)
-            layout.addStretch()
-
-        self.setCentralWidget(central)
-        central.setLayout(layout)
-
+        if not syn_addresses.empty:
+            data = {
+                "suspicious": suspicious_text,
+                "attacked": attacked_text,
+                "explanation": explanation_text,
+                "data": []
+            }
+            for i in range(syn_addresses.shape[0]):
+                data["data"].append({
+                    "address": syn_addresses.loc[i, "Address"],
+                    "sendsSYN": int(syn_addresses.loc[i, "SendsSYN"]),
+                    "receivesSYN": int(syn_addresses.loc[i, "ReceivesSYN"]),
+                    "sendSYNACK" : int(syn_addresses.loc[i, "SendsSYN-ACK"]),
+                    "receivesSYNACK": int(syn_addresses.loc[i, "ReceivesSYN-ACK"])
+                })
+            with open("src/pythonGUI/plotData/tcpsyn.json", "w+") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
 
     def tcp_scanning_detect(self):
         threshold = self.threshold_input.text()
@@ -106,27 +89,17 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         else:
             threshold = int(threshold)
 
-        canvas = self.attack_detect.tcp_connect_scanning_detect(threshold)
+        syn_rate = self.attack_detect.tcp_connect_scanning_detect(threshold)
         suspicious = self.attack_detect.tcp_scanning_suspicious
 
-        central = QWidget()
-        layout = QVBoxLayout()
-
         suspicious_text = ""
-        if canvas is None:
-            suspicious_text = "No TCP (SYN) packets present, no suspicious addresses detected"
-        else:
-            if not suspicious:
-                suspicious_text = "No suspicious addresses detected"
-            elif suspicious:
-                suspicious_text = "Suspicious addresses: "
-                suspicious_addresses = ', '.join(suspicious)
-                suspicious_text = suspicious_text + suspicious_addresses
+        if not suspicious:
+            suspicious_text = "No suspicious addresses detected"
+        elif suspicious:
+            suspicious_text = "Suspicious addresses: "
+            suspicious_addresses = ', '.join(suspicious)
+            suspicious_text = suspicious_text + suspicious_addresses
 
-
-
-        explain_label = QLabel("\nExplanation:")
-        explain_label.setFont(QFont('Arial', 12))
 
         explanation_text = "Addresses are marked as suspicious if the address sends SYN flags without receiving " \
                            "SYN-ACK packets and if the same address sends more SYN packets than the threshold within " \
@@ -140,16 +113,21 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         suspicious_label.setFont(QFont('Arial', 15))
         suspicious_label.setWordWrap(True)
 
-        layout.addWidget(canvas)
-        layout.addWidget(suspicious_label)
-
-        if canvas is not None:
-            layout.addWidget(explain_label)
-            layout.addWidget(explanation_label)
-            layout.addStretch()
-
-        self.setCentralWidget(central)
-        central.setLayout(layout)
+        if syn_rate:
+            data = {
+                "suspicious": suspicious_text,
+                "explanation": explanation_text,
+                "data": []
+            }
+            addresses = syn_rate["Address"]
+            rates = syn_rate["SYN_rate"]
+            for i in range(len(addresses)):
+                data["data"].append({
+                    "address": addresses[i],
+                    "rate": rates[i]
+                })
+            with open("src/pythonGUI/plotData/tcpscan.json", "w+") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
 
     def dos_detect(self):
         threshold = self.threshold_input.text()
@@ -158,7 +136,7 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         else:
             threshold = int(threshold)
 
-        canvas = self.attack_detect.threshold_dos_detect(threshold)
+        canvas, pps_table = self.attack_detect.threshold_dos_detect(threshold)
         suspicious = self.attack_detect.dos_suspicious_addresses
 
         central = QWidget()
@@ -193,14 +171,29 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         self.setCentralWidget(central)
         central.setLayout(layout)
+        if pps_table:
+            data = {
+                "suspicious": suspicious_text,
+                "explanation": "These addresses are sending a greater amount of traffic then the threshold and therefore are marked as suspicious.",
+                "data": []
+            }
+            addresses = pps_table["Address"]
+            pps = pps_table["PPS"]
+            for i in range(len(addresses)):
+                data["data"].append({
+                    "address": addresses[i],
+                    "rate": pps[i]
+                })
+            with open("src/pythonGUI/plotData/dos.json", "w+") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
 
     def arp_poison_detect(self):
-        canvas = self.attack_detect.arp_poison_detect()
+        canvas, mac_addr_fre = self.attack_detect.arp_poison_detect()
         suspicious = self.attack_detect.arp_suspicious_addresses
-
         central = QWidget()
         layout = QVBoxLayout()
-
+        
+        
         suspicious_text = ""
         if canvas is None:
             suspicious_text = "No ARP packets present, no suspicious addresses detected"
@@ -219,10 +212,9 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         explain_label = QLabel("\nExplanation:")
         explain_label.setFont(QFont('Arial', 12))
-
         explanation_text = "These addresses were marked because the MAC addresses they originated from are associated " \
                            "with more than one IP address, which is erroneous and indicative of ARP Poisoning."
-
+        
         explanation_label = QLabel(explanation_text)
         explanation_label.setFont(QFont('Arial', 10))
         explanation_label.setWordWrap(True)
@@ -237,6 +229,21 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         self.setCentralWidget(central)
         central.setLayout(layout)
+        if mac_addr_fre:
+            mac_addr = mac_addr_fre['MAC_addresses']
+            frequency = mac_addr_fre['Frequency']
+            data = {
+                "data": [],
+                "suspicious": suspicious_text,
+                "explanation": explanation_text
+            }
+            for i in range(len(mac_addr)):
+                data["data"].append({
+                    "mac": mac_addr[i],
+                    "frequency": frequency[i]
+                })
+            with open ("src/pythonGUI/plotData/arp.json", "w+") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
 
     def icmp_flood_detect(self):
         threshold = self.threshold_input.text()
@@ -244,7 +251,7 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
             threshold = 100
         else:
             threshold = int(threshold)
-        canvas = self.attack_detect.icmp_flood_detect(threshold)
+        canvas, pps_dataframe = self.attack_detect.icmp_flood_detect(threshold)
         suspicious = self.attack_detect.icmp_suspicious
 
         central = QWidget()
@@ -286,6 +293,19 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         self.setCentralWidget(central)
         central.setLayout(layout)
+        if not pps_dataframe.empty:
+            data = {
+                "suspicious": suspicious_text,
+                "explanation": explanation_text,
+                "data": []
+            }
+            for i in range(pps_dataframe.shape[0]):
+                data["data"].append({
+                    "address": pps_dataframe.loc[i, "Address"],
+                    "rate": int(pps_dataframe.loc[i, "PPS"])
+                })
+            with open("src/pythonGUI/plotData/icmpflood.json", "w+") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
 
     def http_flood_detect(self):
         threshold = self.threshold_input.text()
@@ -293,7 +313,7 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
             threshold = 5
         else:
             threshold = int(threshold)
-        canvas = self.attack_detect.http_attack(threshold)
+        canvas, pps_dataframe = self.attack_detect.http_attack(threshold)
         suspicious = self.attack_detect.http_suspicious
 
         central = QWidget()
@@ -336,14 +356,27 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         self.setCentralWidget(central)
         central.setLayout(layout)
-
+        if not pps_dataframe.empty:
+            data = {
+                "suspicious": suspicious_text,
+                "explanation": explanation_text,
+                "data": []
+            }
+            for i in range(pps_dataframe.shape[0]):
+                data["data"].append({
+                    "address": pps_dataframe.loc[i, "Address"],
+                    "rate": int(pps_dataframe.loc[i, "PPS"]) 
+                })
+            with open("src/pythonGUI/plotData/httpflood.json", "w+") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+        
     def dns_flood_detect(self):
         threshold = self.threshold_input.text()
         if threshold == '':
             threshold = 20
         else:
             threshold = int(threshold)
-        canvases = self.attack_detect.dns_request_response_detect(threshold)
+        canvases, pps_res, pps_req = self.attack_detect.dns_request_response_detect(threshold)
 
         central = QWidget()
         layout = QVBoxLayout()
@@ -409,6 +442,33 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         self.setCentralWidget(central)
         central.setLayout(layout)
+        if pps_req or pps_res:
+            res_data = {
+                "suspicious": suspicious_text,
+                "explanation": explanation_text,
+                "data": []
+            }
+            req_data = {
+                "data": []
+            }
+            res_addr = pps_res["Address"]
+            res_pps = pps_res["PPS"]
+            for i in range(len(res_addr)):
+                res_data["data"].append({
+                    "address": res_addr[i],
+                    "rate": res_pps[i]
+                })
+            req_addr = pps_req["Address"]
+            req_pps = pps_req["PPS"]
+            for i in range(len(req_addr)):
+                req_data["data"].append({
+                    "address": req_addr[i],
+                    "rate": req_pps[i]
+                })
+            with open("src/pythonGUI/plotData/dnsresponse.json", "w+") as f:
+                json.dump(res_data, f, ensure_ascii=False, indent=4)
+            with open("src/pythonGUI/plotData/dnsrequest.json", "w+") as f:
+                json.dump(req_data, f, ensure_ascii=False, indent=4)
 
     def run_all_detect(self):
         threshold = self.threshold_input.text()

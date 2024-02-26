@@ -1,0 +1,98 @@
+{
+    "suspicious": "Suspicious addresses: 35.186.224.39, 3.162.21.14, 34.107.221.82, 35.186.224.33",
+    "explanation": "These addresses are sending a greater amount of traffic then the threshold and therefore are marked as suspicious.",
+    "data": [
+        {
+            "address": "162.159.133.234",
+            "rate": 0
+        },
+        {
+            "address": "192.168.1.62",
+            "rate": 87
+        },
+        {
+            "address": "192.168.1.1",
+            "rate": 6
+        },
+        {
+            "address": "35.186.224.39",
+            "rate": 6786
+        },
+        {
+            "address": "192.168.1.48",
+            "rate": 0
+        },
+        {
+            "address": "192.168.1.43",
+            "rate": 1
+        },
+        {
+            "address": "192.168.1.69",
+            "rate": 0
+        },
+        {
+            "address": "199.232.54.167",
+            "rate": 37
+        },
+        {
+            "address": "34.120.208.123",
+            "rate": 83
+        },
+        {
+            "address": "18.172.95.181",
+            "rate": 8
+        },
+        {
+            "address": "54.190.145.243",
+            "rate": 8
+        },
+        {
+            "address": "142.250.200.35",
+            "rate": 94
+        },
+        {
+            "address": "3.162.20.44",
+            "rate": 41
+        },
+        {
+            "address": "52.84.137.125",
+            "rate": 3
+        },
+        {
+            "address": "54.186.134.217",
+            "rate": 10
+        },
+        {
+            "address": "54.191.201.144",
+            "rate": 13
+        },
+        {
+            "address": "3.162.21.14",
+            "rate": 319
+        },
+        {
+            "address": "54.230.10.99",
+            "rate": 94
+        },
+        {
+            "address": "99.181.79.10",
+            "rate": 13
+        },
+        {
+            "address": "34.107.221.82",
+            "rate": 8388608
+        },
+        {
+            "address": "52.223.203.214",
+            "rate": 81
+        },
+        {
+            "address": "23.160.0.0",
+            "rate": 45
+        },
+        {
+            "address": "35.186.224.33",
+            "rate": 2219
+        }
+    ]
+}
