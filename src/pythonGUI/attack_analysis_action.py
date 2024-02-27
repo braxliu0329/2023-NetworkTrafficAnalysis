@@ -1,4 +1,6 @@
+from PyQt5 import Qt
 from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt
 
 from PyQt5.QtWidgets import *
 import sys
@@ -71,19 +73,21 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
                 attacked_text = attacked_text + attacked_addresses
 
         suspicious_label = QLabel(suspicious_text + "\n" + attacked_text)
-        suspicious_label.setFont(QFont('Arial', 15))
+        suspicious_label.setFont(QFont('Arial', 25))
+        suspicious_label.setAlignment(Qt.AlignCenter)
 
         explanation_text = "The suspicious addresses were marked because these addresses send a greater amount of " \
                            "SYN requests than it does receive SYN-ACK responses back, suggesting it is overloading a" \
-                           "system. \nThe attacked addresses were marked because these addresses receive a greater " \
+                           "system. \n\nThe attacked addresses were marked because these addresses receive a greater " \
                            "amount of SYN requests than it sends SYN-ACK responses back, which is indicative that " \
                            "these addresses are being overwhelmed by SYN requests and cant response fast enough. "
 
         explain_label = QLabel("\nExplanation:")
-        explain_label.setFont(QFont('Arial', 12))
+        explain_label.setFont(QFont('Arial', 25))
 
         explanation_label = QLabel(explanation_text)
-        explanation_label.setFont(QFont('Arial', 10))
+        explanation_label.setFont(QFont('Arial', 20))
+        explanation_label.setAlignment(Qt.AlignLeft)
         explanation_label.setWordWrap(True)
 
         layout.addWidget(canvas)
@@ -122,18 +126,19 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
                 suspicious_text = suspicious_text + suspicious_addresses
 
         explain_label = QLabel("\nExplanation:")
-        explain_label.setFont(QFont('Arial', 12))
+        explain_label.setFont(QFont('Arial', 25))
 
         explanation_text = "Addresses are marked as suspicious if the address sends SYN flags without receiving " \
                            "SYN-ACK packets and if the same address sends more SYN packets than the threshold within " \
                            "the time interval. "
 
         explanation_label = QLabel(explanation_text)
-        explanation_label.setFont(QFont('Arial', 10))
+        explanation_label.setFont(QFont('Arial', 20))
         explanation_label.setWordWrap(True)
 
         suspicious_label = QLabel(suspicious_text)
-        suspicious_label.setFont(QFont('Arial', 15))
+        suspicious_label.setFont(QFont('Arial', 25))
+        suspicious_label.setAlignment(Qt.AlignCenter)
         suspicious_label.setWordWrap(True)
 
         layout.addWidget(canvas)
@@ -176,14 +181,19 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
                     "These addresses are sending a greater amount of traffic then the threshold and therefore are marked as suspicious.")
 
         suspicious_label = QLabel(suspicious_text)
-        suspicious_label.setFont(QFont('Arial', 15))
+        suspicious_label.setFont(QFont('Arial', 25))
+        suspicious_label.setAlignment(Qt.AlignCenter)
         suspicious_label.setWordWrap(True)
 
-        explanation_label.setFont(QFont('Arial', 10))
+        explain_label = QLabel("\nExplanation:")
+        explain_label.setFont(QFont('Arial', 25))
+
+        explanation_label.setFont(QFont('Arial', 20))
         explanation_label.setWordWrap(True)
 
         layout.addWidget(canvas)
         layout.addWidget(suspicious_label)
+        layout.addWidget(explain_label)
         layout.addWidget(explanation_label)
         layout.addStretch()
 
@@ -210,17 +220,18 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
                 suspicious_text = suspicious_text + suspicious_addresses
 
         suspicious_label = QLabel(suspicious_text)
-        suspicious_label.setFont(QFont('Arial', 15))
+        suspicious_label.setFont(QFont('Arial', 25))
+        suspicious_label.setAlignment(Qt.AlignCenter)
         suspicious_label.setWordWrap(True)
 
         explain_label = QLabel("\nExplanation:")
-        explain_label.setFont(QFont('Arial', 12))
+        explain_label.setFont(QFont('Arial', 25))
 
         explanation_text = "These addresses were marked because the MAC addresses they originated from are associated " \
                            "with more than one IP address, which is erroneous and indicative of ARP Poisoning."
 
         explanation_label = QLabel(explanation_text)
-        explanation_label.setFont(QFont('Arial', 10))
+        explanation_label.setFont(QFont('Arial', 20))
         explanation_label.setWordWrap(True)
 
         layout.addWidget(canvas)
@@ -259,17 +270,18 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
                 suspicious_text = suspicious_text + suspicious_addresses
 
         suspicious_label = QLabel(suspicious_text)
-        suspicious_label.setFont(QFont('Arial', 15))
+        suspicious_label.setFont(QFont('Arial', 25))
+        suspicious_label.setAlignment(Qt.AlignCenter)
         suspicious_label.setWordWrap(True)
 
         explain_label = QLabel("\nExplanation:")
-        explain_label.setFont(QFont('Arial', 12))
+        explain_label.setFont(QFont('Arial', 25))
 
         explanation_text = "These addresses were marked because the ICMP Echo packets sent from these addresses are " \
                            "over too high a frequency. "
 
         explanation_label = QLabel(explanation_text)
-        explanation_label.setFont(QFont('Arial', 10))
+        explanation_label.setFont(QFont('Arial', 20))
         explanation_label.setWordWrap(True)
 
         layout.addWidget(canvas)
@@ -308,18 +320,19 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
                 suspicious_text = suspicious_text + suspicious_addresses
 
         suspicious_label = QLabel(suspicious_text)
-        suspicious_label.setFont(QFont('Arial', 15))
+        suspicious_label.setFont(QFont('Arial', 25))
+        suspicious_label.setAlignment(Qt.AlignCenter)
         suspicious_label.setWordWrap(True)
 
         explain_label = QLabel("\nExplanation:")
-        explain_label.setFont(QFont('Arial', 12))
+        explain_label.setFont(QFont('Arial', 25))
 
         explanation_text = "These addresses were marked because the HTTP Request packets sent from these addresses " \
                            "after a tcp connection are established are " \
                            "over too high a frequency. "
 
         explanation_label = QLabel(explanation_text)
-        explanation_label.setFont(QFont('Arial', 10))
+        explanation_label.setFont(QFont('Arial', 20))
         explanation_label.setWordWrap(True)
 
         layout.addWidget(canvas)
@@ -383,17 +396,18 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
             layout.addWidget(response_graph)
 
         suspicious_label = QLabel(suspicious_text)
-        suspicious_label.setFont(QFont('Arial', 15))
+        suspicious_label.setFont(QFont('Arial', 25))
+        suspicious_label.setAlignment(Qt.AlignCenter)
         suspicious_label.setWordWrap(True)
 
         explain_label = QLabel("\nExplanation:")
-        explain_label.setFont(QFont('Arial', 12))
+        explain_label.setFont(QFont('Arial', 25))
 
         explanation_text = "These addresses were marked because the DNS packets sent from these addresses are " \
                            "over too high a frequency. "
 
         explanation_label = QLabel(explanation_text)
-        explanation_label.setFont(QFont('Arial', 10))
+        explanation_label.setFont(QFont('Arial', 20))
         explanation_label.setWordWrap(True)
 
         layout.addWidget(suspicious_label)
@@ -407,10 +421,10 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         central.setLayout(layout)
 
     def udp_flood_detect(self):
-        # Retrieve the threshold value from the input field. If it's empty, use a default value of 100.
+        # Retrieve the threshold value from the input field. If it's empty, use a default value of 500.
         threshold = self.threshold_input.text()
         if threshold == '':
-            threshold = 100
+            threshold = 500
         else:
             threshold = int(threshold)
 
@@ -439,7 +453,8 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         # Create a label to display the suspicious addresses or the status message.
         suspicious_label = QLabel(suspicious_text)
-        suspicious_label.setFont(QFont('Arial', 30, QFont.Bold))
+        suspicious_label.setFont(QFont('Arial', 25))
+        suspicious_label.setAlignment(Qt.AlignCenter)
         suspicious_label.setWordWrap(True)
 
         layout.addWidget(suspicious_label)
@@ -447,19 +462,19 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         # Only add explanation if suspicious addresses were detected.
         if suspicious:
             explain_label = QLabel("\nExplanation:")
-            explain_label.setFont(QFont('Arial', 30, QFont.Bold))
+            explain_label.setFont(QFont('Arial', 25))
 
-            explanation_text = "These addresses were marked because the UDP packets sent from these addresses are over a too high frequency"
+            explanation_text = ("These addresses were marked because the UDP packets sent from these addresses are "
+                                "over a too high frequency")
 
             explanation_label = QLabel(explanation_text)
-            explanation_label.setFont(QFont('Arial', 30, QFont.Bold))
+            explanation_label.setFont(QFont('Arial', 20))
             explanation_label.setWordWrap(True)
 
             layout.addSpacing(10)  # Adds space between the suspicious label and the explanation
             layout.addWidget(explain_label)
             layout.addWidget(explanation_label)
 
-        layout.addStretch()  # Ensures that the widgets are aligned to the top
         central.setLayout(layout)
         self.setCentralWidget(central)
 
