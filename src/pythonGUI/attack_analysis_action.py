@@ -461,22 +461,21 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         # Only add explanation if suspicious addresses were detected.
         if suspicious:
-            explain_label = QLabel("\nExplanation:")
+            explain_label = QLabel("Explanation:")
             explain_label.setFont(QFont('Arial', 25))
 
             explanation_text = ("These addresses were marked because the UDP packets sent from these addresses are "
                                 "over a too high frequency")
-
             explanation_label = QLabel(explanation_text)
             explanation_label.setFont(QFont('Arial', 20))
             explanation_label.setWordWrap(True)
 
-            layout.addSpacing(10)  # Adds space between the suspicious label and the explanation
+            layout.addWidget(suspicious_label)
             layout.addWidget(explain_label)
             layout.addWidget(explanation_label)
 
-        central.setLayout(layout)
         self.setCentralWidget(central)
+        central.setLayout(layout)
 
     def run_all_detect(self):
         threshold = self.threshold_input.text()
