@@ -427,6 +427,9 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         if canvas is None:
             suspicious_text = "No UDP packets present, no suspicious addresses detected"
         else:
+            # Always add the canvas to the layout if it exists.
+            layout.addWidget(canvas)  # This ensures canvas is displayed regardless of suspicious addresses detection.
+
             # If there are no suspicious addresses, update the text accordingly.
             if not suspicious:
                 suspicious_text = "No suspicious addresses detected"
@@ -436,33 +439,29 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
 
         # Create a label to display the suspicious addresses or the status message.
         suspicious_label = QLabel(suspicious_text)
-        suspicious_label.setFont(QFont('Arial',15))
+        suspicious_label.setFont(QFont('Arial', 30, QFont.Bold))
         suspicious_label.setWordWrap(True)
 
-        explain_label = QLabel("\nExplanation:")
-        explain_label.setFont(QFont('Arial', 12))
-
-        # Set the explanatory text describing why addresses were marked suspicious.
-        explanation_text = "These addresses were marked because the UDP packets sent from these addresses are" \
-                           "\nover a too high frequency"
-
-        # Create a label for the explanatory text.
-        explanation_label = QLabel(explanation_text)
-        explanation_label.setFont(QFont('Arial', 12))
-        explanation_label.setWordWrap(True)
-
-        # Add the labels to the layout. If a canvas is present, it should also be added to the layout.
-        layout.addWidget(canvas)
         layout.addWidget(suspicious_label)
-        layout.addStretch()
 
-        if canvas is not None:
-            layout.addWidget(explanation_label)
-            layout.addWidget(explanation_label)
-            layout.addStretch()
+        # Only add explanation if suspicious addresses were detected.
+        if suspicious:
+            explain_label = QLabel("\nExplanation:")
+            explain_label.setFont(QFont('Arial', 30, QFont.Bold))
 
-        self.setCentralWidget(central)
+            explanation_text = "These addresses were marked because the UDP packets sent from these addresses are over a too high frequency"
+
+            explanation_label = QLabel(explanation_text)
+            explanation_label.setFont(QFont('Arial', 30, QFont.Bold))
+            explanation_label.setWordWrap(True)
+
+            layout.addSpacing(10)  # Adds space between the suspicious label and the explanation
+            layout.addWidget(explain_label)
+            layout.addWidget(explanation_label)
+
+        layout.addStretch()  # Ensures that the widgets are aligned to the top
         central.setLayout(layout)
+        self.setCentralWidget(central)
 
     def run_all_detect(self):
         threshold = self.threshold_input.text()
