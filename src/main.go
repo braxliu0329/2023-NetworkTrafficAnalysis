@@ -20,7 +20,7 @@ const (
 // provide help on how to use the program on the CLI
 func help() {
 	// print help
-	fmt.Printf("Usage:\ngo run src/main.go [tests] [\"filepath\"]\nUse All to run all tests, for a list of tests use:\ngo run src/main.go tests")
+	fmt.Printf("Usage:\ngo run . [tests] [\"filepath\"]\nUse All to run all tests, for a list of tests use:\ngo run . tests")
 }
 
 // provide a list of tests usable
@@ -52,10 +52,6 @@ func getTest(testArg string) int {
 	}
 }
 
-// logic for running checks
-func runTcp(filepath string) {
-	print("tcp")
-}
 func runTcpConnect(filepath string) {
 	print("tcp connect")
 }
@@ -106,7 +102,7 @@ func main() {
 		filepath = strings.ReplaceAll(filepath, "src/", "")
 
 		// check the filepath
-		_, err := os.ReadFile("src/" + filepath + ".pcap")
+		_, err := os.ReadFile(filepath + ".pcap")
 		if err == nil {
 			// get the test
 			test := getTest(testArg)
@@ -127,11 +123,29 @@ func main() {
 			case all:
 				runAll(filepath)
 			default:
-				print("unrecognised test, for a list of all tests use:\ngo run src/main.go tests")
+				print("unrecognised test, for a list of all tests use:\ngo run . tests")
 			}
 		} else {
 			// file path not found
-			print("filepath \"src/" + filepath + ".pcap\" not found")
+			print("filepath \"" + filepath + ".pcap\" not found")
 		}
 	}
+}
+
+// logic for running checks
+func runTcp(filepath string) {
+	// notify start of TCP analysis
+	print("Running TCP Flood Detection on " + filepath + ".pcap...\n------------------------\n")
+
+	// run attack analysis to get suspicious and attacked addresses
+	report := tcpSynFloodDetect(filepath)
+
+	// if no addresses found, print accordingly
+	if len(report.suspicious) == 0 {
+		print("No signs of a TCP Flood attack found.\n------------------------")
+		return
+	}
+
+	// if addresses have been found, communicate
+	print("TCP Flood attack detected:\nSuspicious Addresses: " + strings.Join(report.suspicious, ", ") + "\nAttacked Addresses: " + strings.Join(report.attacked, ", ") + "\n------------------------")
 }
