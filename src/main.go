@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -52,23 +53,26 @@ func getTest(testArg string) int {
 	}
 }
 
-func runTcpConnect(filepath string) {
-	print("tcp connect")
-}
-func runArp(filepath string) {
-	print("arp")
-}
-func runIcmp(filepath string) {
-	print("icmp")
-}
-func runHttp(filepath string) {
-	print("http")
-}
-func runDns(filepath string) {
-	print("dns")
-}
-func runAll(filepath string) {
-	print("all")
+func inputThreshold(test string) int {
+	// ask user for a threshold
+	fmt.Println("Enter threshold for " + test + ":")
+	var input string
+
+	// read a single line of input
+	_, err := fmt.Scan(&input)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return -1
+	}
+
+	// convert input into an int
+	threshold, err := strconv.Atoi(input)
+	if err != nil {
+		fmt.Println("Threshold must be an integer.")
+		return -1
+	}
+
+	return threshold
 }
 
 func main() {
@@ -148,4 +152,101 @@ func runTcp(filepath string) {
 
 	// if addresses have been found, communicate
 	print("TCP Flood attack detected:\nSuspicious Addresses: " + strings.Join(report.suspicious, ", ") + "\nAttacked Addresses: " + strings.Join(report.attacked, ", ") + "\n------------------------")
+}
+
+func runTcpConnect(filepath string) {
+	// get the threshold
+	threshold := inputThreshold("TCP Connection Scan")
+	// bad format
+	if threshold == -1 {
+		runTcpConnect(filepath)
+		return
+	}
+
+	// notify start of TCP connection analysis
+	print("Running TCP Connection Flood Scan on " + filepath + ".pcap...\n------------------------\n")
+
+	// run attack analysis to get suspicious and attacked addresses
+	suspicious := tcpConnectScanDetect(filepath, threshold)
+
+	// if no addresses found, print accordingly
+	if len(suspicious) == 0 {
+		print("No suspicious addresses found.\n------------------------")
+		return
+	}
+
+	// if addresses have been found, communicate
+	print("Suspicious Addresses Found: " + strings.Join(suspicious, ", ") + "\n------------------------")
+
+}
+func runArp(filepath string) {
+	// notify start of ARP analysis
+	print("Running ARP Poison Detection on " + filepath + ".pcap...\n------------------------\n")
+
+	// run attack analysis to get suspicious addresses
+	suspicious := arpPoisonDetect(filepath)
+
+	// if no addresses found, print accordingly
+	if len(suspicious) == 0 {
+		print("No signs of ARP Poisoning attack found.\n------------------------")
+		return
+	}
+
+	// if addresses have been found, communicate
+	print("ARP Poison attack detected:\nSuspicious Addresses: " + strings.Join(suspicious, ", ") + "\n------------------------")
+
+}
+func runIcmp(filepath string) {
+	// get the threshold
+	threshold := inputThreshold("ICMP Flood Detection")
+	// bad format
+	if threshold == -1 {
+		runIcmp(filepath)
+		return
+	}
+
+	// notify start of ICMP Flood analysis
+	print("Running ICMP Flood Detection on " + filepath + ".pcap...\n------------------------\n")
+
+	// run attack analysis to get suspicious addresses
+	suspicious := icmpFloodDetect(filepath, float64(threshold))
+
+	// if no addresses found, print accordingly
+	if len(suspicious) == 0 {
+		print("No suspicious addresses found.\n------------------------")
+		return
+	}
+
+	// if addresses have been found, communicate
+	print("Suspicious Addresses Found: " + strings.Join(suspicious, ", ") + "\n------------------------")
+}
+func runHttp(filepath string) {
+	// get the threshold
+	threshold := inputThreshold("HTTP Flood Detection")
+	// bad format
+	if threshold == -1 {
+		runHttp(filepath)
+		return
+	}
+
+	// notify start of HTTP connection analysis
+	print("Running HTTP Flood Detection on " + filepath + ".pcap...\n------------------------\n")
+
+	// run attack analysis to get suspicious and attacked addresses
+	suspicious := httpFloodDetect(filepath, float64(threshold))
+
+	// if no addresses found, print accordingly
+	if len(suspicious) == 0 {
+		print("No suspicious addresses found.\n------------------------")
+		return
+	}
+
+	// if addresses have been found, communicate
+	print("Suspicious Addresses Found: " + strings.Join(suspicious, ", ") + "\n------------------------")
+}
+func runDns(filepath string) {
+	print("dns")
+}
+func runAll(filepath string) {
+	print("all")
 }
