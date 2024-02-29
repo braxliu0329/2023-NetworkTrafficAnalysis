@@ -245,8 +245,43 @@ func runHttp(filepath string) {
 	print("Suspicious Addresses Found: " + strings.Join(suspicious, ", ") + "\n------------------------")
 }
 func runDns(filepath string) {
-	print("dns")
+	// get the threshold
+	threshold := inputThreshold("DNS Attack Detection")
+	// bad format
+	if threshold == -1 {
+		runDns(filepath)
+		return
+	}
+
+	// notify start of DNS analysis
+	print("Running DNS Attack Detection on " + filepath + ".pcap...\n------------------------\n")
+
+	// run attack analysis to get request and attacked response
+	report := dnsRequestResponse(filepath, float64(threshold))
+
+	// if no addresses found, print accordingly
+	if len(report.suspicious) == 0 {
+		print("No signs of a DNS attack found.\n------------------------")
+		return
+	}
+
+	// if addresses have been found, communicate
+	print("TCP Flood attack detected:\nSuspicious Request Addresses: " + strings.Join(report.suspicious, ", ") + "\nSuspicious Response Addresses: " + strings.Join(report.attacked, ", ") + "\n------------------------")
+
 }
 func runAll(filepath string) {
-	print("all")
+	// run all other attack analyses
+	runTcp(filepath)
+	print("\n")
+	runTcpConnect(filepath)
+	print("\n")
+	runArp(filepath)
+	print("\n")
+	runIcmp(filepath)
+	print("\n")
+	runHttp(filepath)
+	print("\n")
+	runDns(filepath)
+	// finished confirmation
+	print("\nAll Tests Finished.")
 }
