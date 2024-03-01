@@ -51,6 +51,7 @@ Each action, when triggered, calls a specific method to analyze the data for a p
 Overrides the close event of the QMainWindow to perform custom operations when the AttackAnalysisWindow is being closed. 
 It ensures that any new suspicious addresses identified during the current session are saved to the main window's list
 of flagged IPs for persistent tracking across sessions.
+
 ```cython
 def closeEvent(self, event):
     for address in self.attack_detect.suspicious_addresses:
@@ -423,6 +424,8 @@ self.setCentralWidget(central)
 central.setLayout(layout)
 ```
 
+## http flood detection
+Retrieves and sets threshold value for detection from the user input
 ```cython
 def http_flood_detect(self):
     threshold = self.threshold_input.text()
@@ -430,25 +433,37 @@ def http_flood_detect(self):
         threshold = 5
     else:
         threshold = int(threshold)
+```
 
-    canvas = self.attack_detect.http_attack(threshold)
-    suspicious = self.attack_detect.http_suspicious
+obtain a canvas and suspicious list of address for visualization
+```cython
+canvas = self.attack_detect.http_attack(threshold)
+suspicious = self.attack_detect.http_suspicious
+```
 
-    central = QWidget()
-    layout = QVBoxLayout()
+Sets up the central widget and layout for displaying detection results.
+```cython
+central = QWidget()
+layout = QVBoxLayout()
+```
 
-    suspicious_text = ""
+Checks weather graph was created and shows information for different situation
+```cython
+suspicious_text = ""
 
-    if canvas is None:
-        suspicious_text = "No HTTP packets present or no TCP handshake was established, no suspicious addresses detected"
-    else:
-        if not suspicious:
-            suspicious_text = "No suspicious addresses detected"
-        elif suspicious:
-            suspicious_text = "Suspicious addresses: "
-            suspicious_addresses = ', '.join(suspicious)
-            suspicious_text = suspicious_text + suspicious_addresses
+if canvas is None:
+    suspicious_text = "No HTTP packets present or no TCP handshake was established, no suspicious addresses detected"
+else:
+    if not suspicious:
+        suspicious_text = "No suspicious addresses detected"
+    elif suspicious:
+        suspicious_text = "Suspicious addresses: "
+        suspicious_addresses = ', '.join(suspicious)
+        suspicious_text = suspicious_text + suspicious_addresses
+```
 
+Displays the suspicious addresses and explanation.
+```cython
     suspicious_label = QLabel(suspicious_text)
     suspicious_label.setFont(QFont('Arial', 25))
     suspicious_label.setAlignment(Qt.AlignCenter)
@@ -464,7 +479,11 @@ def http_flood_detect(self):
     explanation_label = QLabel(explanation_text)
     explanation_label.setFont(QFont('Arial', 20))
     explanation_label.setWordWrap(True)
+```
 
+Adds the canvas and labels to the layout, if applicable.
+Applies the layout to the central widget and sets it as the main content of the window.
+```cython
     layout.addWidget(canvas)
     layout.addWidget(suspicious_label)
 
@@ -477,6 +496,8 @@ def http_flood_detect(self):
     central.setLayout(layout)
 ```
 
+## DNS flood detection 
+Retrieves and sets the threshold value for detection from user input.
 ```cython
 def dns_flood_detect(self):
     threshold = self.threshold_input.text()
@@ -484,31 +505,44 @@ def dns_flood_detect(self):
         threshold = 20
     else:
         threshold = int(threshold)
-    canvases = self.attack_detect.dns_request_response_detect(threshold)
+```
 
-    central = QWidget()
-    layout = QVBoxLayout()
+Obtains canvases for visualization of request and response packets.
+```cython
+canvases = self.attack_detect.dns_request_response_detect(threshold)
+```
 
-    request_graph = canvases[0]
-    response_graph = canvases[1]
+Sets up the central widget and layout for displaying detection results.
+```cython
+central = QWidget()
+layout = QVBoxLayout()
+```
 
-    if request_graph is None and response_graph is None:
-        suspicious_text = "No DNS packets present, no suspicious addresses detected"
+Separates the canvases for request and response graphs.
+```cython
+request_graph = canvases[0]
+response_graph = canvases[1]
+```
+
+Determines the message to display based on detection outcome.
+```cython
+if request_graph is None and response_graph is None:
+    suspicious_text = "No DNS packets present, no suspicious addresses detected"
+else:
+    request_suspicious = self.attack_detect.dns_request_suspicious
+    response_suspicious = self.attack_detect.dns_response_suspicious
+
+    request_suspicious_text = ""
+
+    if request_graph is None:
+        request_suspicious_text = "No DNS Request packets present, no suspicious addresses detected"
     else:
-        request_suspicious = self.attack_detect.dns_request_suspicious
-        response_suspicious = self.attack_detect.dns_response_suspicious
-
-        request_suspicious_text = ""
-
-        if request_graph is None:
-            request_suspicious_text = "No DNS Request packets present, no suspicious addresses detected"
-        else:
-            if not request_suspicious:
-                request_suspicious_text = "No DNS Request suspicious addresses detected"
-            elif request_suspicious:
-                request_suspicious_text = "DNS Request suspicious addresses: "
-                suspicious_addresses = ', '.join(request_suspicious)
-                request_suspicious_text = request_suspicious_text + suspicious_addresses
+        if not request_suspicious:
+            request_suspicious_text = "No DNS Request suspicious addresses detected"
+        elif request_suspicious:
+            request_suspicious_text = "DNS Request suspicious addresses: "
+            suspicious_addresses = ', '.join(request_suspicious)
+            request_suspicious_text = request_suspicious_text + suspicious_addresses
 
         response_suspicious_text = ""
 
@@ -521,38 +555,46 @@ def dns_flood_detect(self):
                 response_suspicious_text = "DNS Response suspicious addresses: "
                 suspicious_addresses = ', '.join(response_suspicious)
                 response_suspicious_text = response_suspicious_text + suspicious_addresses
-
-        suspicious_text = request_suspicious_text + "\n" + response_suspicious_text
-
-        layout.addWidget(request_graph)
-        layout.addWidget(response_graph)
-
-    suspicious_label = QLabel(suspicious_text)
-    suspicious_label.setFont(QFont('Arial', 25))
-    suspicious_label.setAlignment(Qt.AlignCenter)
-    suspicious_label.setWordWrap(True)
-
-    explain_label = QLabel("\nExplanation:")
-    explain_label.setFont(QFont('Arial', 25))
-
-    explanation_text = "These addresses were marked because the DNS packets sent from these addresses are " \
-                       "over too high a frequency. "
-
-    explanation_label = QLabel(explanation_text)
-    explanation_label.setFont(QFont('Arial', 20))
-    explanation_label.setWordWrap(True)
-
-    layout.addWidget(suspicious_label)
-
-    if request_graph is not None or response_graph is not None:
-        layout.addWidget(explain_label)
-        layout.addWidget(explanation_label)
-        layout.addStretch()
-
-    self.setCentralWidget(central)
-    central.setLayout(layout)
 ```
 
+creating a user interface layout to display the results of a DNS flood detection process
+```cython
+suspicious_text = request_suspicious_text + "\n" + response_suspicious_text
+
+layout.addWidget(request_graph)
+layout.addWidget(response_graph)
+
+suspicious_label = QLabel(suspicious_text)
+suspicious_label.setFont(QFont('Arial', 25))
+suspicious_label.setAlignment(Qt.AlignCenter)
+suspicious_label.setWordWrap(True)
+
+explain_label = QLabel("\nExplanation:")
+explain_label.setFont(QFont('Arial', 25))
+
+explanation_text = "These addresses were marked because the DNS packets sent from these addresses are " \
+               "over too high a frequency. "
+
+explanation_label = QLabel(explanation_text)
+explanation_label.setFont(QFont('Arial', 20))
+explanation_label.setWordWrap(True)
+
+layout.addWidget(suspicious_label)
+```
+
+Only displays explanation if there are suspicious addresses.
+```cython
+if request_graph is not None or response_graph is not None:
+    layout.addWidget(explain_label)
+    layout.addWidget(explanation_label)
+    layout.addStretch()
+
+self.setCentralWidget(central)
+central.setLayout(layout)
+```
+
+## UDP flood detection
+Retrieves and sets threshold value for detection from the user input
 ```cython
 def udp_flood_detect(self):
     # Retrieve the threshold value from the input field. If it's empty, use a default value of 500.
@@ -561,14 +603,22 @@ def udp_flood_detect(self):
         threshold = 500
     else:
         threshold = int(threshold)
+```
 
-    canvas = self.attack_detect.udp_flood_detect(threshold)
-    suspicious = self.attack_detect.udp_suspicious
+obtain a canvas and suspicious list of address for visualization
+```cython
+canvas = self.attack_detect.udp_flood_detect(threshold)
+suspicious = self.attack_detect.udp_suspicious
+```
 
-    # Initialize the central widget and layout for displaying the results.
-    central = QWidget()
-    layout = QVBoxLayout()
+Sets up the central widget and layout for displaying detection results.
+```cython
+central = QWidget()
+layout = QVBoxLayout()
+```
 
+Checks weather graph was created and shows information for different situation
+```cython
     suspicious_text = ""
 
     # If no canvas is returned, it implies no UDP packets were detected.
@@ -584,13 +634,20 @@ def udp_flood_detect(self):
         else:
             # If there are suspicious addresses, compile them into a string for display.
             suspicious_text = "Suspicious addresses: " + ', '.join(suspicious)
+```
 
+Displays the suspicious addresses
+```cython
     # Create a label to display the suspicious addresses or the status message.
     suspicious_label = QLabel(suspicious_text)
     suspicious_label.setFont(QFont('Arial', 25))
     suspicious_label.setAlignment(Qt.AlignCenter)
     suspicious_label.setWordWrap(True)
+```
 
+Adds the canvas and labels to the layout, if applicable.
+Applies the layout to the central widget and sets it as the main content of the window.
+```cython
     layout.addWidget(suspicious_label)
 
     # Only add explanation if suspicious addresses were detected.
@@ -607,89 +664,58 @@ def udp_flood_detect(self):
         layout.addWidget(suspicious_label)
         layout.addWidget(explain_label)
         layout.addWidget(explanation_label)
-
     self.setCentralWidget(central)
     central.setLayout(layout)
 ```
+## display flagged address
 
-```cython
-def run_all_detect(self):
-    threshold = self.threshold_input.text()
-    if threshold == '':
-        threshold = None
-    else:
-        threshold = int(threshold)
-
-    self.attack_detect.run_all_detection(threshold)
-
-    central = QWidget()
-    layout = QVBoxLayout()
-
-    dns_suspicious = self.attack_detect.dns_request_suspicious + self.attack_detect.dns_response_suspicious
-
-    # Dictionary of attack detection methods in order to enumerate through them
-    attack_list = {"DOS": self.attack_detect.dos_suspicious_addresses,
-                   "TCP Scanning": self.attack_detect.tcp_scanning_suspicious,
-                   "TCP": self.attack_detect.tcp_suspicious_addresses,
-                   "ICMP": self.attack_detect.icmp_suspicious,
-                   "HTTP": self.attack_detect.http_suspicious,
-                   "ARP": self.attack_detect.arp_suspicious_addresses,
-                   "DNS": dns_suspicious}
-
-    # creates gui labels for each attack
-    for attack in attack_list:
-        suspicious_text = ""
-        if not attack_list[attack]:
-            suspicious_text = attack + ": no suspicious addresses detected"
-        elif attack:
-            suspicious_text = attack + " suspicious addresses: "
-            suspicious_addresses = ', '.join(attack_list[attack])
-            suspicious_text = suspicious_text + suspicious_addresses
-
-        suspicious_label = QLabel(suspicious_text)
-        suspicious_label.setFont(QFont('Arial', 15))
-        suspicious_label.setWordWrap(True)
-
-        layout.addWidget(suspicious_label)
-
-    layout.addStretch()
-    self.setCentralWidget(central)
-    central.setLayout(layout)
-```
-
+Setting Up the Main Widget and Layout
 ```cython
 def display_flagged_addr(self):
     central = QWidget()
     layout = QVBoxLayout()
-
-    suspicious = self.attack_detect.suspicious_addresses
-    if not suspicious:
-        suspicious_text = "No suspicious addresses detected"
-    elif suspicious:
-        suspicious_text = "Suspicious addresses: "
-        suspicious_addresses = ', '.join(suspicious)
-        suspicious_text = suspicious_text + suspicious_addresses
-
-    suspicious_label = QLabel(suspicious_text)
-    suspicious_label.setFont(QFont('Arial', 15))
-    suspicious_label.setWordWrap(True)
-
-    layout.addWidget(suspicious_label)
-
-    save_button = QPushButton(central)
-    save_button.setText("Save flagged IP addresses")
-    save_button.clicked.connect(self.saveIPList)
-
-    import_button = QPushButton(central)
-    import_button.setText("Import flagged IP addresses")
-    import_button.clicked.connect(self.importIPList)
-
-    layout.addWidget(save_button)
-    layout.addWidget(import_button)
-    self.setCentralWidget(central)
-    central.setLayout(layout)
 ```
 
+Displaying Suspicious Addresses
+```cython
+suspicious = self.attack_detect.suspicious_addresses
+if not suspicious:
+    suspicious_text = "No suspicious addresses detected"
+elif suspicious:
+    suspicious_text = "Suspicious addresses: "
+    suspicious_addresses = ', '.join(suspicious)
+    suspicious_text = suspicious_text + suspicious_addresses
+suspicious_label = QLabel(suspicious_text)
+suspicious_label.setFont(QFont('Arial', 15))
+suspicious_label.setWordWrap(True)
+
+layout.addWidget(suspicious_label)
+```
+
+creates save button, connect and add save button to the layout
+```cython
+save_button = QPushButton(central)
+save_button.setText("Save flagged IP addresses")
+save_button.clicked.connect(self.saveIPList)
+```
+
+creates, connect and add import button to the layout
+```cython
+import_button = QPushButton(central)
+import_button.setText("Import flagged IP addresses")
+import_button.clicked.connect(self.importIPList)
+layout.addWidget(save_button)
+```
+
+Finalizing the Window
+```cython
+layout.addWidget(import_button)
+self.setCentralWidget(central)
+central.setLayout(layout)
+```
+
+## Save IP address list 
+save the list of suspicious IP addresses to a text file. 
 ```cython
 def saveIPList(self):
     file_name = QFileDialog.getSaveFileName(self, 'Save File')
@@ -703,6 +729,8 @@ def saveIPList(self):
         file.close()
 ```
 
+## Import IP address list
+import a list of IP addresses from a file and update the list of flagged IP addresses
 ```cython
 def importIPList(self):
     imported_ips = []
@@ -718,12 +746,4 @@ def importIPList(self):
 
     self.attack_detect.update_flagged_ips(imported_ips)
     self.display_flagged_addr()
-```
-
-```cython
-if __name__ == '__main__':
-app = QApplication(sys.argv)
-window = AttackAnalysisWindow()
-window.show()
-app.exec_()
 ```
