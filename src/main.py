@@ -16,7 +16,7 @@ from PyQt5.QtGui import QDesktopServices
 import webbrowser
 
 from pythonGUI.capture_analysis import plotting
-from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action, message
+from pythonGUI import subWindow, window, attack_analysis_action, message
 
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
 
@@ -321,8 +321,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # open the graph subwindow
     def graph(self):
         data = self.GUI_actions.get_sniffed_packets()
-        attack_analysis = attack_analysis_action.AttackAnalysis(data, self.flaggedIPs)
-        attack_analysis.run_all_detect()
+        plot = plotting.Plotting(data)
+        plot.run_all()
 
     # open the attack analysis subwindow
     def attack_analysis(self):
@@ -924,30 +924,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
             # hide the dropdown list
             self.filterBox.hidePopup()
         super(QComboBox, self.filterBox).enter_keypress(key)
-
-    # helper functions to generate graphs and detect attacks using the sniffed packets
-    def bar_analysis(self):
-        # create plotting object with sniffed packets
-        plotter = plotting.Plotting(self.GUI_actions.get_sniffed_packets())
-        # generate bar chart with sniffed packets
-        plotter.plot_protocol()
-
-    def network_graph(self):
-        plotter = plotting.Plotting(self.GUI_actions.get_sniffed_packets())
-        plotter.network_graph()
-
-    def mac_network_graph(self):
-        plotter = plotting.Plotting(self.GUI_actions.get_sniffed_packets())
-        plotter.mac_network_graph()
-
-    def sourceaddr_plot(self):
-        plotter = plotting.Plotting(self.GUI_actions.get_sniffed_packets())
-        plotter.plot_source()
-
-    def tcp_syn_flood_detect(self):
-        plotter = plotting.Plotting(self.GUI_actions.get_sniffed_packets())
-        self.detect = attack_detection.AttackDetection(plotter.data_frame)
-        self.detect.tcp_syn_flood_detect()
 
 # ran first and intialises PyQt window
 if __name__ == '__main__':
