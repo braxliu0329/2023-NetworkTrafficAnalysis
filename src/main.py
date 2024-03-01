@@ -49,6 +49,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.detect = None
         self.cwd = None
         self.stopped_capture = False
+        self.stopped_analysis = True
         self.packet_number = 1
         # creates GUI_actions object
         self.GUI_actions = GUI_actions.GUIActions()
@@ -58,6 +59,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.show_in_hex = None
         self.show_in_bin = None
         self.capture_thread = None
+        self.analysis_thread = None
 
         # create array which tracks currently marked packets
         self.marked_packets = dict()
@@ -83,6 +85,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # set the analysis menu
         self.actionGraph.triggered.connect(self.graph)
         self.actionAttack_Analysis.triggered.connect(self.attack_analysis)
+
 
         # set the help menu
         self.actionUse_Guide.triggered.connect(self.use_guide)
@@ -329,6 +332,20 @@ class Window(window.Ui_MainWindow, QMainWindow):
         data = self.GUI_actions.get_sniffed_packets()
         attack_analysis = attack_analysis_action.AttackAnalysis(data, self.flaggedIPs)
         attack_analysis.run_all_detect()
+
+    def start_analysis(self):
+        if not self.stopped_analysis and not self.stopped_capture:
+            self.analysis_thread = threading.Thread(target=self.start_analysis_thread)
+            self.analysis_thread.start()
+        else:
+            self.stopped_analysis = True
+    
+    def start_analysis_thread(self):
+        self.stopped_analysis = False
+        while not self.stopped_analysis:
+            self.graph()
+            self.attack_analysis()
+            time.sleep(10)
 
     def use_guide(self):
         # project_root = os.path.abspath(os.path.dirname(__file__))
