@@ -72,15 +72,16 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
                 attacked_addresses = ', '.join(attacked)
                 attacked_text = attacked_text + attacked_addresses
 
-        suspicious_label = QLabel(suspicious_text + "\n" + attacked_text)
-        suspicious_label.setFont(QFont('Arial', 25))
-        suspicious_label.setAlignment(Qt.AlignCenter)
-
         explanation_text = "The suspicious addresses were marked because these addresses send a greater amount of " \
                            "SYN requests than it does receive SYN-ACK responses back, suggesting it is overloading a" \
                            "system. \n\nThe attacked addresses were marked because these addresses receive a greater " \
                            "amount of SYN requests than it sends SYN-ACK responses back, which is indicative that " \
                            "these addresses are being overwhelmed by SYN requests and cant response fast enough. "
+
+        suspicious_label = QLabel(suspicious_text)
+        suspicious_label.setFont(QFont('Arial', 25))
+        suspicious_label.setAlignment(Qt.AlignCenter)
+        suspicious_label.setWordWrap(True)
 
         explain_label = QLabel("\nExplanation:")
         explain_label.setFont(QFont('Arial', 25))
@@ -310,7 +311,7 @@ class AttackAnalysisWindow(attack_analysis_window.Ui_MainWindow, QMainWindow):
         suspicious_text = ""
 
         if canvas is None:
-            suspicious_text = "No HTTP packets present or no TCP handshake was established, no suspicious addresses detected"
+            suspicious_text = "No HTTP packets/TCP handshake was present, no suspicious addresses detected"
         else:
             if not suspicious:
                 suspicious_text = "No suspicious addresses detected"
