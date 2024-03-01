@@ -321,17 +321,14 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # open the graph subwindow
     def graph(self):
         data = self.GUI_actions.get_sniffed_packets()
-        self.graph_window = graph_window_action.GraphWindow(data)
-
-        self.graph_window.show()
+        attack_analysis = attack_analysis_action.AttackAnalysis(data, self.flaggedIPs)
+        attack_analysis.run_all_detect()
 
     # open the attack analysis subwindow
     def attack_analysis(self):
         data = self.GUI_actions.get_sniffed_packets()
-
-        self.attack_analysis_window = attack_analysis_action.AttackAnalysisWindow(data, self, self.flaggedIPs)
-
-        self.attack_analysis_window.show()
+        attack_analysis = attack_analysis_action.AttackAnalysis(data, self.flaggedIPs)
+        attack_analysis.run_all_detect()
 
     def use_guide(self):
         # project_root = os.path.abspath(os.path.dirname(__file__))
