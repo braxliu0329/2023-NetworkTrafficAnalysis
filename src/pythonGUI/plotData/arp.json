@@ -3,6 +3,22 @@
         {
             "mac": "a0:b5:3c:9d:b3:47",
             "frequency": 1
+        },
+        {
+            "mac": "70:9c:d1:ae:40:a2",
+            "frequency": 1
+        },
+        {
+            "mac": "60:e3:2b:4a:7d:6a",
+            "frequency": 1
+        },
+        {
+            "mac": "44:4f:8e:1c:57:24",
+            "frequency": 1
+        },
+        {
+            "mac": "98:22:6e:5d:79:7a",
+            "frequency": 1
         }
     ],
     "suspicious": "No suspicious addresses detected",

@@ -427,6 +427,8 @@ class AttackDetection:
         #    - remove any outliers using these
         #    - calculate the packets per second sent by each address
         #    - adds to suspicious addresses if above the threshold
+        if suspicious_addresses is None:
+            return None
         for address in suspicious_addresses:
             packets_ip = packets[packets['SourceIP'] == address]
 

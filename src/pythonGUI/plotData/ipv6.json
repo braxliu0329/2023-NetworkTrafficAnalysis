@@ -1,18 +1,53 @@
 {
     "nodes": [
         {
-            "id": "fe80::d6f5:47ff:fe17:d85",
+            "id": "fe80::182a:634e:24c7:e844",
             "size": 24
         },
         {
             "id": "ff02::fb",
             "size": 24
+        },
+        {
+            "id": "fe80::1086:270e:efaa:6cb8",
+            "size": 24
+        },
+        {
+            "id": "fe80::a2b5:3cff:fe9d:b347",
+            "size": 24
+        },
+        {
+            "id": "ff02::1",
+            "size": 24
+        },
+        {
+            "id": "fe80::3743:8fe8:b4c5:fa71",
+            "size": 24
+        },
+        {
+            "id": "ff02::16",
+            "size": 24
         }
     ],
     "links": [
         {
-            "source": "fe80::d6f5:47ff:fe17:d85",
+            "source": "fe80::182a:634e:24c7:e844",
             "target": "ff02::fb",
+            "distance": 100
+        },
+        {
+            "source": "ff02::fb",
+            "target": "fe80::1086:270e:efaa:6cb8",
+            "distance": 100
+        },
+        {
+            "source": "fe80::a2b5:3cff:fe9d:b347",
+            "target": "ff02::1",
+            "distance": 100
+        },
+        {
+            "source": "fe80::3743:8fe8:b4c5:fa71",
+            "target": "ff02::16",
             "distance": 100
         }
     ]

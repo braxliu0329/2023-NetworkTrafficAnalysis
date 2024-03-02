@@ -4,7 +4,7 @@ import sys
 import hashlib
 
 from PyQt5.Qt import Qt, QCompleter
-from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal
+from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal, QObject
 from PyQt5.QtGui import QColor, QCursor
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QTreeWidgetItem, QMenu, QAction
 from PyQt5.QtWidgets import QHeaderView, QAbstractItemView, QComboBox
@@ -36,10 +36,14 @@ def hex_packet_data(packet_data):
 
     return ' --- '.join(result)
 
+
+
+
 # define the window class that inherits from the GUI window class and the main window class
 class Window(window.Ui_MainWindow, QMainWindow):
 
     permission_allowed = pyqtSignal()
+    finished = pyqtSignal()
 
     def __init__(self):
         super(Window, self).__init__()
@@ -60,6 +64,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.show_in_bin = None
         self.capture_thread = None
         self.analysis_thread = None
+        self.stop_event = threading.Event()
+       
+        
 
         # create array which tracks currently marked packets
         self.marked_packets = dict()
@@ -84,8 +91,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # set the analysis menu
         self.actionStartAnalysis.triggered.connect(self.start_analysis)
-        self.actionGraph.triggered.connect(self.graph)
-        self.actionAttack_Analysis.triggered.connect(self.attack_analysis)
+        
 
 
         # set the help menu
@@ -288,6 +294,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # variable used to remove captured packets from display
         self.stopped_capture = True
+        self.stopped_analysis = True
         self.captureList.setRowCount(0)
         self.GUI_actions.start_sniffer(False, mainWindow)
         self.packet_number = 1
@@ -322,32 +329,28 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # starts running the thread
         self.capture_thread.start()
         
-    # open the graph subwindow
-    def graph(self):
-        data = self.GUI_actions.get_sniffed_packets()
-        plot = plotting.Plotting(data)
-        plot.run_all()
-
-    # open the attack analysis subwindow
-    def attack_analysis(self):
-        data = self.GUI_actions.get_sniffed_packets()
-        attack_analysis = attack_analysis_action.AttackAnalysis(data, self.flaggedIPs)
-        attack_analysis.run_all_detect()
-
     def start_analysis(self):
         if self.stopped_analysis and not self.stopped_capture:
             self.open_alert("Analysis started", "Analysis is now running in the background!")
             self.analysis_thread = threading.Thread(target=self.start_analysis_thread)
             self.analysis_thread.start()
-        else:
-            self.stopped_analysis = True
     
     def start_analysis_thread(self):
         self.stopped_analysis = False
-        while not self.stopped_analysis and not self.stopped_capture:
-            self.graph()
-            self.attack_analysis()
-            time.sleep(10)
+        while not self.stopped_analysis and not self.stopped_capture and self.stop_event.is_set():
+            with lock:
+                data = self.GUI_actions.get_sniffed_packets()
+                flags = self.flaggedIPs
+            plot = plotting.Plotting(data)
+            plot.run_all()
+            attack_analysis = attack_analysis_action.AttackAnalysis(data, flags)
+            attack_analysis.run_all_detect()
+            time.sleep(5)
+
+    def closeEvent(self, event):
+        self.stop_event.set()
+        self.GUI_actions.start_sniffer(False, mainWindow)
+        event.accept()
 
     def use_guide(self):
         # project_root = os.path.abspath(os.path.dirname(__file__))
@@ -947,6 +950,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 # ran first and intialises PyQt window
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    lock = threading._RLock()
     mainWindow = Window()
     mainWindow.permission_allowed.connect(mainWindow.handle_permision_error)
     app.setStyle('Fusion')

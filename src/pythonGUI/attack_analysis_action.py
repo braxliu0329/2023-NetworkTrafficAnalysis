@@ -221,7 +221,7 @@ class AttackAnalysis():
             suspicious_addresses = ', '.join(request_suspicious)
             request_suspicious_text = request_suspicious_text + suspicious_addresses
 
-            response_suspicious_text = ""
+        response_suspicious_text = ""
 
         
         if not response_suspicious:
@@ -231,7 +231,7 @@ class AttackAnalysis():
             suspicious_addresses = ', '.join(response_suspicious)
             response_suspicious_text = response_suspicious_text + suspicious_addresses
 
-            suspicious_text = request_suspicious_text + "\n" + response_suspicious_text
+        suspicious_text = request_suspicious_text + "\n" + response_suspicious_text
         explanation_text = "These addresses were marked because the DNS packets sent from these addresses are " \
                            "over too high a frequency. "
         if pps_req is not None or pps_res is not None:

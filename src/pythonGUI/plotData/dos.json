@@ -1,18 +1,106 @@
 {
-    "suspicious": "No suspicious addresses detected",
+    "suspicious": "Suspicious addresses: 162.159.135.232",
     "explanation": "These addresses are sending a greater amount of traffic then the  and therefore are marked as suspicious.",
     "data": [
+        {
+            "address": "192.168.1.62",
+            "rate": 37
+        },
+        {
+            "address": "3.124.108.117",
+            "rate": 0
+        },
         {
             "address": "192.168.1.1",
             "rate": 0
         },
         {
-            "address": "192.168.1.69",
+            "address": "192.168.1.173",
+            "rate": 4
+        },
+        {
+            "address": "fe80::182a:634e:24c7:e844",
+            "rate": 3
+        },
+        {
+            "address": "194.50.90.222",
+            "rate": 0
+        },
+        {
+            "address": "192.168.1.49",
+            "rate": 0
+        },
+        {
+            "address": "90.244.155.26",
+            "rate": 67
+        },
+        {
+            "address": "3.162.20.122",
+            "rate": 0
+        },
+        {
+            "address": "20.44.10.123",
             "rate": 1
         },
         {
-            "address": "fe80::d6f5:47ff:fe17:d85",
+            "address": "18.165.160.75",
+            "rate": 0
+        },
+        {
+            "address": "162.159.130.234",
+            "rate": 0
+        },
+        {
+            "address": "185.15.59.224",
             "rate": 2
+        },
+        {
+            "address": "3.162.20.46",
+            "rate": 4
+        },
+        {
+            "address": "13.224.81.93",
+            "rate": 8
+        },
+        {
+            "address": "35.186.224.39",
+            "rate": 0
+        },
+        {
+            "address": "fe80::1086:270e:efaa:6cb8",
+            "rate": 0
+        },
+        {
+            "address": "192.168.1.47",
+            "rate": 0
+        },
+        {
+            "address": "18.172.88.70",
+            "rate": 1
+        },
+        {
+            "address": "192.168.1.195",
+            "rate": 0
+        },
+        {
+            "address": "192.168.1.60",
+            "rate": 0
+        },
+        {
+            "address": "192.168.1.97",
+            "rate": 0
+        },
+        {
+            "address": "20.189.173.2",
+            "rate": 2
+        },
+        {
+            "address": "52.168.112.67",
+            "rate": 19
+        },
+        {
+            "address": "162.159.135.232",
+            "rate": 521
         }
     ]
 }
