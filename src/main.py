@@ -43,7 +43,6 @@ def hex_packet_data(packet_data):
 class Window(window.Ui_MainWindow, QMainWindow):
 
     permission_allowed = pyqtSignal()
-    finished = pyqtSignal()
 
     def __init__(self):
         super(Window, self).__init__()
@@ -65,6 +64,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.capture_thread = None
         self.analysis_thread = None
         self.stop_event = threading.Event()
+        self.stop_analysis_event = threading.Event()
        
         
 
@@ -328,16 +328,26 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.capture_thread = threading.Thread(target=self.start_capture_thread)
         # starts running the thread
         self.capture_thread.start()
-        
+    
+    # if analysis is NOT running and the packet capture is NOT stopped, START analysis
+    # if analysis IS running then STOP analysis and SET the event
     def start_analysis(self):
         if self.stopped_analysis and not self.stopped_capture:
             self.open_alert("Analysis started", "Analysis is now running in the background!")
             self.analysis_thread = threading.Thread(target=self.start_analysis_thread)
             self.analysis_thread.start()
+            return
+        if not self.stopped_analysis and not self.stopped_capture:
+            self.stop_analysis_event.set()
+            self.stopped_analysis = True
     
+    # if analysis_event is NOT SET AND packet capture IS running and the thread has NOT been told to stop
+    # then carry out packet analysis
+    # please allow a few seconds on clicking (x) for all threads to be told to stop
     def start_analysis_thread(self):
         self.stopped_analysis = False
-        while not self.stopped_analysis and not self.stopped_capture and self.stop_event.is_set():
+        while not self.stop_analysis_event.is_set() and not self.stopped_capture and not self.stop_event.is_set():
+            print("DOING STUFF!!")
             with lock:
                 data = self.GUI_actions.get_sniffed_packets()
                 flags = self.flaggedIPs
@@ -345,7 +355,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
             plot.run_all()
             attack_analysis = attack_analysis_action.AttackAnalysis(data, flags)
             attack_analysis.run_all_detect()
-            time.sleep(5)
+            self.stop_analysis_event.wait(5)
+        self.stop_analysis_event.clear()
 
     def closeEvent(self, event):
         self.stop_event.set()

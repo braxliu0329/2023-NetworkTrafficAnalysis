@@ -3,8 +3,8 @@
     "explanation": "These addresses were marked because the DNS packets sent from these addresses are over too high a frequency. ",
     "data": [
         {
-            "address": "192.168.1.173",
-            "rate": 2
+            "address": "192.168.1.170",
+            "rate": 0
         }
     ]
 }

@@ -160,3 +160,7 @@ cython_debug/
 .idea/
 /src/.idea/
 /src/pythonGUI/.idea/
+
+
+# Plot data
+/src/pythonGUI/plotData

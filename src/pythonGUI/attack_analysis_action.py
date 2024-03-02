@@ -234,7 +234,7 @@ class AttackAnalysis():
         suspicious_text = request_suspicious_text + "\n" + response_suspicious_text
         explanation_text = "These addresses were marked because the DNS packets sent from these addresses are " \
                            "over too high a frequency. "
-        if pps_req is not None or pps_res is not None:
+        if pps_req is not None and pps_res is not None:
             res_data = {
                 "suspicious": suspicious_text,
                 "explanation": explanation_text,

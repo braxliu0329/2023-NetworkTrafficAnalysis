@@ -427,8 +427,6 @@ class AttackDetection:
         #    - remove any outliers using these
         #    - calculate the packets per second sent by each address
         #    - adds to suspicious addresses if above the threshold
-        if suspicious_addresses is None:
-            return None
         for address in suspicious_addresses:
             packets_ip = packets[packets['SourceIP'] == address]
 
@@ -438,10 +436,11 @@ class AttackDetection:
 
             # removes any outliers (timestamps that are more than 3 standard deviations away from the mean)
             packets_no_outliers = packets_ip[packets_ip['Time'] <= mean + (3 * std)]
-
-            # calculates average packets per second
-            difference = packets_no_outliers['Time'].iloc[-1] - packets_no_outliers['Time'].iloc[0]
-            packet_per_sec = len(packets_no_outliers) / difference
+            packet_per_sec = 0
+            if len(packets_no_outliers.index) != 0:
+                # calculates average packets per second
+                difference = packets_no_outliers['Time'].iloc[-1] - packets_no_outliers['Time'].iloc[0]
+                packet_per_sec = len(packets_no_outliers) / difference
 
             pps_table['Address'].append(address)
             pps_table['PPS'].append(int(packet_per_sec))
