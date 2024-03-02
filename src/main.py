@@ -1,18 +1,18 @@
 from dataclasses import dataclass
+from functools import partial
 import os.path
 import sys
 import hashlib
 
 from PyQt5.Qt import Qt, QCompleter
-from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal, QObject
+from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal
 from PyQt5.QtGui import QColor, QCursor
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QTreeWidgetItem, QMenu, QAction
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QTreeWidgetItem, QMenu, QDesktopWidget
 from PyQt5.QtWidgets import QHeaderView, QAbstractItemView, QComboBox
 from scapy.all import *
 from scapy.layers.inet import IP
 from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import ARP, Ether
-from PyQt5.QtGui import QDesktopServices
 import webbrowser
 
 from pythonGUI.capture_analysis import plotting
@@ -338,26 +338,32 @@ class Window(window.Ui_MainWindow, QMainWindow):
             self.analysis_thread.start()
             return
         if not self.stopped_analysis and not self.stopped_capture:
+            self.open_alert("Analysis stopped", "Analysis is no longer running.")
             self.stop_analysis_event.set()
             self.stopped_analysis = True
     
     # if analysis_event is NOT SET AND packet capture IS running and the thread has NOT been told to stop
     # then carry out packet analysis
-    # please allow a few seconds on clicking (x) for all threads to be told to stop
+    # please allow a few seconds after clicking (x) for all threads to be told to stop
     def start_analysis_thread(self):
         self.stopped_analysis = False
         while not self.stop_analysis_event.is_set() and not self.stopped_capture and not self.stop_event.is_set():
-            print("DOING STUFF!!")
+            # using a lock so that flags and data refer to the same sniffed packets
             with lock:
                 data = self.GUI_actions.get_sniffed_packets()
                 flags = self.flaggedIPs
+            # proceed to run all analyses and wait 5 seconds before looping again
             plot = plotting.Plotting(data)
             plot.run_all()
             attack_analysis = attack_analysis_action.AttackAnalysis(data, flags)
             attack_analysis.run_all_detect()
             self.stop_analysis_event.wait(5)
+        # resets the event so that it can be set again
         self.stop_analysis_event.clear()
 
+    # sets the stop_event which tells all threads that they should terminate
+    # since the sniffer can simply be disabled using start_sniffer, only the analysis thread
+    # is told to stop using stop_event
     def closeEvent(self, event):
         self.stop_event.set()
         self.GUI_actions.start_sniffer(False, mainWindow)
@@ -802,10 +808,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
     # create a message box warning user of a marking conflict
     def open_alert(self, title, warning):
-        msgBox = message.MarkWaring(self)
-        msgBox.setWindowTitle(title)
-        msgBox.setText(warning)
-        msgBox.exec_()
+        msg_box = message.MarkWaring(self, )
+        msg_box.setWindowTitle(title)
+        msg_box.setText(warning)
+        msg_box.exec_()
 
     # logic for marking a packet, as either a packet of interest or ignoring it
     def marker(self, row, ignore, mark):

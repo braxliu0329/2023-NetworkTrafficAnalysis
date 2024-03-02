@@ -41,24 +41,25 @@ class Plotting:
         keys = self.data_frame[mode].value_counts().keys()
         values = self.data_frame[mode].value_counts().values
         data = []
-        for i in range(len(keys)):
-            if mode == "SourceIP":
-                data.append({
-                    "source": keys[i],
-                    "frequency": int(values[i])
-                })
-            elif mode == "DestIP":
-                data.append({
-                    "dest": keys[i],
-                    "frequency": int(values[i])
-                })
-            elif mode == "Protocol":
-                data.append({
-                    "protocol": keys[i],
-                    "frequency": int(values[i])
-                })
-        with open(f"src/pythonGUI/plotData/{mode}.json", "w+") as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+        if keys is not None and values is not None:
+            for i in range(len(keys)):
+                if mode == "SourceIP":
+                    data.append({
+                        "source": keys[i],
+                        "frequency": int(values[i])
+                    })
+                elif mode == "DestIP":
+                    data.append({
+                        "dest": keys[i],
+                        "frequency": int(values[i])
+                    })
+                elif mode == "Protocol":
+                    data.append({
+                        "protocol": keys[i],
+                        "frequency": int(values[i])
+                    })
+            with open(f"src/pythonGUI/plotData/{mode}.json", "w+") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
     
     def run_all(self):
         self.write_frequency_json("Protocol")
