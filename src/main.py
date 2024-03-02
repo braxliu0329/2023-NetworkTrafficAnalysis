@@ -48,7 +48,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         self.detect = None
         self.cwd = None
-        self.stopped_capture = False
+        self.stopped_capture = True
         self.stopped_analysis = True
         self.packet_number = 1
         # creates GUI_actions object
@@ -83,6 +83,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionPause.triggered.connect(self.pause_capture)
 
         # set the analysis menu
+        self.actionStartAnalysis.triggered.connect(self.start_analysis)
         self.actionGraph.triggered.connect(self.graph)
         self.actionAttack_Analysis.triggered.connect(self.attack_analysis)
 
@@ -334,7 +335,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         attack_analysis.run_all_detect()
 
     def start_analysis(self):
-        if not self.stopped_analysis and not self.stopped_capture:
+        if self.stopped_analysis and not self.stopped_capture:
+            self.open_alert("Analysis started", "Analysis is now running in the background!")
             self.analysis_thread = threading.Thread(target=self.start_analysis_thread)
             self.analysis_thread.start()
         else:
@@ -342,7 +344,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
     
     def start_analysis_thread(self):
         self.stopped_analysis = False
-        while not self.stopped_analysis:
+        while not self.stopped_analysis and not self.stopped_capture:
             self.graph()
             self.attack_analysis()
             time.sleep(10)

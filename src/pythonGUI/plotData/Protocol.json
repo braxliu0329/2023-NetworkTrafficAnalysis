@@ -1,6 +1,18 @@
 [
     {
+        "protocol": "UDP/DNS",
+        "frequency": 7
+    },
+    {
+        "protocol": "ARP",
+        "frequency": 2
+    },
+    {
         "protocol": "TCP",
-        "frequency": 4975
+        "frequency": 2
+    },
+    {
+        "protocol": "UDP",
+        "frequency": 1
     }
 ]

@@ -1,10 +1,30 @@
 [
     {
-        "dest": "10.0.0.2",
-        "frequency": 3317
+        "dest": "ff02::fb",
+        "frequency": 4
     },
     {
-        "dest": "10.128.0.2",
-        "frequency": 1658
+        "dest": "224.0.0.251",
+        "frequency": 3
+    },
+    {
+        "dest": "255.255.255.255",
+        "frequency": 1
+    },
+    {
+        "dest": "192.168.1.69",
+        "frequency": 1
+    },
+    {
+        "dest": "192.168.1.48",
+        "frequency": 1
+    },
+    {
+        "dest": "192.168.1.62",
+        "frequency": 1
+    },
+    {
+        "dest": "192.168.1.170",
+        "frequency": 1
     }
 ]

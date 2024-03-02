@@ -1,4 +1,19 @@
 {
-    "nodes": [],
-    "links": []
+    "nodes": [
+        {
+            "id": "fe80::d6f5:47ff:fe17:d85",
+            "size": 24
+        },
+        {
+            "id": "ff02::fb",
+            "size": 24
+        }
+    ],
+    "links": [
+        {
+            "source": "fe80::d6f5:47ff:fe17:d85",
+            "target": "ff02::fb",
+            "distance": 100
+        }
+    ]
 }

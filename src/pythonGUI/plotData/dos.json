@@ -3,12 +3,16 @@
     "explanation": "These addresses are sending a greater amount of traffic then the  and therefore are marked as suspicious.",
     "data": [
         {
-            "address": "10.0.0.2",
-            "rate": 64
+            "address": "192.168.1.1",
+            "rate": 0
         },
         {
-            "address": "10.128.0.2",
-            "rate": 45
+            "address": "192.168.1.69",
+            "rate": 1
+        },
+        {
+            "address": "fe80::d6f5:47ff:fe17:d85",
+            "rate": 2
         }
     ]
 }

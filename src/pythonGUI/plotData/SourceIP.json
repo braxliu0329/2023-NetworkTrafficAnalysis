@@ -1,10 +1,30 @@
 [
     {
-        "source": "10.128.0.2",
-        "frequency": 3317
+        "source": "fe80::d6f5:47ff:fe17:d85",
+        "frequency": 4
     },
     {
-        "source": "10.0.0.2",
-        "frequency": 1658
+        "source": "192.168.1.69",
+        "frequency": 2
+    },
+    {
+        "source": "192.168.1.1",
+        "frequency": 2
+    },
+    {
+        "source": "192.168.1.49",
+        "frequency": 1
+    },
+    {
+        "source": "192.168.1.60",
+        "frequency": 1
+    },
+    {
+        "source": "192.168.1.62",
+        "frequency": 1
+    },
+    {
+        "source": "192.168.1.48",
+        "frequency": 1
     }
 ]

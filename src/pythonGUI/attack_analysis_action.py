@@ -46,7 +46,7 @@ class AttackAnalysis():
                            "system. \nThe attacked addresses were marked because these addresses receive a greater " \
                            "amount of SYN requests than it sends SYN-ACK responses back, which is indicative that " \
                            "these addresses are being overwhelmed by SYN requests and cant response fast enough. "
-        if not syn_addresses.empty:
+        if syn_addresses is not None:
             data = {
                 "suspicious": suspicious_text,
                 "attacked": attacked_text,
@@ -80,7 +80,7 @@ class AttackAnalysis():
         explanation_text = "Addresses are marked as suspicious if the address sends SYN flags without receiving " \
                            "SYN-ACK packets and if the same address sends more SYN packets than the  within " \
                            "the time interval. "
-        if syn_rate:
+        if syn_rate is not None:
             data = {
                 "suspicious": suspicious_text,
                 "explanation": explanation_text,
@@ -113,7 +113,7 @@ class AttackAnalysis():
             suspicious_text = suspicious_text + suspicious_addresses
             explanation_label = QLabel(
                     "These addresses are sending a greater amount of traffic then the  and therefore are marked as suspicious.")
-        if pps_table:
+        if pps_table is not None:
             data = {
                 "suspicious": suspicious_text,
                 "explanation": "These addresses are sending a greater amount of traffic then the  and therefore are marked as suspicious.",
@@ -141,7 +141,7 @@ class AttackAnalysis():
             suspicious_text = suspicious_text + suspicious_addresses
         explanation_text = "These addresses were marked because the MAC addresses they originated from are associated " \
                            "with more than one IP address, which is erroneous and indicative of ARP Poisoning."
-        if mac_addr_fre:
+        if mac_addr_fre is not None:
             mac_addr = mac_addr_fre['MAC_addresses']
             frequency = mac_addr_fre['Frequency']
             data = {
@@ -196,7 +196,7 @@ class AttackAnalysis():
         explanation_text = "These addresses were marked because the HTTP Request packets sent from these addresses " \
                            "after a tcp connection are established are " \
                            "over too high a frequency. "
-        if not pps_dataframe.empty:
+        if pps_dataframe is not None:
             data = {
                 "suspicious": suspicious_text,
                 "explanation": explanation_text,
@@ -234,7 +234,7 @@ class AttackAnalysis():
             suspicious_text = request_suspicious_text + "\n" + response_suspicious_text
         explanation_text = "These addresses were marked because the DNS packets sent from these addresses are " \
                            "over too high a frequency. "
-        if pps_req or pps_res:
+        if pps_req is not None or pps_res is not None:
             res_data = {
                 "suspicious": suspicious_text,
                 "explanation": explanation_text,
