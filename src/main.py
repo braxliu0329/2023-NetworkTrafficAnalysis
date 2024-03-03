@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 import os.path
+import sys
 import hashlib
 
 from PyQt5.Qt import Qt, QCompleter
-from PyQt5.QtCore import QSortFilterProxyModel, QUrl
+from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal
 from PyQt5.QtGui import QColor, QCursor
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QTreeWidgetItem, QMenu, QAction
 from PyQt5.QtWidgets import QHeaderView, QAbstractItemView, QComboBox
@@ -37,6 +38,9 @@ def hex_packet_data(packet_data):
 
 # define the window class that inherits from the GUI window class and the main window class
 class Window(window.Ui_MainWindow, QMainWindow):
+
+    permission_allowed = pyqtSignal()
+
     def __init__(self):
         super(Window, self).__init__()
 
@@ -45,7 +49,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.detect = None
         self.cwd = None
         self.stopped_capture = False
-        self.capture_thread = None
         self.packet_number = 1
         # creates GUI_actions object
         self.GUI_actions = GUI_actions.GUIActions()
@@ -54,6 +57,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.flaggedIPs = []
         self.show_in_hex = None
         self.show_in_bin = None
+        self.capture_thread = None
 
         # create array which tracks currently marked packets
         self.marked_packets = dict()
@@ -228,6 +232,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         file_name, _ = QFileDialog.getOpenFileName(self, "Open file", "", 'pcap (*.pcap);;All files (*)')
         if file_name:
             self.GUI_actions.read_pcap(str(file_name), mainWindow)
+        else:
+            self.stop_capture()
 
     # opens pcap file(s) and displays its content
     def open_multiple_file(self):
@@ -290,19 +296,28 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.GUI_actions.sniffer.set_sniff_amount(self.lineEdit.text())
         self.GUI_actions.sniffer.set_filter(self.filterBox.currentText())
         # calls method in GUI_actions to start sniffer, passes window object through
-        self.GUI_actions.start_sniffer(True, mainWindow)
+        try:
+            self.GUI_actions.start_sniffer(True, mainWindow)
+        except PermissionError:
+            self.permission_allowed.emit()
 
+    # handles error raised by sniffer if user does not have capture permissions     
+    def handle_permision_error(self):
+        sys.stderr.write("PermissionError: You do not have permission to capture...\n")
+        sys.stderr.flush()
+        self.stop_capture()
+        self.open_alert("Permission Error", "You are not allowed to capture packets")
+    
     # initialises and starts packet capture thread
     def start_capture(self):
         self.actionStartCapture.setEnabled(False)
         self.actionPauseCapture.setEnabled(True)
         self.actionStopCaputure.setEnabled(True)
-
         # creates a thread to run simultaneously so the user can still interact with GUI
         self.capture_thread = threading.Thread(target=self.start_capture_thread)
         # starts running the thread
         self.capture_thread.start()
-
+        
     # open the graph subwindow
     def graph(self):
         data = self.GUI_actions.get_sniffed_packets()
@@ -708,7 +723,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
         selected_rows = [index.row() for index in selected_indexes]
         return selected_rows
 
-
     # data class to keep track of a marked packet, its hash, and its previous colour prior to marking
     @dataclass
     class MarkedPacket:
@@ -722,7 +736,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # finds all duplicates, used only in marking
     def find_duplicates(self, packet):
         details = str.splitlines(packet.show(dump=True))
-        hashed = hashlib.sha256(''.join(details).encode('utf-8')).hexdigest()
+        hashed = hashlib.sha256((str(packet.time) + ''.join(details)).encode('utf-8')).hexdigest()
         if hashed not in self.seen:
             self.seen.add(hashed)
         else:
@@ -730,8 +744,12 @@ class Window(window.Ui_MainWindow, QMainWindow):
         
     # given a row, hash a packet using its encoded details
     def hash_packet(self, row):
-        _, details = self.get_select_packet(row)
-        return hashlib.sha256(''.join(details).encode('utf-8')).hexdigest()
+        packet, details = self.get_select_packet(row)
+        # append the time to the packet details, thus ensuring packets with the same
+        # details aren't considered duplicates (A duplicate should be seen as two packets
+        # that are virtually indistinguishable, not two packets with the same "details")
+        tag = (str(packet.time) + ''.join(details)).encode('utf-8')
+        return hashlib.sha256(tag).hexdigest()
     
     # on every filter, reapply markings to packets
     def reapply_markers(self):
@@ -753,8 +771,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
         return rows
 
     # create a message box warning user of a marking conflict
-    def mark_and_ignore_alert(self):
+    def open_alert(self, title, warning):
         msgBox = message.MarkWaring(self)
+        msgBox.setWindowTitle(title)
+        msgBox.setText(warning)
         msgBox.exec_()
 
     # logic for marking a packet, as either a packet of interest or ignoring it
@@ -767,8 +787,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
             marked_packet = self.marked_packets[hashed_packet]
             # if we try to mark and ignored packet, or ignore a marked packet, we launch a message box warning us
             if (ignore and marked_packet.marked) or (marked_packet.ignored and mark):
-                self.mark_and_ignore_alert()
-                return
+                self.open_alert("Marking Warning", "You are trying to mark an ignored packet, or ignore a marked packet")
+                return 1
             # if this packet is a duplicate, we unmark all duplicates
             if marked_packet.hash in self.duplicates:
                 duplicate_rows = self.get_rows_from_hash(marked_packet.hash)
@@ -788,6 +808,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
             previous_color = cell.background().color()
             red, green, blue = (previous_color.red(), previous_color.green(), previous_color.blue())
             marked_packet = self.MarkedPacket(hashed_packet, red, green, blue, False, True)
+            if ignore:
+                marked_packet.ignored = True
+                marked_packet.marked = False
             # if this packet is a duplicate, we will mark all duplicates
             if hashed_packet in self.duplicates:
                 duplicate_rows = self.get_rows_from_hash(hashed_packet)
@@ -805,7 +828,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 if ignore:
                     packet, _ = self.get_select_packet(row)
                     self.GUI_actions.sniffer.ignored_packets.append(packet)
-                    marked_packet.ignored = True
                     self.set_background(row, 255, 255, 255)
                 else:
                     self.set_background(row, 0, 0, 0)
@@ -822,7 +844,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 continue
             if hash in self.duplicates:
                 local_duplicates.add(hash)
-            self.marker(row, False, True)
+            if self.marker(row, False, True) == 1:
+                return
 
     # mark all visible packets
     def mark_all_displayed(self):
@@ -835,7 +858,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     continue
                 if hash in self.duplicates:
                     local_duplicates.add(hash)
-                self.marker(row, False, True)
+                if self.marker(row, False, True) == 1:
+                    return
         
     # unmark all visible packets
     def unmark_all_displayed(self):
@@ -848,7 +872,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     continue
                 if hash in self.duplicates:
                     local_duplicates.add(hash)
-                self.marker(row, False, True)
+                if self.marked_packets[hash].marked:
+                    if self.marker(row, False, True) == 1:
+                        return
 
     # mark a packet or packets as ignored, or unmark it as such
     def ignore_packet(self):
@@ -860,7 +886,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 continue
             if hash in self.duplicates:
                 local_duplicates.add(hash)
-            self.marker(row, True, False)
+            if self.marker(row, True, False) == 1:
+                return
 
     # ignores all visible packets
     def ignore_all_displayed(self):
@@ -872,7 +899,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     continue
                 if hash in self.duplicates:
                     local_duplicates.add(hash)
-                self.marker(row, True, False)
+                if self.marker(row, True, False) == 1:
+                    return
 
     # removes all markings that say a packet is ignored for visible packets
     def unignore_all_displayed(self):
@@ -884,7 +912,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     continue
                 if hash in self.duplicates:
                     local_duplicates.add(hash)
-                self.marker(row, True, False)
+                if self.marked_packets[hash].ignored:
+                    if self.marker(row, True, False) == 1:
+                        return
 
     # use <ENTER> in filter box of the GUI to select filter
     def enter_keypress(self, key): # key refers to the key that was pressed
@@ -922,11 +952,11 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.detect = attack_detection.AttackDetection(plotter.data_frame)
         self.detect.tcp_syn_flood_detect()
 
-
 # ran first and intialises PyQt window
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainWindow = Window()
+    mainWindow.permission_allowed.connect(mainWindow.handle_permision_error)
     app.setStyle('Fusion')
     mainWindow.show()
     sys.exit(app.exec_())

@@ -176,3 +176,19 @@ Others Present: Louis Goodland (Client)
  - Tomos will continue working on the CLI implementation in Go
  - Ani will continue working on the react side of the GUI
  - Tony will continue implementing attack detections
+
+## Group Meeting 21/02/2024
+Group Members Present: Tomos, Tony
+Group Members Absent: Ani, Joe
+### Progress
+ - Tomos has implemented the attack analysis methods in Go
+ - Tony has implemented SSL stripping
+### Testing Feedback
+ - During testing day, consensus was split about having the attack analysis window embedded within the program or on a webopage separately
+ - Some result say the GUI is unintiutive
+ - On some laptops, the important stop and start buttons are too small
+ - Other feedback will be collated
+ - The new graphs could be hard to follow, and might need a redesign
+### Next Steps
+ - Tony will work on the analysis window for all of the new attack analyses
+ - Tomos will collate all the research, along with working on Main for the Go implementation

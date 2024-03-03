@@ -25,7 +25,37 @@ class MyTestCase(unittest.TestCase):
         read_packets = self.actions.get_sniffed_packets()
         # define the method to detect attacks using the sniffed packets
         return attack_detection.AttackDetection(read_packets, [])
+ 
+    def test_ssl_stripping(self):
+        attack_false_detect = self.setUpAttackDetection("SYN")
+        attack_detect = self.setUpAttackDetection("ssl_stripping")
+        known_source = "192.168.1.100"
+        known_destination = "192.168.1.1"
 
+        attack_detect.ssl_stripping()
+
+        suspicious_source_address = attack_detect.ssl_stripping_suspicious_source_address
+        suspicious_destination_address = attack_detect.ssl_stripping_suspicious_destination_address
+
+        attack_false_detect.ssl_stripping()
+        false_suspicious_source_address = attack_false_detect.ssl_stripping_suspicious_source_address
+        false_suspicious_destination_address = attack_false_detect.ssl_stripping_suspicious_destination_address
+
+        self.assertFalse(false_suspicious_source_address, "The SSL_Stripping Attack Analysis has detected false "
+                                                          "suspicious source addresses ")
+        self.assertFalse(false_suspicious_destination_address, "The SSL_Stripping Attack Analysis has detected "
+                                                               "false destination addresses")
+
+        # Tests whether the known suspicious and victim addresses appeared in the correct lists
+        self.assertIn(known_source, suspicious_source_address,
+                      "The SSL_Stripping Attack Analysis has not detected an expected suspicious address")
+        self.assertIn(known_destination, suspicious_destination_address,
+                      "The SSL_Stripping Attack Analysis has not detected an expected victim address")
+        self.assertNotIn(known_source, suspicious_destination_address,
+                         "The SSL_Stripping Attack Analysis has identified a suspicious address as an attacked address")
+        self.assertNotIn(known_destination, suspicious_source_address,
+                         "The SSL_Stripping Attack Analysis has identified an attacked address as a suspicious address")
+        
     def test_udp_flood(self):
         # set up an attack detection using a pcap file without udp flood attacks
         attack_false_detect = self.setUpAttackDetection("dns")

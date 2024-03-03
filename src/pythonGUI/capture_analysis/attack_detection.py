@@ -22,6 +22,7 @@ class AttackDetection:
     # initialise attack detection variables
     def __init__(self, data, flagged_IPs):
         # initialise all flagged ip addresses as empty
+        self.ssl_stripping_suspicious_address = None
         self.udp_suspicious = None
         self.arp_suspicious_addresses = None
         self.icmp_suspicious = None
@@ -54,9 +55,6 @@ class AttackDetection:
                 self.suspicious_addresses.append(ip)
 
     def tcp_syn_flood_detect(self):
-        # creates canvas
-        canvas = EmbeddedCanvas(self)
-
         # initialises suspicious address lists
         self.tcp_suspicious_addresses = []
         self.attacked_addresses = []
@@ -92,12 +90,6 @@ class AttackDetection:
                                   axis=1).reset_index()
         syn_addresses.columns = ['Address', 'SendsSYN', 'ReceivesSYN', 'SendsSYN-ACK', 'ReceivesSYN-ACK']
         syn_addresses = syn_addresses.replace(np.nan, 0)
-
-        # plots graph with these values
-        tcpsyn_graph = syn_addresses.plot(ax=canvas.axes, x="Address",
-                                          y=["SendsSYN", "ReceivesSYN", "SendsSYN-ACK", "ReceivesSYN-ACK"], kind="barh")
-        tcpsyn_graph.set(title="TCP SYN Flood", xlabel="Packets")
-
         for index, row in syn_addresses.iterrows():
             address = row['Address']
             # add to attacked addresses if receives more SYN packets than SYN-ACK packets sent back
@@ -110,11 +102,9 @@ class AttackDetection:
                 if address not in self.tcp_suspicious_addresses:
                     self.tcp_suspicious_addresses.append(address)
         # return the plotted graph
-        return canvas
+        return syn_addresses
 
     def tcp_connect_scanning_detect(self, threshold):
-        # create an empty canvas to store data points
-        canvas = EmbeddedCanvas()
         # initialise suspicious addresses as an empty list
         self.tcp_scanning_suspicious = []
         # Sets interval time
@@ -178,15 +168,9 @@ class AttackDetection:
         # if this dataframe is empty, return None as a tcp connect attack is unfeasible
         if syn_rate_df.empty:
             return None
-        # create the graph to display the data points
-        tcp_con_graph = syn_rate_df.plot(ax=canvas.axes, x="Address", kind='barh', legend=False)
-        tcp_con_graph.axvline(threshold, color='r', linestyle='--')
-        tcp_con_graph.set(xlabel="SYN sending rate (packets/sec)")
-
         # initialise lists to contain the tcp connection count and time
         tcp_connection_count = {}
         tcp_connection_time = {}
-
         # The detection requires two steps to be suspicious:
         # 1. If the address sends SYN flags without receiving SYN-ACK packets
         # 2. If the same address sends more SYN packets than the threshold within the time interval
@@ -218,9 +202,8 @@ class AttackDetection:
                             tcp_connection_count[src_ip] = 0
                             tcp_connection_time[src_ip] = r['Time']
                     tcp_connection_count[src_ip] += 1
-
         # return the dataframe to be displayed
-        return canvas
+        return syn_rate
 
     def arp_poison_detect(self):
         # initialise arp suspicious addresses
@@ -292,7 +275,7 @@ class AttackDetection:
                 self.suspicious_addresses.append(address)
 
         # return the canvas to graphically display the suspicious addresses
-        return canvas
+        return canvas, mac_freq_table
 
     # Simple detection to see if pps are above a threshold
     def threshold_dos_detect(self, threshold):
@@ -345,7 +328,7 @@ class AttackDetection:
                     self.suspicious_addresses.append(address["Address"])
 
         # return the dataframe to be graphically represented
-        return canvas
+        return canvas, pps_table
 
     def icmp_flood_detect(self, threshold):
         # initialise icmp suspicious addresses
@@ -375,7 +358,7 @@ class AttackDetection:
         pps_graph.axvline(threshold, color='r', linestyle='--')
 
         # return the created graph to be represented on the GUI
-        return canvas
+        return canvas, pps_dataframe
 
     def http_attack(self, threshold):
         self.http_suspicious = []
@@ -450,8 +433,7 @@ class AttackDetection:
         pps_graph.set(title="HTTP Request Flood Detection", xlabel="Packets Per Second")
         pps_graph.locator_params(axis="x", integer=True, tight=True)
         pps_graph.axvline(threshold, color='r', linestyle='--')
-
-        return canvas
+        return canvas, pps_dataframe
 
     def dns_request_response_detect(self, threshold):
         canvas = EmbeddedCanvas()
@@ -475,10 +457,10 @@ class AttackDetection:
         dns_response_addresses = dns_responses['SourceIP'].unique()
 
         # Calculates packets per second for dns requests
-        pps_table = self.calc_pps(dns_request_addresses, dns_requests, self.dns_request_suspicious, threshold)
+        pps_table_req = self.calc_pps(dns_request_addresses, dns_requests, self.dns_request_suspicious, threshold)
 
         # creates dataframe from dictionary
-        pps_dataframe = pd.DataFrame.from_dict(pps_table)
+        pps_dataframe = pd.DataFrame.from_dict(pps_table_req)
 
         # creates graph from dataframe
         pps_graph = pps_dataframe.plot(ax=canvas.axes, kind='barh', x="Address", legend=False)
@@ -487,10 +469,10 @@ class AttackDetection:
         pps_graph.axvline(threshold, color='r', linestyle='--')
 
         # Calculates packets per second for dns_responses
-        pps_table = self.calc_pps(dns_response_addresses, dns_responses, self.dns_response_suspicious, threshold)
+        pps_table_res = self.calc_pps(dns_response_addresses, dns_responses, self.dns_response_suspicious, threshold)
 
         # creates dataframe from dictionary
-        pps2_dataframe = pd.DataFrame.from_dict(pps_table)
+        pps2_dataframe = pd.DataFrame.from_dict(pps_table_res)
 
         # creates graph from dataframe
         pps2_graph = pps2_dataframe.plot(ax=canvas2.axes, kind='barh', x="Address", legend=False)
@@ -499,9 +481,45 @@ class AttackDetection:
         pps2_graph.axvline(threshold, color='r', linestyle='--')
 
         # Returns both graphs
-        return [canvas, canvas2]
+        return [canvas, canvas2], pps_table_res, pps_table_req
+
 
         # -------------Below are new attack methods----------------
+    def ssl_stripping(self):
+        # create canvas
+        canvas = EmbeddedCanvas(self)
+
+        # initialises suspicious addresses address lists
+        self.ssl_stripping_suspicious_source_address = []
+        self.ssl_stripping_suspicious_destination_address = []
+
+        # check for HTTP traffic on port 443, suppose to be HTTPS rather than HTTP
+        for index, row in self.dataframe.iterrows():
+            if row['Protocol'] == 'TCP' and row['DestinationPort'] == 443:
+
+                self.ssl_stripping_suspicious_source_address.append(row['SourceIP'])
+                self.ssl_stripping_suspicious_destination_address.append(row['DestIP'])
+
+        http_packets = self.dataframe[(self.dataframe['Protocol'] == 'TCP') & (self.dataframe['DestinationPort'] == 443)]
+        if http_packets.empty:
+            return None
+
+        # Create dataframes from the lists of suspicious addresses
+        source_addresses_df = pd.DataFrame(self.ssl_stripping_suspicious_source_address, columns=["Suspicious Source IPs"])
+        destination_addresses_df = pd.DataFrame(self.ssl_stripping_suspicious_destination_address,
+                                                columns=["Suspicious Destination IPs"])
+
+        # Count the number of occurrences for each IP
+        source_counts = source_addresses_df["Suspicious Source IPs"].value_counts().rename_axis('Source IP').reset_index(
+            name="Counts")
+        destination_counts = destination_addresses_df["Suspicious Destination IPs"].value_counts().rename_axis(
+            'Destination IP').reset_index(name="Counts")
+
+        # Creates graphs from dataframes
+        # For Source IPs
+        # source_graph = source_counts.plot(ax=canvas.axes, kind='barh', x='Source IP', y='Counts', legend=False)
+        # source_graph.set_title("SSL Stripping Suspicious Source IPs", xlabel="Count number", ylabel="Source IP")
+
     def udp_flood_detect(self, threshold):
         # initialise udp suspicious addresses
         self.udp_suspicious = []

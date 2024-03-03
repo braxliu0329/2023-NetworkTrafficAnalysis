@@ -30,9 +30,9 @@ func sliceEqual(s []string, t []string) bool {
 // test the TCP Flood detection for the CLI tool is working as expected
 func TestTcpFlood(t *testing.T) {
 	// detect an attack using a pcap file without tcp flood attacks
-	attackFalseDetect := tcpSynFloodDetect("dns")
+	attackFalseDetect := tcpSynFloodDetect("test_pcaps/dns")
 	// detect an attack using a pcap file with a tcp flood attack
-	attackDetect := tcpSynFloodDetect("SYN")
+	attackDetect := tcpSynFloodDetect("test_pcaps/SYN")
 
 	// expected suspicious address
 	knownSuspicious := []string{"10.128.0.2"}
@@ -59,11 +59,11 @@ func TestTcpFlood(t *testing.T) {
 // test the TCP Connect Scanning detection for the CLI tool is working as expected
 func TestTcpConnectScanningFlood(t *testing.T) {
 	// detect an attack using a pcap file without tcp flood attacks
-	attackFalseDetect := tcpConnectScanDetect("dns", 100)
+	attackFalseDetect := tcpConnectScanDetect("test_pcaps/dns", 100)
 	// detect an attack using a high threshold
-	attackDetectThreshold := tcpConnectScanDetect("SYN", 10000)
+	attackDetectThreshold := tcpConnectScanDetect("test_pcaps/SYN", 10000)
 	// detect an attack using a pcap file with a tcp flood attack
-	attackDetect := tcpConnectScanDetect("SYN", 100)
+	attackDetect := tcpConnectScanDetect("test_pcaps/SYN", 100)
 
 	// expected suspicious address
 	knownSuspicious := []string{"10.128.0.2"}
@@ -86,9 +86,9 @@ func TestTcpConnectScanningFlood(t *testing.T) {
 // test the ARP poison detection for the CLI tool is working as expected
 func TestARPPoison(t *testing.T) {
 	// detect an attack using a pcap file without arp poisoning attacks
-	attackFalseDetect := arpPoisonDetect("dns")
+	attackFalseDetect := arpPoisonDetect("test_pcaps/dns")
 	// detect an attack using a pcap file with arp poisoning attacks
-	attackDetect := arpPoisonDetect("arp-poisoning")
+	attackDetect := arpPoisonDetect("test_pcaps/arp-poisoning")
 
 	// expected suspicious address
 	knownSuspicious := []string{"192.168.1.1", "192.168.1.254"}
@@ -107,11 +107,11 @@ func TestARPPoison(t *testing.T) {
 // test the ICMP Flood detection for the CLI tool is working as expected
 func TestIcmpFlood(t *testing.T) {
 	// detect an attack using a pcap file without icmp flood attacks
-	attackFalseDetect := icmpFloodDetect("dns", 100)
+	attackFalseDetect := icmpFloodDetect("test_pcaps/dns", 100)
 	// detect an attack using a high threshold
-	attackDetectThreshold := icmpFloodDetect("icmp-ping", 10000)
+	attackDetectThreshold := icmpFloodDetect("test_pcaps/icmp-ping", 10000)
 	// detect an attack using a pcap file with an icmp flood attack
-	attackDetect := icmpFloodDetect("icmp-ping", 100)
+	attackDetect := icmpFloodDetect("test_pcaps/icmp-ping", 100)
 
 	// expected suspicious address
 	knownSuspicious := []string{"10.0.0.2"}
@@ -134,14 +134,14 @@ func TestIcmpFlood(t *testing.T) {
 // test the HTTP Flood detection for the CLI tool is working as expected
 func TestHttpFlood(t *testing.T) {
 	// detect an attack using a pcap file without http flood attacks
-	attackFalseDetect := httpFloodDetect("dns", 5)
+	attackFalseDetect := httpFloodDetect("test_pcaps/dns", 5)
 	// detect an attack using a high threshold
-	attackDetectThreshold := httpFloodDetect("http-flood", 500)
+	attackDetectThreshold := httpFloodDetect("test_pcaps/http-flood", 500)
 	// detect an attack using a pcap file with an icmp flood attack
-	attackDetect := httpFloodDetect("http-flood", 5)
+	attackDetect := httpFloodDetect("test_pcaps/http-flood", 5)
 
 	// expected suspicious address
-	knownSuspicious := []string{"10.0.0.2"}
+	knownSuspicious := []string{"10.128.0.2"}
 
 	// ensure that the method does not incur any false positives
 	if len(attackFalseDetect) > 0 {
@@ -161,11 +161,11 @@ func TestHttpFlood(t *testing.T) {
 // test the DNS Request Response detection for the CLI tool is working as expected
 func TestDns(t *testing.T) {
 	// detect an attack using a pcap file without http flood attacks
-	attackFalseDetect := dnsRequestResponse("http-flood", 20)
+	attackFalseDetect := dnsRequestResponse("test_pcaps/http-flood", 20)
 	// detect an attack using a high threshold
-	attackDetectThreshold := dnsRequestResponse("dns", 500)
+	attackDetectThreshold := dnsRequestResponse("test_pcaps/dns", 500)
 	// detect an attack using a pcap file with an icmp flood attack
-	attackDetect := dnsRequestResponse("dns", 20)
+	attackDetect := dnsRequestResponse("test_pcaps/dns", 20)
 
 	// expected suspicious addresses
 	knownRequestSuspicious := []string{"207.86.6.174"}
@@ -181,7 +181,7 @@ func TestDns(t *testing.T) {
 	}
 
 	// tests whether the known suspicious addresses appeared in the correct list
-	if !(sliceEqual(attackDetect.attacked, knownResponseSuspicious) && sliceEqual(attackDetect.suspicious, knownResponseSuspicious)) {
+	if !(sliceEqual(attackDetect.attacked, knownResponseSuspicious) && sliceEqual(attackDetect.suspicious, knownRequestSuspicious)) {
 		t.Fatalf("Expected suspicious addresses %v, got %v instead", Report{knownRequestSuspicious, knownResponseSuspicious}, attackDetect)
 	}
 }
