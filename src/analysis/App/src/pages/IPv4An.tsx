@@ -34,9 +34,6 @@ function IPv4An() {
             console.error(error);
         }
     };
-
-    
-
     return (
         <div className="Analysis">
             <h1 className="title">IPv4 Analysis</h1>

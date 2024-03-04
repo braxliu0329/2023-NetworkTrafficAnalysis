@@ -1,18 +1,40 @@
-import data from "../../../../pythonGUI/plotData/dos.json";
+import React from "react";
 import FrequencyGraph from "../components/FrequencyGraph";
 import { useState, useEffect } from 'react';
 
 function ICMPFlood() {
+    const [data, setData] = React.useState({} as any);
     const [chartHeight, setChartHeight] = useState<number | string>('auto');
-    // Sets heights based on number of addresses
+
+    // Fetch data from the backend when the component mounts
     useEffect(() => {
-        const numEntries = data.data.length;
-        let calculatedHeight = 400;
-        if (numEntries > 20) {
-            calculatedHeight = numEntries * 25;
+        fetchData();
+        const interval = setInterval(fetchData, 5000)
+        return () => clearInterval(interval)
+       
+    }, []);
+
+    // Fetch data from the backend
+    const fetchData = async () => {
+        try {
+            const response = await fetch('/api/icmpflooddata');
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+            const jsonData = await response.json();
+            setData(jsonData);
+
+            // Calculate chart height based on number of nodes
+            const numNodes = jsonData.nodes.length;
+            let calculatedHeight = 400;
+            if (numNodes > 20) {
+                calculatedHeight = numNodes * 20;
+            }
+            setChartHeight(calculatedHeight);
+        } catch (error) {
+            console.error(error);
         }
-        setChartHeight(calculatedHeight);
-    }, [data]);
+    };
     return (
         <div className="analysis">
             <h1 className="title">ICMP Ping Flood Detection</h1>
