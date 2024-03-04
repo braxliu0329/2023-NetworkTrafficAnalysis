@@ -92,11 +92,15 @@ _When finished running the program, don't forget to deactivate the virtual envir
 
 ## Deployment Instructions
 
-- Run main.py with command
+- Navigate to the Yarn environment and build the app
 ```
-python src/main.py
+cd src/analysis/App
+yarn build
 ```
-
+- Then return to the root directory and run the shell script
+```
+./run.sh
+```
 _(MacOS) When prompted to configure Python interpreter, select conda interpreter_
 
 ## License
