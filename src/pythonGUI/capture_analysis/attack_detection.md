@@ -266,7 +266,7 @@ as a suspicious address and plots it on the graph.
 After finishing analyses, the final state of the canvas is returned to graphically represent the suspicious addresses.
 
 ### ARP Poison Detection
-`arp_poison_detect` scans all provided TCP packets for signs of an ARP Poisoning Attack. It is expected that each packet's mac address has one associated ip address. If this is nt the case, the address is marked as suspicious for ARP Poisoning.
+`arp_poison_detect` scans all provided TCP packets for signs of an ARP Poisoning Attack. It is expected that each packet's mac address has one associated ip address. If this is not the case, the address is marked as suspicious for ARP Poisoning.
 ```cython
 def arp_poison_detect(self):
         # initialise this arp suspicious addresses

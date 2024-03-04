@@ -6,7 +6,7 @@ Attack analysis tests is a file that makes use of python unit tests to assert th
 import unittest
 import matplotlib
 matplotlib.use('Agg')
-from pythonGUI.capture_analysis import attack_detection, GUI_actions
+from src.pythonGUI.capture_analysis import attack_detection, GUI_actions
 ```
 Attack analysis tests imports the following libraries and code:
  - unittest - The python framework for implementing unit tests

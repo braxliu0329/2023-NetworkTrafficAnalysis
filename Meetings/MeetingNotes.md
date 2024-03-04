@@ -129,3 +129,66 @@ Others Present: Oliver (Mentor)
  - Joe will finish adding install instructions for pcap and look into a new attack 
  - Tony will continue looking into new attack methods
  - Ani will continue working on the GUI
+
+## Client Meeting 31/01/2024 ##
+Group Members Present: Tomos, Tony, Joe  
+Others Present: Louis Goodland (Client)
+### The Minimum Viable Product
+  - The current state of the new GUI was showcased
+  - The documentation of the code was displayed
+### Client Communication
+  - The next meeting was provisionally scheduled for Wednesday 14th 12:00
+  - Weekly update emails will be sent to the client
+### Next Steps
+  - Tomos will start work on the GO CLI implementation
+  - Joe and Tony will add new attack method analyses
+  - Ani will polish and finish the GUI
+
+## Group Mentor Meeting 07/02/2024
+ Group Members Present: Ani, Tomos, Tony
+ Others Present: Oliver (Mentor)
+### Rankings and Feedback
+ - Rankings have gone up - we are currently 10th
+ - The Readme structure can be changed - only one bullet point per user
+### Progress
+ - Tomos has begun working on the GO CLI Implementation
+ - Ani is working on the final aspects of the GUI
+ - Tony has implemented a new attack analysis method
+### Next Steps
+ - An email will be sent to the client updating him on this week's progress
+ - Ani will finish up the GUI
+ - Tony and Joe will continue adding more attack analyses
+ - Tomos will look into setting up continuous development
+
+## Client Meeting 14/02/2024
+Group Members Present: Tomos, Ani, Tony
+Group Members Absent: Joe
+Others Present: Louis Goodland (Client)
+### Progress
+ - Ani has continued work on the GUI - to fix and improve the graphs from the existing GUI, a local react page has been made to dynamically display attack analyses.
+ - Tony has worked on developing new attack detection methods - UDP Flood detection and SSL Stripping
+ - Joe has been working on DNS amplification detection
+### Feedback
+ - The CLI analysis tool should be more of a "packet disector" than a packet analysis tool
+ - GUI feedback:
+ ![image](https://github.com/spe-uob/2023-NetworkTrafficAnalysis/assets/123552121/0738a737-a676-4c8a-8234-dd580618fa14)
+### Next Steps
+ - Tomos will continue working on the CLI implementation in Go
+ - Ani will continue working on the react side of the GUI
+ - Tony will continue implementing attack detections
+
+## Group Meeting 21/02/2024
+Group Members Present: Tomos, Tony
+Group Members Absent: Ani, Joe
+### Progress
+ - Tomos has implemented the attack analysis methods in Go
+ - Tony has implemented SSL stripping
+### Testing Feedback
+ - During testing day, consensus was split about having the attack analysis window embedded within the program or on a webopage separately
+ - Some result say the GUI is unintiutive
+ - On some laptops, the important stop and start buttons are too small
+ - Other feedback will be collated
+ - The new graphs could be hard to follow, and might need a redesign
+### Next Steps
+ - Tony will work on the analysis window for all of the new attack analyses
+ - Tomos will collate all the research, along with working on Main for the Go implementation
