@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from functools import partial
 import os.path
+import signal
 import sys
 import hashlib
+
 
 from PyQt5.Qt import Qt, QCompleter
 from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal
@@ -35,7 +37,6 @@ def hex_packet_data(packet_data):
         result.append("{0:04X}".format(i) + ' --- ' + hexa.ljust(16 * (digits + 1)) + ' --- ' + "{0}".format(text))
 
     return ' --- '.join(result)
-
 
 
 
@@ -156,6 +157,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionIgnorePacket.triggered.connect(self.ignore_packet)
         self.actionIgnoreAllDisplayed.triggered.connect(self.ignore_all_displayed)
         self.actionUnignoreAllDisplayed.triggered.connect(self.unignore_all_displayed)
+        webbrowser.open("http://localhost:8080")
 
     # Helper function to get the current row of the capture list
     def get_current_list_row(self):
@@ -363,8 +365,12 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
     # sets the stop_event which tells all threads that they should terminate
     # since the sniffer can simply be disabled using start_sniffer, only the analysis thread
-    # is told to stop using stop_event
+    # is told to stop using stop_event. Additionally, sends a SIGINT to the server to shut it down.
     def closeEvent(self, event):
+        with open("src/analysis/backend/pid.txt", "r+") as f:
+            pid = f.read()
+            os.kill(int(pid), signal.SIGINT)
+        os.remove("src/analysis/backend/pid.txt")
         self.stop_event.set()
         self.GUI_actions.start_sniffer(False, mainWindow)
         event.accept()
