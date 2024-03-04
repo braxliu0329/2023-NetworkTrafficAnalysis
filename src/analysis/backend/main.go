@@ -1,31 +1,31 @@
 package main
 
 import (
-	"fmt"
-	"io"
+	"context"
+	"log"
 	"net/http"
 	"os"
 	"path"
+	"src/analysis/backend/api"
 	"strings"
+	"sync"
 )
 
 const FSPATH = "../App/dist/"
+const ENDPOINT = ":8080"
+
+var ctxShutdown, cancel = context.WithCancel(context.Background())
 
 func main() {
+	serverDone := &sync.WaitGroup{}
+	serverDone.Add(1)
+	Start(serverDone)
+	serverDone.Wait()
+}
+
+func Start(wg *sync.WaitGroup) {
 	fs := http.FileServer(http.Dir(FSPATH))
-	http.HandleFunc("/api/ipv4data", func(w http.ResponseWriter, r *http.Request) {
-		jsonFile, err := os.Open("../../pythonGUI/plotData/ipv4.json")
-		if err != nil {
-			fmt.Println("Error opening JSON...")
-		}
-		defer jsonFile.Close()
-		jsonData, err := io.ReadAll(jsonFile)
-		if err != nil {
-			http.Error(w, "Unable to read JSON file", http.StatusInternalServerError)
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(jsonData)
-	})
+	api.Run()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
@@ -40,5 +40,15 @@ func main() {
 		}
 		fs.ServeHTTP(w, r)
 	})
-	http.ListenAndServe(":8080", nil)
+	srv := &http.Server{
+		Addr: ENDPOINT,
+	}
+	api.Shutdown(srv, ctxShutdown, cancel)
+	go func() {
+		defer wg.Done()
+		log.Println("Running server on http://localhost:8080")
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe(): %v", err)
+		}
+	}()
 }
