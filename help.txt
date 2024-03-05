@@ -10,6 +10,6 @@ Options:
     -h --help           Show usage instructions
     --monitor           Run sniffer in monitor mode (Disabled by default)
     --promiscuous       Run sniffer in promiscuous mode (Disabled by default)
-    --analysis    Enable web server for analysis (EDisabled by default)
+    --analysis          Enable web server for analysis (Disabled by default)
     --version           Show version
     

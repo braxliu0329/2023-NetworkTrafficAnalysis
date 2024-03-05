@@ -13,7 +13,7 @@ for arg in "$@"; do
         "--analysis")
             if [[ $# -eq 2 ]]
             then
-                if [[ "$2" = "--help" || "$2" -eq "--version" ]]
+                if [[ "$2" = "--help" || "$2" -eq "--version" || "$2" != "--monitor" || "$2" != "--promiscuous" ]]
                 then
                     echo "Usage: ./run.sh [--analysis] [--monitor | --promiscuous]"
                     exit
@@ -34,6 +34,11 @@ for arg in "$@"; do
                     echo "Usage: ./run.sh [--analysis][--monitor | --promiscuous]"
                     exit
                 fi
+                if [[ "$2" != "--analisys" ]]
+                then
+                    echo "Usage: ./run.sh [--analysis][--monitor | --promiscuous]"
+                    exit
+                fi
             fi
             monitor=true
             ;;
@@ -46,6 +51,11 @@ for arg in "$@"; do
                     echo "Usage: ./run.sh [--analysis][--monitor | --promiscuous]"
                     exit
                 fi
+                if [[ "$2" != "--analisys" ]]
+                then
+                    echo "Usage: ./run.sh [--analysis][--monitor | --promiscuous]"
+                    exit
+                fi
             fi
             promiscuous=true
             ;;
@@ -55,8 +65,11 @@ for arg in "$@"; do
         "--version")
             echo "1.0a"
             exit;;
+        *)
+            cat help.txt
+            exit;;
     esac
 done
 
-python3 src/main.py
+python3 src/main.py $analysis $promiscuous $monitor
 

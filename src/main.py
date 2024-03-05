@@ -44,12 +44,15 @@ def hex_packet_data(packet_data):
 class Window(window.Ui_MainWindow, QMainWindow):
 
     permission_allowed = pyqtSignal()
+    _ANALYSIS = sys.argv[1]
+    _MONITOR = sys.argv[2]
+    _PROMISCUOUS = sys.argv[3]
 
     def __init__(self):
         super(Window, self).__init__()
 
         self.data_box_menu = QMenu(self)
-
+        
         self.detect = None
         self.cwd = None
         self.stopped_capture = True
@@ -92,6 +95,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # set the analysis menu
         self.actionStartAnalysis.triggered.connect(self.start_analysis)
+        self.actionAttack_Analysis.triggered.connect(self.start_analysis)
         
 
 
@@ -157,7 +161,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionIgnorePacket.triggered.connect(self.ignore_packet)
         self.actionIgnoreAllDisplayed.triggered.connect(self.ignore_all_displayed)
         self.actionUnignoreAllDisplayed.triggered.connect(self.unignore_all_displayed)
-        webbrowser.open("http://localhost:8080")
+        if self._ANALYSIS == "true":
+            webbrowser.open("http://localhost:8080")
 
     # Helper function to get the current row of the capture list
     def get_current_list_row(self):
@@ -367,10 +372,11 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # since the sniffer can simply be disabled using start_sniffer, only the analysis thread
     # is told to stop using stop_event. Additionally, sends a SIGINT to the server to shut it down.
     def closeEvent(self, event):
-        with open("src/analysis/backend/pid.txt", "r+") as f:
-            pid = f.read()
-            os.kill(int(pid), signal.SIGINT)
-        os.remove("src/analysis/backend/pid.txt")
+        if self._ANALYSIS == "true":
+            with open("src/analysis/backend/pid.txt", "r+") as f:
+                pid = f.read()
+                os.kill(int(pid), signal.SIGINT)
+            os.remove("src/analysis/backend/pid.txt")
         self.stop_event.set()
         self.GUI_actions.start_sniffer(False, mainWindow)
         event.accept()
