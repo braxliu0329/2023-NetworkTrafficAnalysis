@@ -242,8 +242,6 @@ class AttackDetection:
             mac_freq_table["MAC_addresses"].append(mac_addr)
             mac_freq_table["Frequency"].append(mac_addr_freq_list[index])
 
-        # initialise the dataframe with appropriate axes and titles
-        table_dataframe = pd.DataFrame.from_dict(mac_freq_table)
         # removes any repeated addresses
         self.arp_suspicious_addresses = list(dict.fromkeys(suspicious_addresses))
 
@@ -429,10 +427,13 @@ class AttackDetection:
         # check for HTTP traffic on port 443, suppose to be HTTPS rather than HTTP
         for index, row in self.dataframe.iterrows():
             if row['Protocol'] == 'TCP' and row['DestinationPort'] == 443:
-
-                self.ssl_stripping_suspicious_source_address.append(row['SourceIP'])
-                self.ssl_stripping_suspicious_destination_address.append(row['DestIP'])
-
+                source_ip = row['SourceIP']
+                dest_ip = row['DestIP']
+                if source_ip not in self.ssl_stripping_suspicious_source_address:
+                    self.ssl_stripping_suspicious_source_address.append(source_ip)
+                if dest_ip not in self.ssl_stripping_suspicious_destination_address:
+                    self.ssl_stripping_suspicious_destination_address.append(dest_ip)
+        
         http_packets = self.dataframe[(self.dataframe['Protocol'] == 'TCP') & (self.dataframe['DestinationPort'] == 443)]
         if http_packets.empty:
             return None
@@ -447,8 +448,7 @@ class AttackDetection:
             name="Counts")
         destination_counts = destination_addresses_df["Suspicious Destination IPs"].value_counts().rename_axis(
             'Destination IP').reset_index(name="Counts")
-        return (source_addresses_df, destination_addresses_df)
-
+        return (source_counts, destination_counts)
 
     def udp_flood_detect(self, threshold):
         # initialise udp suspicious addresses
@@ -466,7 +466,6 @@ class AttackDetection:
         # create the packets per second table using the calc_pps function. This will also populate the suspicious list
         # with all udp addresses that have a pps above the provided threshold
         pps_table = self.calc_pps(udp_addresses, udp_packets, self.udp_suspicious, threshold)
-        print(self.udp_suspicious)
         # creates dataframe from dictionary
         pps_dataframe = pd.DataFrame.from_dict(pps_table)
         return pps_dataframe

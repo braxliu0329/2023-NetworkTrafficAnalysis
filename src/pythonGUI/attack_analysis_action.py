@@ -27,7 +27,7 @@ class AttackAnalysis():
         syn_addresses = self.attack_detect.tcp_syn_flood_detect()
         suspicious = self.attack_detect.tcp_suspicious_addresses
         attacked = self.attack_detect.attacked_addresses
-       
+        
         if not suspicious:
             suspicious_text = "No suspicious addresses detected"
         elif suspicious:
@@ -292,6 +292,45 @@ class AttackAnalysis():
             with open("src/pythonGUI/plotData/udpflood.json", "w+") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
 
+    def ssl_stripping_detect(self):
+        source_df, dest_df = self.attack_detect.ssl_stripping()
+        suspicious_source = self.attack_detect.ssl_stripping_suspicious_source_address
+        suspicious_dest = self.attack_detect.ssl_stripping_suspicious_destination_address
+        suspicious_source_text = ""
+        suspicious_dest_text = ""
+        explanation_text = ""
+        if not suspicious_source:
+            suspicious_source_text = "No suspicious addresses detected"
+            explanation_text = ("These addresses were marked suspicious because the packets from these addresses were "
+                                "meant to use HTTPS but use HTTP instead.")
+        else:
+            suspicious_source_text = "Suspicious source addresses: " + ','.join(suspicious_source)
+        if suspicious_dest:
+            suspicious_dest_text = "Suspicious destination addresses: " + ','.join(suspicious_dest)
+        if source_df is not None and dest_df is not None:
+            source_data = {
+                "suspicious": suspicious_source_text + '\n' + suspicious_dest_text,
+                "explanation": explanation_text,
+                "data": []
+            }
+            dest_data = {
+                "data": []
+            }
+            for i in range(source_df.shape[0]):
+                source_data["data"].append({
+                    "address": source_df.loc[i, "Source IP"],
+                    "frequency": int(source_df.loc[i, "Counts"])
+                })
+            for i in range(dest_df.shape[0]):
+                dest_data["data"].append({
+                    "address": dest_df.loc[i, "Destination IP"],
+                    "frequency": int(dest_df.loc[i, "Counts"])
+                })
+            with open("src/pythonGUI/plotData/sslsource.json", "w+") as f:
+                json.dump(source_data, f, ensure_ascii=False, indent=4)
+            with open("src/pythonGUI/plotData/ssldest.json", "w+") as f:
+                json.dump(dest_data, f, ensure_ascii=False, indent=4)
+
     def run_all_detect(self):
         self.tcp_syn_flood_detect()
         self.tcp_scanning_detect()
@@ -301,6 +340,7 @@ class AttackAnalysis():
         self.http_flood_detect()
         self.dns_flood_detect()
         self.udp_flood_detect()
+        self.ssl_stripping_detect()
 
 
     
