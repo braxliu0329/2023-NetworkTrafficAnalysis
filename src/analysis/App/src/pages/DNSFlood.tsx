@@ -31,7 +31,7 @@ function DNSFlood() {
             const reqData = await responseReq.json()
             setReqData(reqData)
             // Calculate chart height based on number of nodes
-            const numNodes = resData.nodes.length;
+            const numNodes = resData.data.length;
             let calculatedHeight = 400;
             if (numNodes > 20) {
                 calculatedHeight = numNodes * 20;

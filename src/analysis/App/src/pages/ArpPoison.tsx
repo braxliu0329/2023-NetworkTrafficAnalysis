@@ -17,18 +17,18 @@ function ArpPoision() {
     // Fetch data from the backend
     const fetchData = async () => {
         try {
-            const response = await fetch('/api/ipv4data');
+            const response = await fetch('/api/arpdata');
             if (!response.ok) {
                 throw new Error('Failed to fetch data');
             }
             const jsonData = await response.json();
             setData(jsonData);
-
-            // Calculate chart height based on number of nodes
-            const numNodes = jsonData.nodes.length;
+            
+            // Calculate chart height based on number of Entries
+            const numEntries = jsonData.data.length;
             let calculatedHeight = 400;
-            if (numNodes > 5) {
-                calculatedHeight = numNodes * 25;
+            if (numEntries > 5) {
+                calculatedHeight = numEntries * 25;
             }
             setChartHeight(calculatedHeight);
         } catch (error) {
@@ -39,7 +39,7 @@ function ArpPoision() {
         <div className="analysis">
             <h1 className="title">Arp Poisoning</h1>
             <div style={{ height: chartHeight, width:1000, margin: "auto" }}>
-               <FrequencyGraph data={data.data} index="mac"/>
+               <FrequencyGraph data={data.data} index={"mac"}/>
             </div>
             <div style={{ textAlign: "center", maxWidth: 600, margin: "auto" }}>
                 <p><b>{data.suspicious}</b></p>

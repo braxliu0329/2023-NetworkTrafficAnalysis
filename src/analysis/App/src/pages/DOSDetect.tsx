@@ -24,11 +24,11 @@ function DOSDetect() {
             const jsonData = await response.json();
             setData(jsonData);
 
-            // Calculate chart height based on number of nodes
-            const numNodes = jsonData.nodes.length;
+            // Calculate chart height based on number of Entries
+            const numEntries = jsonData.data.length;
             let calculatedHeight = 400;
-            if (numNodes > 20) {
-                calculatedHeight = numNodes * 20;
+            if (numEntries > 5) {
+                calculatedHeight = numEntries * 25;
             }
             setChartHeight(calculatedHeight);
         } catch (error) {

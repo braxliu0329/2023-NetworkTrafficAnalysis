@@ -7,6 +7,22 @@ import (
 	"os"
 )
 
+func ARPPoison() {
+	http.HandleFunc("/api/arpdata", func(w http.ResponseWriter, r *http.Request) {
+		jsonFile, err := os.Open("../../pythonGUI/plotData/arp.json")
+		if err != nil {
+			fmt.Println("Error opening JSON...")
+		}
+		defer jsonFile.Close()
+		jsonData, err := io.ReadAll(jsonFile)
+		if err != nil {
+			http.Error(w, "Unable to read JSON file", http.StatusInternalServerError)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(jsonData)
+	})
+}
+
 func DNSRequest() {
 	http.HandleFunc("/api/dnsreqdata", func(w http.ResponseWriter, r *http.Request) {
 		jsonFile, err := os.Open("../../pythonGUI/plotData/dnsrequest.json")

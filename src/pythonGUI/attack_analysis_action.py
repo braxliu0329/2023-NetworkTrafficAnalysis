@@ -56,10 +56,10 @@ class AttackAnalysis():
             for i in range(syn_addresses.shape[0]):
                 data["data"].append({
                     "address": syn_addresses.loc[i, "Address"],
-                    "sendsSYN": int(syn_addresses.loc[i, "SendsSYN"]),
-                    "receivesSYN": int(syn_addresses.loc[i, "ReceivesSYN"]),
-                    "sendSYNACK" : int(syn_addresses.loc[i, "SendsSYN-ACK"]),
-                    "receivesSYNACK": int(syn_addresses.loc[i, "ReceivesSYN-ACK"])
+                    "Sends SYN": int(syn_addresses.loc[i, "SendsSYN"]),
+                    "Receives SYN": int(syn_addresses.loc[i, "ReceivesSYN"]),
+                    "Sends SYN/ACK" : int(syn_addresses.loc[i, "SendsSYN-ACK"]),
+                    "Receives SYN/ACK": int(syn_addresses.loc[i, "ReceivesSYN-ACK"])
                 })
             with open("src/pythonGUI/plotData/tcpsyn.json", "w+") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
