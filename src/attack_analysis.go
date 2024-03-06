@@ -70,10 +70,6 @@ type DNSPacketAddress struct {
 	Response    bool
 }
 
-func main() {
-
-}
-
 // getPackets retrieves packets from a file into a slice of packets
 func getPackets(path string) []gopacket.Packet {
 	// handle errors, such as incorrect file paths
