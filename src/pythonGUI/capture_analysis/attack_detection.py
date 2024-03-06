@@ -422,9 +422,6 @@ class AttackDetection:
 
         # -------------Below are new attack methods----------------
     def ssl_stripping(self):
-        # create canvas
-        canvas = EmbeddedCanvas(self)
-
         # initialises suspicious addresses address lists
         self.ssl_stripping_suspicious_source_address = []
         self.ssl_stripping_suspicious_destination_address = []
@@ -451,16 +448,10 @@ class AttackDetection:
         destination_counts = destination_addresses_df["Suspicious Destination IPs"].value_counts().rename_axis(
             'Destination IP').reset_index(name="Counts")
 
-        # Creates graphs from dataframes
-        # For Source IPs
-        # source_graph = source_counts.plot(ax=canvas.axes, kind='barh', x='Source IP', y='Counts', legend=False)
-        # source_graph.set_title("SSL Stripping Suspicious Source IPs", xlabel="Count number", ylabel="Source IP")
 
     def udp_flood_detect(self, threshold):
         # initialise udp suspicious addresses
         self.udp_suspicious = []
-        # create an empty canvas to store data points
-        canvas = EmbeddedCanvas()
 
         # dataframe with only UDP packets
         udp_packets = self.dataframe[self.dataframe['Protocol'] == 'UDP']
@@ -477,15 +468,7 @@ class AttackDetection:
 
         # creates dataframe from dictionary
         pps_dataframe = pd.DataFrame.from_dict(pps_table)
-
-        # creates graph from dataframe
-        pps_graph = pps_dataframe.plot(ax=canvas.axes, kind='barh', x="Address", legend=False)
-        pps_graph.set(title="UDP Flood Detection", xlabel="Packets Per Second")
-        pps_graph.locator_params(axis="x", integer=True, tight=True)
-        pps_graph.axvline(threshold, color='r', linestyle='--')
-
-        # return the created graph to be represented on the GUI
-        return canvas
+        return
 
     def calc_pps(self, suspicious_addresses, packets, attack_sus_list, threshold):
         # dictionary of the addresses and their packets per second
