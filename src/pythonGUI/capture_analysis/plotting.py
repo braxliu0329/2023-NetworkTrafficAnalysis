@@ -6,7 +6,7 @@ from scapy.layers.dns import DNS
 from scapy.layers.inet import IP, TCP, UDP
 from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import ARP, Ether
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import numpy as np
 
 from pythonGUI.capture_analysis import dataframe_create
 
@@ -72,8 +72,9 @@ class Plotting:
         ipv6_addresses = self.data_frame[self.data_frame["IP_Version"] == "IPv6"]
         network = nx.from_pandas_edgelist(ipv6_addresses, source='SourceIP', target='DestIP')
         self.write_json(network, "ipv6")
-
-        network = nx.from_pandas_edgelist(self.data_frame, source="SourceMac", target="DestMac")
+        # Remove all None entries from data_frame
+        filtered_df = self.data_frame[~self.data_frame['SourceMac'].isnull()]
+        network = nx.from_pandas_edgelist(filtered_df, source="SourceMac", target="DestMac")
         self.write_json(network, "mac")
 
         self.write_frequency_json("SourceIP")

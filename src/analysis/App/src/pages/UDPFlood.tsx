@@ -17,7 +17,7 @@ function UDPFlood() {
     // Fetch data from the backend
     const fetchData = async () => {
         try {
-            const response = await fetch('/api/utpfloodddata');
+            const response = await fetch('/api/udpflooddata');
             if (!response.ok) {
                 throw new Error('Failed to fetch data');
             }

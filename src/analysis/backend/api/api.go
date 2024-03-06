@@ -15,4 +15,5 @@ func Run() {
 	DoS()
 	Tcpscan()
 	Tcpsyn()
+	UDPFlood()
 }

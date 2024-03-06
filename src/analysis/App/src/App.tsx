@@ -19,6 +19,7 @@ import DNSFlood from './pages/DNSFlood';
 import ICMPFlood from './pages/ICMPFlood';
 import { Page } from './components/Sidebar';
 import Shutdown from './pages/Shutdown';
+import UDPFlood from './pages/UDPFlood';
 
 // Define paths and titles for use in the sidebar
 const pages: Page[] = [
@@ -40,7 +41,8 @@ const pages: Page[] = [
     { title: 'DoS Detection', path: '/attackanalysis/dosdetect' },
     { title: 'HTTP Flooding', path: '/attackanalysis/httpflood' },
     { title: 'DNS Flooding', path: '/attackanalysis/dnsflood' },
-    { title: 'ICMP Flooding', path: '/attackanalysis/icmpflood' }
+    { title: 'ICMP Flooding', path: '/attackanalysis/icmpflood' },
+    { title: 'UDP Flooding', path: '/attackanalysis/udpflood'}
   ] },
   { title: 'Shutdown', path: '/shutdown'}  
 ];
@@ -70,6 +72,7 @@ function App() {
               <Route path="/attackanalysis/httpflood" element={<HTTPFlood />} />
               <Route path="/attackanalysis/dnsflood" element={<DNSFlood />} />
               <Route path="/attackanalysis/icmpflood" element={<ICMPFlood />} />
+              <Route path="/attackanalysis/udpflood" element={<UDPFlood />} />
               <Route path="/shutdown" element={<Shutdown />} />
           </Routes>
         </BrowserRouter>

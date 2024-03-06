@@ -134,3 +134,19 @@ func Tcpsyn() {
 		w.Write(jsonData)
 	})
 }
+
+func UDPFlood() {
+	http.HandleFunc("/api/udpflooddata", func(w http.ResponseWriter, r *http.Request) {
+		jsonFile, err := os.Open("../../pythonGUI/plotData/udpflood.json")
+		if err != nil {
+			fmt.Println("Error opening JSON...")
+		}
+		defer jsonFile.Close()
+		jsonData, err := io.ReadAll(jsonFile)
+		if err != nil {
+			http.Error(w, "Unable to read JSON file", http.StatusInternalServerError)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(jsonData)
+	})
+}

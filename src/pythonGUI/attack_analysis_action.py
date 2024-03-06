@@ -262,6 +262,36 @@ class AttackAnalysis():
             with open("src/pythonGUI/plotData/dnsrequest.json", "w+") as f:
                 json.dump(req_data, f, ensure_ascii=False, indent=4)
 
+    def udp_flood_detect(self):
+        pps_dataframe = self.attack_detect.udp_flood_detect(100)
+        suspicious = self.attack_detect.udp_suspicious
+        # Initialize the central widget and layout for displaying the results.
+        suspicious_text = ""
+        explanation_text = ""
+        if not suspicious:
+            suspicious_text = "No suspicious addresses detected"
+        else:
+            # If there are suspicious addresses, compile them into a string for display.
+            suspicious_text = "Suspicious addresses: " + ', '.join(suspicious)
+
+        # Only add explanation if suspicious addresses were detected.
+        if suspicious:
+            explanation_text = ("These addresses were marked because the UDP packets sent from these addresses are "
+                                "over a too high frequency")
+        if pps_dataframe is not None:
+            data = {
+                "suspicious": suspicious_text,
+                "explanation": explanation_text,
+                "data": []
+            }
+            for i in range(pps_dataframe.shape[0]):
+                data["data"].append({
+                    "address": pps_dataframe.loc[i, "Address"],
+                    "rate": int(pps_dataframe.loc[i, "PPS"])
+                })
+            with open("src/pythonGUI/plotData/udpflood.json", "w+") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+
     def run_all_detect(self):
         self.tcp_syn_flood_detect()
         self.tcp_scanning_detect()
@@ -270,6 +300,7 @@ class AttackAnalysis():
         self.icmp_flood_detect()
         self.http_flood_detect()
         self.dns_flood_detect()
+        self.udp_flood_detect()
 
 
     

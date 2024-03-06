@@ -447,6 +447,7 @@ class AttackDetection:
             name="Counts")
         destination_counts = destination_addresses_df["Suspicious Destination IPs"].value_counts().rename_axis(
             'Destination IP').reset_index(name="Counts")
+        return (source_addresses_df, destination_addresses_df)
 
 
     def udp_flood_detect(self, threshold):
@@ -465,10 +466,10 @@ class AttackDetection:
         # create the packets per second table using the calc_pps function. This will also populate the suspicious list
         # with all udp addresses that have a pps above the provided threshold
         pps_table = self.calc_pps(udp_addresses, udp_packets, self.udp_suspicious, threshold)
-
+        print(self.udp_suspicious)
         # creates dataframe from dictionary
         pps_dataframe = pd.DataFrame.from_dict(pps_table)
-        return
+        return pps_dataframe
 
     def calc_pps(self, suspicious_addresses, packets, attack_sus_list, threshold):
         # dictionary of the addresses and their packets per second
