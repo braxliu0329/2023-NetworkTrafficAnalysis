@@ -508,3 +508,22 @@ class AttackDetection:
 
         return pps_table
 
+    def run_all_detection(self, threshold):
+        if threshold is None:
+            self.tcp_syn_flood_detect()
+            self.tcp_connect_scanning_detect(100)
+            self.threshold_dos_detect(200)
+            self.arp_poison_detect()
+            self.icmp_flood_detect(100)
+            self.http_attack(5)
+            self.dns_request_response_detect(20)
+            self.udp_flood_detect(100)
+        else:
+            self.tcp_syn_flood_detect()
+            self.tcp_connect_scanning_detect(threshold)
+            self.threshold_dos_detect(threshold)
+            self.arp_poison_detect()
+            self.icmp_flood_detect(threshold)
+            self.http_attack(threshold)
+            self.dns_request_response_detect(threshold)
+            self.udp_flood_detect(threshold)
