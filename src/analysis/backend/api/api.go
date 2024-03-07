@@ -15,5 +15,7 @@ func Run() {
 	DoS()
 	Tcpscan()
 	Tcpsyn()
+	SSLStrippingSource()
+	SSLStrippingDest()
 	UDPFlood()
 }
