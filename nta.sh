@@ -20,8 +20,8 @@ for arg in "$@"; do
             fi
             analysis=true
             cd "$DIR/src/analysis/backend" || exit
-            GO="/usr/local/go/bin/go"
-            $GO run main.go &
+            
+            ./nta10a &
             cd $DIR || exit
             ;;
         "--monitor")
@@ -65,4 +65,5 @@ for arg in "$@"; do
 done
 
 python3 "$DIR/src/main.py" "$analysis" "$promiscuous" "$monitor"
+
 

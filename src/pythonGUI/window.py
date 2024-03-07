@@ -295,8 +295,6 @@ class Ui_MainWindow(object):
         icon2.addPixmap(QtGui.QPixmap("src/pythonGUI/Icons/stop.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionStopCaputure.setIcon(icon2)
         self.actionStopCaputure.setObjectName("actionStopCaputure")
-        self.actionGraph = QtWidgets.QAction(MainWindow)
-        self.actionGraph.setObjectName("actionGraph")
         self.actionSave_As_2 = QtWidgets.QAction(MainWindow)
         self.actionSave_As_2.setObjectName("actionSave_As_2")
 
@@ -356,7 +354,6 @@ class Ui_MainWindow(object):
         self.menuCapture.addAction(self.actionPause)
         self.menuCapture.addAction(self.actionStop)
 
-        self.menuAnalysis.addAction(self.actionGraph)
         self.menuAnalysis.addAction(self.actionAttack_Analysis)
 
         self.menuEdit.addAction(self.actionCopy)
@@ -442,14 +439,12 @@ class Ui_MainWindow(object):
         self.actionStop.setShortcut(_translate("MainWindow", "Ctrl+E"))
         self.actionStartCapture.setText(_translate("MainWindow", "StartCapture"))
         self.actionStartCapture.setToolTip(_translate("MainWindow", "Start capturing"))
-        self.actionStartAnalysis.setText(_translate("MainWindow", "StartAnalysis"))
-        self.actionStartAnalysis.setToolTip(_translate("MainWindow", "Start analysing"))
+        self.actionStartAnalysis.setText(_translate("MainWindow", "ToggleAnalysis"))
+        self.actionStartAnalysis.setToolTip(_translate("MainWindow", "Toggle analysing"))
         self.actionPauseCapture.setText(_translate("MainWindow", "PauseCapture"))
         self.actionPauseCapture.setToolTip(_translate("MainWindow", "Pause capturing"))
         self.actionStopCaputure.setText(_translate("MainWindow", "StopCaputure"))
         self.actionStopCaputure.setToolTip(_translate("MainWindow", "Stop capturing"))
-        self.actionGraph.setText(_translate("MainWindow", "Analysis Graphs"))
-        self.actionGraph.setShortcut(_translate("MainWindow", "Ctrl+G"))
         self.actionSave_As_2.setText(_translate("MainWindow", "Save As"))
         self.actionSave_As_2.setShortcut(_translate("MainWindow", "Ctrl+Shift+S"))
         self.actionAttack_Analysis.setText(_translate("MainWindow", "Attack Analysis"))

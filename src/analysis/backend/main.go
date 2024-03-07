@@ -10,6 +10,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"syscall"
 
 	"nta/backend/api"
 )
@@ -24,20 +25,15 @@ var srv = &http.Server{
 }
 
 func main() {
-	// get PID of parent process and write it to a file to be read by the main program
-	// the python program reads the PID and sends a SIGINT to it
-	pid := fmt.Sprintf("%d\n", os.Getpid())
-	err := os.WriteFile("pid.txt", []byte(pid), 0644)
-	if err != nil {
-		log.Fatal("Unable to write PID. Closing...")
-	}
+	// Create a channel which handels kill signals. Python program gets the name of the Go process
+	// and sends a SIGINT to it
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	// deal with SIGINT so that shutdown is graceful
+	signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
+	// deal with SIGTERM so that shutdown is graceful
 	go func() {
 		<-c
 		log.Println("Shutting down server on localhost:8080...")
-		os.Exit(0)
+		cancel()
 	}()
 	serverDone.Add(1)
 	start()

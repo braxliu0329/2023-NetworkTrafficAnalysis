@@ -4,6 +4,7 @@ import os.path
 import signal
 import sys
 import hashlib
+import psutil
 
 
 from PyQt5.Qt import Qt, QCompleter
@@ -372,11 +373,15 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # since the sniffer can simply be disabled using start_sniffer, only the analysis thread
     # is told to stop using stop_event. Additionally, sends a SIGINT to the server to shut it down.
     def closeEvent(self, event):
+        PROCNAME = "nta10a"
         if self._ANALYSIS == "true":
-            with open("src/analysis/backend/pid.txt", "r+") as f:
-                pid = f.read()
-                os.kill(int(pid), signal.SIGINT)
-            os.remove("src/analysis/backend/pid.txt")
+            for proc in psutil.process_iter():
+                if proc.name() == PROCNAME:
+                    pid = proc.pid
+                    try:
+                        os.kill(pid, signal.SIGINT)
+                    except ProcessLookupError:
+                        print("Unable to find process, process most likely killed before closEvent() was called...")
         self.stop_event.set()
         self.GUI_actions.start_sniffer(False, mainWindow)
         event.accept()
