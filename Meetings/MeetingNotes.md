@@ -192,3 +192,20 @@ Group Members Absent: Ani, Joe
 ### Next Steps
  - Tony will work on the analysis window for all of the new attack analyses
  - Tomos will collate all the research, along with working on Main for the Go implementation
+
+## Mentor and Group Meeting 06/03/2024
+Group Members Present: Tomos, Ani, Tony
+Group Members Absent: Joe
+### Progress
+ - Ani has integrated the react page for the attack analyses
+   - This will require assistance to pass the continuous integration
+ - Tomos has finished work on the basic GO CLI implementation
+ - Tony has implemented the analysis window for UDP flood analysis
+### Weekly Feedback
+ - A lot of scores are max
+ - Pull request names could be more descriptive
+ - Run more tests in CI - test that the setup works, split tests into smaller tests
+### Next Steps
+ - Tomos will update the CI this week, and ensure the functionality of the CLI tool
+ - Ani will complete the GUI to the Beta standard
+ - Tony will integrate the analysis windows for all remaining tests
