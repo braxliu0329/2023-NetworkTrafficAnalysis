@@ -1,8 +1,8 @@
 ---
-  tcp_scan_detect_threshold: 100
-  dos_detect_threshold: 100
-  icmp_flood_detect_threshold: 100
-  http_flood_detect_threshold: 100
-  dns_flood_detect_threshold: 100
-  udp_flood_detect_threshold: 100
+  TCP_Scan_Detect_Threshold: 100
+  DoS_Detect_Threshold: 100
+  ICMP_Flood_Detect_Threshold: 100
+  HTTP_Flood_Detect_Threshold: 100
+  Dns_Flood_Detect_Threshold: 100
+  UDP_Flood_Detect_Threshold: 100
   

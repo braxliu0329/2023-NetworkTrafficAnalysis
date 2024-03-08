@@ -18,9 +18,9 @@ from scapy.layers.l2 import ARP, Ether
 import webbrowser
 
 from pythonGUI.capture_analysis import plotting
-from pythonGUI import subWindow, window, attack_analysis_action, message
+from pythonGUI import subWindow, window, attack_analysis_action, message, config_window
 
-from pythonGUI.capture_analysis import GUI_actions, attack_detection
+from pythonGUI.capture_analysis import GUI_actions
 
 import pythonGUI.rc_icons as rc_icons
 
@@ -369,6 +369,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         config_options = {}
         with open("src/pythonGUI/config.yml", "r") as f:
             config_options = yaml.safe_load(f)
+        config = config_window.Ui_ConfigWindow(config_options)
+        config.exec_()
         
     # sets the stop_event which tells all threads that they should terminate
     # since the sniffer can simply be disabled using start_sniffer, only the analysis thread
@@ -824,7 +826,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 rows.append(row)
         return rows
 
-    # create a message box warning user of a marking conflict
+    # create a message box that displays some notification to the user
     def open_alert(self, title, warning):
         msg_box = message.MarkWaring(self, )
         msg_box.setWindowTitle(title)

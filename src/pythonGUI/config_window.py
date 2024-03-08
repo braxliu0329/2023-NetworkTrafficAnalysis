@@ -12,14 +12,15 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_ConfigWindow(QtWidgets.QWidget):
-    def __init__(self):
+class Ui_ConfigWindow(QtWidgets.QDialog):
+    def __init__(self, config):
         super().__init__()
-        self.setupUi(self)
+        self.config = config
+        self.setupUi()
 
-    def setupUi(self, Config):
-        Config.setObjectName("Config")
-        Config.resize(400, 300)
+    def setupUi(self):
+        self.setObjectName("Config")
+        self.resize(400, 300)
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -156,28 +157,22 @@ class Ui_ConfigWindow(QtWidgets.QWidget):
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255, 128))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.PlaceholderText, brush)
-        row = QtWidgets.QWidget()
-        horizontal_layout = QtWidgets.QHBoxLayout()
-        horizontal_layout.addWidget(QtWidgets.QLabel("TCP Connect Scanning Threshold:"))
-        line_edit = QtWidgets.QLineEdit(str("100"))
-        horizontal_layout.addWidget(line_edit)
-        row.setLayout(horizontal_layout)
-        layout = QtWidgets.QFormLayout()
-        layout.addWidget(row)
-        self.setLayout(layout)
-        Config.setPalette(palette)
+        layout = QtWidgets.QFormLayout(self)
+        for key in self.config.keys():
+            row = QtWidgets.QWidget()
+            attack_name = key.replace("_"," ")
+            threshold = self.config[key]
+            horizontal_layout = QtWidgets.QHBoxLayout(row)
+            horizontal_layout.addWidget(QtWidgets.QLabel(attack_name))
+            line_edit = QtWidgets.QLineEdit(str(threshold))
+            horizontal_layout.addWidget(line_edit)
+            layout.addWidget(row)
+        self.setPalette(palette)
 
 
-        self.retranslateUi(Config)
-        QtCore.QMetaObject.connectSlotsByName(Config)
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
 
-    def retranslateUi(self, Config):
+    def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        Config.setWindowTitle(_translate("Config", "Config"))
-
-if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
-    mainWindow = Ui_ConfigWindow()
-    app.setStyle('Fusion')
-    mainWindow.show()
-    sys.exit(app.exec_())
+        self.setWindowTitle(_translate("Config", "Config"))
