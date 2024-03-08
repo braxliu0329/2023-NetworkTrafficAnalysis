@@ -33,7 +33,7 @@ func main() {
 	go func() {
 		<-c
 		log.Println("Shutting down server on localhost:8080...")
-		cancel()
+		os.Exit(0)
 	}()
 	serverDone.Add(1)
 	start()

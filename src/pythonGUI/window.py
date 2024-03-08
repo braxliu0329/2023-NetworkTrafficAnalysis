@@ -319,6 +319,8 @@ class Ui_MainWindow(object):
 
         self.actionAttack_Analysis = QtWidgets.QAction(MainWindow)
         self.actionAttack_Analysis.setObjectName("actionAttack_Analysis")
+        self.actionConfigureAttackAnalysis = QtWidgets.QAction(MainWindow)
+        self.actionConfigureAttackAnalysis.setObjectName("actionConfigureAttackAnalysis")
         self.actionOpen_Multi_Files = QtWidgets.QAction(MainWindow)
         self.actionOpen_Multi_Files.setObjectName("actionOpen_Multi_Files")
         self.actionUse_Guide = QtWidgets.QAction(MainWindow)
@@ -355,6 +357,7 @@ class Ui_MainWindow(object):
         self.menuCapture.addAction(self.actionStop)
 
         self.menuAnalysis.addAction(self.actionAttack_Analysis)
+        self.menuAnalysis.addAction(self.actionConfigureAttackAnalysis)
 
         self.menuEdit.addAction(self.actionCopy)
         self.menuEdit.addAction(self.actionFindNextPacket)
@@ -441,6 +444,7 @@ class Ui_MainWindow(object):
         self.actionStartCapture.setToolTip(_translate("MainWindow", "Start capturing"))
         self.actionStartAnalysis.setText(_translate("MainWindow", "ToggleAnalysis"))
         self.actionStartAnalysis.setToolTip(_translate("MainWindow", "Toggle analysing"))
+        self.actionConfigureAttackAnalysis.setText(_translate("MainWindow", "Configure analysis"))
         self.actionPauseCapture.setText(_translate("MainWindow", "PauseCapture"))
         self.actionPauseCapture.setToolTip(_translate("MainWindow", "Pause capturing"))
         self.actionStopCaputure.setText(_translate("MainWindow", "StopCaputure"))

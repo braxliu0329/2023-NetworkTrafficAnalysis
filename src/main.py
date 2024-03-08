@@ -1,11 +1,10 @@
 from dataclasses import dataclass
-from functools import partial
 import os.path
 import signal
 import sys
 import hashlib
 import psutil
-
+import yaml
 
 from PyQt5.Qt import Qt, QCompleter
 from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal
@@ -97,6 +96,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # set the analysis menu
         self.actionStartAnalysis.triggered.connect(self.start_analysis)
         self.actionAttack_Analysis.triggered.connect(self.start_analysis)
+        self.actionConfigureAttackAnalysis.triggered.connect(self.configure_analysis)
         
 
 
@@ -135,10 +135,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # set sub window
         self.subs = []
-
-        # set graph window
-        self.graph_window = None
-        self.attack_analysis_window = None
 
         # start button pressed
         self.actionStartCapture.triggered.connect(self.start_capture)
@@ -369,6 +365,11 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # resets the event so that it can be set again
         self.stop_analysis_event.clear()
 
+    def configure_analysis(self):
+        config_options = {}
+        with open("src/pythonGUI/config.yml", "r") as f:
+            config_options = yaml.safe_load(f)
+        
     # sets the stop_event which tells all threads that they should terminate
     # since the sniffer can simply be disabled using start_sniffer, only the analysis thread
     # is told to stop using stop_event. Additionally, sends a SIGINT to the server to shut it down.
@@ -381,7 +382,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     try:
                         os.kill(pid, signal.SIGINT)
                     except ProcessLookupError:
-                        print("Unable to find process, process most likely killed before closEvent() was called...")
+                        print("Unable to find process, process most likely killed before closeEvent() was called...")
         self.stop_event.set()
         self.GUI_actions.start_sniffer(False, mainWindow)
         event.accept()
