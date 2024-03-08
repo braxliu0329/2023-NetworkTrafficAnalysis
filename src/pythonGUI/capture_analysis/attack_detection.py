@@ -419,6 +419,7 @@ class AttackDetection:
 
 
         # -------------Below are new attack methods----------------
+    
     def ssl_stripping(self):
         # initialises suspicious addresses address lists
         self.ssl_stripping_suspicious_source_address = []
@@ -436,7 +437,7 @@ class AttackDetection:
         
         http_packets = self.dataframe[(self.dataframe['Protocol'] == 'TCP') & (self.dataframe['DestinationPort'] == 443)]
         if http_packets.empty:
-            return None
+            return [None, None]
 
         # Create dataframes from the lists of suspicious addresses
         source_addresses_df = pd.DataFrame(self.ssl_stripping_suspicious_source_address, columns=["Suspicious Source IPs"])
@@ -518,6 +519,7 @@ class AttackDetection:
             self.http_attack(5)
             self.dns_request_response_detect(20)
             self.udp_flood_detect(100)
+            self.ssl_stripping()
         else:
             self.tcp_syn_flood_detect()
             self.tcp_connect_scanning_detect(threshold)
@@ -527,3 +529,4 @@ class AttackDetection:
             self.http_attack(threshold)
             self.dns_request_response_detect(threshold)
             self.udp_flood_detect(threshold)
+            self.ssl_stripping()

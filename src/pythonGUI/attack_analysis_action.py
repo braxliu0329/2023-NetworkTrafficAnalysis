@@ -64,8 +64,8 @@ class AttackAnalysis():
             with open("src/pythonGUI/plotData/tcpsyn.json", "w+") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
 
-    def tcp_scanning_detect(self):
-        syn_rate = self.attack_detect.tcp_connect_scanning_detect(100)
+    def tcp_scanning_detect(self, threshold):
+        syn_rate = self.attack_detect.tcp_connect_scanning_detect(threshold)
         suspicious = self.attack_detect.tcp_scanning_suspicious
 
         suspicious_text = ""
@@ -96,9 +96,9 @@ class AttackAnalysis():
             with open("src/pythonGUI/plotData/tcpscan.json", "w+") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
 
-    def dos_detect(self):
+    def dos_detect(self, threshold):
 
-        pps_table = self.attack_detect.threshold_dos_detect(100)
+        pps_table = self.attack_detect.threshold_dos_detect(threshold)
         suspicious = self.attack_detect.dos_suspicious_addresses
 
 
@@ -157,8 +157,8 @@ class AttackAnalysis():
             with open ("src/pythonGUI/plotData/arp.json", "w+") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
 
-    def icmp_flood_detect(self):
-        pps_dataframe = self.attack_detect.icmp_flood_detect(100)
+    def icmp_flood_detect(self, threshold):
+        pps_dataframe = self.attack_detect.icmp_flood_detect(threshold)
         suspicious = self.attack_detect.icmp_suspicious
         suspicious_text = ""
         if not suspicious:
@@ -183,8 +183,8 @@ class AttackAnalysis():
             with open("src/pythonGUI/plotData/icmpflood.json", "w+") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
 
-    def http_flood_detect(self):
-        pps_dataframe = self.attack_detect.http_attack(100)
+    def http_flood_detect(self, threshold):
+        pps_dataframe = self.attack_detect.http_attack(threshold)
         suspicious = self.attack_detect.http_suspicious
         suspicious_text = ""
         if not suspicious:
@@ -210,8 +210,8 @@ class AttackAnalysis():
             with open("src/pythonGUI/plotData/httpflood.json", "w+") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
         
-    def dns_flood_detect(self):
-        pps_res, pps_req = self.attack_detect.dns_request_response_detect(100)
+    def dns_flood_detect(self, threshold):
+        pps_res, pps_req = self.attack_detect.dns_request_response_detect(threshold)
         request_suspicious = self.attack_detect.dns_request_suspicious
         response_suspicious = self.attack_detect.dns_response_suspicious
 
@@ -262,8 +262,8 @@ class AttackAnalysis():
             with open("src/pythonGUI/plotData/dnsrequest.json", "w+") as f:
                 json.dump(req_data, f, ensure_ascii=False, indent=4)
 
-    def udp_flood_detect(self):
-        pps_dataframe = self.attack_detect.udp_flood_detect(100)
+    def udp_flood_detect(self, threshold):
+        pps_dataframe = self.attack_detect.udp_flood_detect(threshold)
         suspicious = self.attack_detect.udp_suspicious
         # Initialize the central widget and layout for displaying the results.
         suspicious_text = ""
@@ -331,15 +331,15 @@ class AttackAnalysis():
             with open("src/pythonGUI/plotData/ssldest.json", "w+") as f:
                 json.dump(dest_data, f, ensure_ascii=False, indent=4)
 
-    def run_all_detect(self):
+    def run_all_detect(self, config_options):
         self.tcp_syn_flood_detect()
-        self.tcp_scanning_detect()
-        self.dos_detect()
+        self.tcp_scanning_detect(config_options["TCP_Scan_Detect_Threshold"])
+        self.dos_detect(config_options["DoS_Detect_Threshold"])
         self.arp_poison_detect()
-        self.icmp_flood_detect()
-        self.http_flood_detect()
-        self.dns_flood_detect()
-        self.udp_flood_detect()
+        self.icmp_flood_detect(config_options["ICMP_Flood_Detect_Threshold"])
+        self.http_flood_detect(config_options["HTTP_Flood_Detect_Threshold"])
+        self.dns_flood_detect(config_options["DNS_Flood_Detect_Threshold"])
+        self.udp_flood_detect(config_options["UDP_Flood_Detect_Threshold"])
         self.ssl_stripping_detect()
 
 

@@ -351,6 +351,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # please allow a few seconds after clicking (x) for all threads to be told to stop
     def start_analysis_thread(self):
         self.stopped_analysis = False
+        config_options = {}
+        with open("src/pythonGUI/config.yml", "r") as f:
+            config_options = yaml.safe_load(f)
         while not self.stop_analysis_event.is_set() and not self.stopped_capture and not self.stop_event.is_set():
             # using a lock so that flags and data refer to the same sniffed packets
             with lock:
@@ -360,17 +363,20 @@ class Window(window.Ui_MainWindow, QMainWindow):
             plot = plotting.Plotting(data)
             plot.run_all()
             attack_analysis = attack_analysis_action.AttackAnalysis(data, flags)
-            attack_analysis.run_all_detect()
+            attack_analysis.run_all_detect(config_options)
             self.stop_analysis_event.wait(5)
         # resets the event so that it can be set again
         self.stop_analysis_event.clear()
 
     def configure_analysis(self):
-        config_options = {}
-        with open("src/pythonGUI/config.yml", "r") as f:
-            config_options = yaml.safe_load(f)
-        config = config_window.Ui_ConfigWindow(config_options)
-        config.exec_()
+        if not self.stopped_analysis:
+            self.open_alert("Warning", "Cannot change configuration options whilst analysis is running")
+        else:
+            config_options = {}
+            with open("src/pythonGUI/config.yml", "r") as f:
+                config_options = yaml.safe_load(f)
+            config = config_window.Ui_ConfigWindow(config_options)
+            config.exec_()
         
     # sets the stop_event which tells all threads that they should terminate
     # since the sniffer can simply be disabled using start_sniffer, only the analysis thread
