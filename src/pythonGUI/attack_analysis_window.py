@@ -186,6 +186,8 @@ class Ui_MainWindow(object):
         self.actionICMP.setObjectName("actionICMP")
         self.actionDNS = QtWidgets.QAction(MainWindow)
         self.actionDNS.setObjectName("actionDNS")
+        self.actionUDP_Flood = QtWidgets.QAction(MainWindow)
+        self.actionUDP_Flood.setObjectName("actionUDP_Flood")
         self.actionrunAll = QtWidgets.QAction(MainWindow)
         self.actionrunAll.setObjectName("actionrunALL")
         self.actionFlagged = QtWidgets.QAction(MainWindow)
@@ -197,6 +199,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionICMP)
         self.toolBar.addAction(self.actionHTTP_Flood)
         self.toolBar.addAction(self.actionDNS)
+        self.toolBar.addAction(self.actionUDP_Flood)
         self.toolBar.addAction(self.actionrunAll)
         self.toolBar.addAction(self.actionFlagged)
 
@@ -233,5 +236,6 @@ class Ui_MainWindow(object):
         self.actionICMP.setText(_translate("MainWindow", "ICMP Flood"))
         self.actionHTTP_Flood.setText(_translate("MainWindow", "HTTP Flood"))
         self.actionDNS.setText(_translate("MainWindow", "DNS Flood"))
+        self.actionUDP_Flood.setText(_translate("MainWindow", "UDP Flood"))
         self.actionrunAll.setText(_translate("MainWindow", "Run all tests"))
         self.actionFlagged.setText(_translate("MainWindow", "Flagged Addr"))
