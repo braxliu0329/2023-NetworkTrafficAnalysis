@@ -58,9 +58,10 @@ class Plotting:
                         "protocol": keys[i],
                         "frequency": int(values[i])
                     })
-                    data = {
-                        "data": data
-                    }
+            if mode == "Protocol":
+                data = {
+                    "data": data
+                }
             with open(f"src/pythonGUI/plotData/{mode}.json", "w+") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
     
