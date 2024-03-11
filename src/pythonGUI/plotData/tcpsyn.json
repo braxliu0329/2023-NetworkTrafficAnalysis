@@ -1,0 +1,28 @@
+{
+    "suspicious": "Suspicious addresses: 192.168.1.48, 54.161.152.147",
+    "attacked": "Suspected Attacked addresses: 192.168.1.62",
+    "explanation": "The suspicious addresses were marked because these addresses send a greater amount of SYN requests than it does receive SYN-ACK responses back, suggesting it is overloading asystem. \nThe attacked addresses were marked because these addresses receive a greater amount of SYN requests than it sends SYN-ACK responses back, which is indicative that these addresses are being overwhelmed by SYN requests and cant response fast enough. ",
+    "data": [
+        {
+            "address": "192.168.1.62",
+            "Sends SYN": 2,
+            "Receives SYN": 2,
+            "Sends SYN/ACK": 0,
+            "Receives SYN/ACK": 2
+        },
+        {
+            "address": "192.168.1.48",
+            "Sends SYN": 1,
+            "Receives SYN": 1,
+            "Sends SYN/ACK": 1,
+            "Receives SYN/ACK": 0
+        },
+        {
+            "address": "54.161.152.147",
+            "Sends SYN": 1,
+            "Receives SYN": 1,
+            "Sends SYN/ACK": 1,
+            "Receives SYN/ACK": 0
+        }
+    ]
+}

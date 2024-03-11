@@ -1,0 +1,14 @@
+{
+    "suspicious": "No suspicious addresses detected",
+    "explanation": "",
+    "data": [
+        {
+            "address": "162.159.136.232",
+            "rate": -5757
+        },
+        {
+            "address": "172.23.157.239",
+            "rate": -920
+        }
+    ]
+}

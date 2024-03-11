@@ -1,0 +1,10 @@
+{
+    "data": [
+        {
+            "mac": "00:50:56:8e:ee:89",
+            "frequency": 2
+        }
+    ],
+    "suspicious": "Suspicious addresses: 192.168.1.1, 192.168.1.254",
+    "explanation": "These addresses were marked because the MAC addresses they originated from are associated with more than one IP address, which is erroneous and indicative of ARP Poisoning."
+}
