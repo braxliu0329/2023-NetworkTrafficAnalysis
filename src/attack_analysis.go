@@ -239,6 +239,35 @@ func tcpSynFloodDetect(file string) Report {
 	return Report{suspicious: suspiciousAddresses, attacked: attackedAddresses}
 }
 
+// sslStripping uses the name of a pcap file and returns lists containing any suspicious source and destination addresses
+func sslStrippingDetect(file string) Report {
+	// get packets from a pcap file
+	packets := getPackets(file)
+	// extract all TCP layers
+	tcpPackets := getTCP(packets)
+
+	// slices to contain suspicious and attacked addresses
+	var suspiciousAddresses []string
+	var attackedAddresses []string
+
+	// check through packets to see if there are any with the destination port 443, implying http instead of https
+	for _, packet := range tcpPackets {
+		print(packet.TcpPacket.DstPort.String())
+		if packet.TcpPacket.DstPort == 443 {
+			// if found to be suspicious, add source and destination addresses to list
+			if !contains(suspiciousAddresses, packet.Source.String()) {
+				suspiciousAddresses = append(suspiciousAddresses, packet.Source.String())
+			}
+			if !contains(attackedAddresses, packet.Destination.String()) {
+				attackedAddresses = append(attackedAddresses, packet.Destination.String())
+			}
+		}
+	}
+
+	// return the suspicious and attacked addresses as a pair
+	return Report{suspicious: suspiciousAddresses, attacked: attackedAddresses}
+}
+
 // getSentSYNPackets gets all SYN packets sent by a given address using a slice of TCP packets
 func getSentSYNPackets(source gopacket.Endpoint, tcpPackets []TCPPacketAddress) []TCPPacketAddress {
 	// list to store sent tcp packets
@@ -534,7 +563,7 @@ func getTCPConnected(packets []TCPPacketAddress) []TCPPacketAddress {
 	return connectedPackets
 }
 
-// TODO: using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
+// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
 func httpFloodDetect(file string, threshold float64) []string {
 	// get packets from a pcap file
 	packets := getPackets(file)
@@ -551,10 +580,6 @@ func httpFloodDetect(file string, threshold float64) []string {
 	if connectedPackets == nil {
 		return nil
 	}
-
-	// check if connected packets are GET or POST requests
-	//var requestPackets []TCPPacketAddress
-	// loop through connected packets
 
 	// convert between packet address and time source
 	var packetTimes []SourceTime
@@ -590,7 +615,7 @@ func getDNS(packets []gopacket.Packet) []DNSPacketAddress {
 	return dnsPackets
 }
 
-// TODO: using the name of a pcap file and a given threshold, returns lists containing any suspicious and suspected attacked addresses
+// using the name of a pcap file and a given threshold, returns lists containing any suspicious and suspected attacked addresses
 func dnsRequestResponse(file string, threshold float64) Report {
 	// get packets from a pcap file
 	packets := getPackets(file)
