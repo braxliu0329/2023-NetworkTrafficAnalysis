@@ -1,0 +1,5 @@
+This is a file to configure default thresholds and values for analyses run by "main.go";
+TCP Scanning Threshold: 100;
+ICMP Flood Detection Threshold: 100;
+HTTP Flood Detection Threshold: 5;
+DNS Analysis Threshold: 20;
