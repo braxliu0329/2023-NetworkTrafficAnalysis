@@ -1,0 +1,10 @@
+{
+    "suspicious": "No DNS Response suspicious addresses detected\n",
+    "explanation": "These addresses were marked because the DNS packets sent from these addresses are over too high a frequency. ",
+    "data": [
+        {
+            "address": "137.222.0.36",
+            "rate": 0
+        }
+    ]
+}
