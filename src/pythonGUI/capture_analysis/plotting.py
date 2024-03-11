@@ -58,6 +58,7 @@ class Plotting:
                         "protocol": keys[i],
                         "frequency": int(values[i])
                     })
+                if mode == "Protocol":
                     data = {
                         "data": data
                     }
