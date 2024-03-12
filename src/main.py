@@ -203,6 +203,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionStartAnalysis.triggered.connect(self.start_analysis)
         self.actionAttack_Analysis.triggered.connect(self.start_analysis)
         self.actionConfigureAttackAnalysis.triggered.connect(self.configure_analysis)
+        self.actionConfigure.triggered.connect(self.configure_analysis)
         
 
 
@@ -489,10 +490,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # since the sniffer can simply be disabled using start_sniffer, only the analysis thread
     # is told to stop using stop_event. Additionally, sends a SIGINT to the server to shut it down.
     def closeEvent(self, event):
-        PROCNAME = "nta10a"
+        PROC_NAME = "nta10a"
         if self._ANALYSIS == "true":
             for proc in psutil.process_iter():
-                if proc.name() == PROCNAME:
+                if proc.name() == PROC_NAME:
                     pid = proc.pid
                     try:
                         os.kill(pid, signal.SIGINT)
