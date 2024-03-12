@@ -50,6 +50,20 @@ class GUIActions:
                     self.sniffer.filtered_packets = filtered_packets
             return filtered_packets
 
+    def filter_packets_source_address(self, address):
+        filtered_packets = []
+        sniffed_packets = self.get_sniffed_packets()
+        # if no filter specified returns all packets
+        if address == "":
+            self.sniffer.filtered_packets.clear()
+            return sniffed_packets
+        else:
+            # checks if each packet's source address matches the given address and appends to list if so
+            for packet in sniffed_packets:
+                if packet.haslayer(IP) and packet[IP].src == address:
+                    filtered_packets.append(packet)
+            return filtered_packets
+
     # Methods to read and write pcap files
     def read_pcap(self, file, window):
         self.sniffer.sniff_read(file, window)
