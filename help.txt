@@ -1,10 +1,10 @@
 Network Traffic Analysis (NTA) is a packet sniffing tool which provides detailed analyses and graphs of your network.
 
 Usage: 
-    ./run.sh [--analysis] [--monitor | --promiscuous]  
-    ./run.sh
-    ./run.sh -h | --help
-    ./run.sh --version
+    ./nta.sh [--analysis] [--monitor | --promiscuous]  
+    ./nta.sh
+    ./nta.sh -h | --help
+    ./nta.sh --version
 
 Options: 
     -h --help           Show usage instructions

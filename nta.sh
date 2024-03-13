@@ -28,11 +28,11 @@ for arg in "$@"; do
             if [[ $# -eq 2 && "$2" = "--promiscuous" ]]
             then
                 echo "You cannot enable both monitor mode and promiscuous mode"
-                echo "Usage: ./run.sh [--analysis][--monitor | --promiscuous]"
+                echo "Usage: ./nta.sh [--analysis][--monitor | --promiscuous]"
                 exit
             if [[ $# -eq 2 && "$2" != "--analysis" ]]
             then
-                    echo "Usage: ./run.sh [--analysis][--monitor | --promiscuous]"
+                    echo "Usage: ./nta.sh [--analysis][--monitor | --promiscuous]"
                     exit
                 fi
             fi
@@ -59,7 +59,7 @@ for arg in "$@"; do
             echo "1.0a"
             exit;;
         *)
-            cat "$DIR/help.txt"
+            echo "NTA: Command not recognised"
             exit;;
     esac
 done
