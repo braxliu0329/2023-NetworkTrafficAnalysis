@@ -27,7 +27,7 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
     let legendOffsetY = -80;
     let marginL = 85;
     // Change margins so that there is no clipping issues 
-    if (index === "source" || index === "dest" || index === "address") {
+    if (index === "source" || index === "dest" || index === "address" || index === "ssl") {
         legendOffsetY = -250;
         marginL = 300
     }
@@ -40,6 +40,11 @@ const FrequencyGraph: React.FC<FrequencyGraphProps> = ({ data, index }) => {
     if (index === "address") {
         key = "rate"
         legend = "Rate (packets/sec)"
+    }
+    if (index === "ssl") {
+        key = "frequency"
+        legend = "Frequency"
+        index = "address"
     }
     return (
         <ResponsiveBar

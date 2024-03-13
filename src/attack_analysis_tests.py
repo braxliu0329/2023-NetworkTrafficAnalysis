@@ -354,7 +354,6 @@ class MyTestCase(unittest.TestCase):
         # detect the suspicious address
         attack_syn_detect.run_all_detection(20)
         attack_icmp_detect.run_all_detection(20)
-
         # Checks that the address is not in all the lists it shouldn't be
         for attack_sus in attack_syn_lists:
             self.assertNotIn(known_tcp_sus, attack_sus,

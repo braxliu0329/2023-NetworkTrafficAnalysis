@@ -1,18 +1,38 @@
 import NetworkGraph from '../components/NetworkGraph'
-import data from '../../../../pythonGUI/plotData/ipv6.json'
 import { useEffect, useState } from 'react';
 
 function IPv6An() {
+    const [data, setData] = useState(null);
     const [chartHeight, setChartHeight] = useState<number | string>('auto');
-    // Sets heights based on number of nodes in network
+
+    // Fetch data from the backend when the component mounts
     useEffect(() => {
-        const numNodes = data.nodes.length;
-        let calculatedHeight = 400;
-        if (numNodes > 10) {
-            calculatedHeight = numNodes * 50;
+        fetchData();
+        const interval = setInterval(fetchData, 5000)
+        return () => clearInterval(interval)
+    }, []);
+
+    // Fetch data from the backend
+    const fetchData = async () => {
+        try {
+            const response = await fetch('/api/ipv6data');
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+            const jsonData = await response.json();
+            setData(jsonData);
+
+            // Calculate chart height based on number of nodes
+            const numNodes = jsonData.nodes.length;
+            let calculatedHeight = 400;
+            if (numNodes > 10) {
+                calculatedHeight = numNodes * 50;
+            }
+            setChartHeight(calculatedHeight);
+        } catch (error) {
+            console.error(error);
         }
-        setChartHeight(calculatedHeight);
-    }, [data]);
+    };
     return (
         <div className="Analysis">
             <h1 className='title'>IPv6 Analysis</h1>
@@ -26,7 +46,7 @@ function IPv6An() {
                 <p>These graphs can grow quite large, so scrolling may be needed.</p>
             </div>
             <div style={{height:chartHeight}}>
-                <NetworkGraph data={data}/>
+                {data && <NetworkGraph data={data}/>}
             </div>
         </div>
     );

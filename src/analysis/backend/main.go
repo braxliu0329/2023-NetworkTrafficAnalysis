@@ -1,0 +1,91 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"path"
+	"strings"
+	"sync"
+
+	"nta/backend/api"
+)
+
+const FSPATH = "../App/dist/"
+const ENDPOINT = ":8080"
+
+var ctxShutdown, cancel = context.WithCancel(context.Background())
+var serverDone = &sync.WaitGroup{}
+var srv = &http.Server{
+	Addr: ENDPOINT,
+}
+
+func main() {
+	// get PID of parent process and write it to a file to be read by the main program
+	// the python program reads the PID and sends a SIGINT to it
+	pid := fmt.Sprintf("%d\n", os.Getpid())
+	err := os.WriteFile("pid.txt", []byte(pid), 0644)
+	if err != nil {
+		log.Fatal("Unable to write PID. Closing...")
+	}
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	// deal with SIGINT so that shutdown is graceful
+	go func() {
+		<-c
+		log.Println("Shutting down server on localhost:8080...")
+		os.Exit(0)
+	}()
+	serverDone.Add(1)
+	start()
+	serverDone.Wait()
+}
+
+// start file server on :8080
+func start() {
+	fs := http.FileServer(http.Dir(FSPATH))
+	api.Run()
+	// since we are doing client-side routing, server must acknowledge this
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			fullPath := FSPATH + strings.TrimPrefix(path.Clean(r.URL.Path), "/")
+			_, err := os.Stat(fullPath)
+			if err != nil {
+				if !os.IsNotExist(err) {
+					panic(err)
+				}
+				r.URL.Path = "/"
+			}
+		}
+		fs.ServeHTTP(w, r)
+	})
+	shutdown()
+	go func() {
+		defer serverDone.Done()
+		log.Println("Running server on http://localhost:8080")
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe(): %v", err)
+		}
+	}()
+}
+
+// shutdown will close server whenever a request is made to /shutdown
+func shutdown() {
+	http.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-ctxShutdown.Done():
+			fmt.Println("Sorry: Shuting down ...")
+			return
+		default:
+		}
+		cancel()
+		log.Println("Shutting down server on localhost:8080...")
+		err := srv.Shutdown(context.Background())
+		if err != nil {
+			log.Println("Server.Shutdown", err)
+		}
+	})
+}

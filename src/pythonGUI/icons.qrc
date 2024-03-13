@@ -1,15 +1,16 @@
 
 <!DOCTYPE RCC><RCC version="1.0">
     <qresource prefix="/Icons/">
-        <fileIcons/first.png</file>
-        <fileIcons/last.png</file>
-        <fileIcons/load.png</file>
-        <fileIcons/pause.png</file>
-        <fileIcons/paused.png</file>
-        <fileIcons/play.png</file>
-        <fileIcons/played.png</file>
-        <fileIcons/rightArrow.png</file>
-        <fileIcons/save.png</file>
-        <fileIcons/stop.png</file>
+        <Icons>first.png</file>
+        <Icons>last.png</file>
+        <Icons>load.png</file>
+        <Icons>pause.png</file>
+        <Icons>paused.png</file>
+        <Icons>play.png</file>
+        <Icons>played.png</file>
+        <Icons>rightArrow.png</file>
+        <Icons>save.png</file>
+        <Icons>stop.png</file>
+        <Icons>glass.png</file>
     </qresource>
 </RCC>
