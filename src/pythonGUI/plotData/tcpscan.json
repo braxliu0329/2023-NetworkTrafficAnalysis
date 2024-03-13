@@ -1,0 +1,18 @@
+{
+    "suspicious": "No suspicious addresses detected",
+    "explanation": "Addresses are marked as suspicious if the address sends SYN flags without receiving SYN-ACK packets and if the same address sends more SYN packets than the  within the time interval. ",
+    "data": [
+        {
+            "address": "192.168.1.62",
+            "rate": 3
+        },
+        {
+            "address": "20.50.80.213",
+            "rate": 2
+        },
+        {
+            "address": "34.149.100.209",
+            "rate": 6
+        }
+    ]
+}

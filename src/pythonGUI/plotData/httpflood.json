@@ -1,0 +1,14 @@
+{
+    "suspicious": "No suspicious addresses detected",
+    "explanation": "These addresses were marked because the HTTP Request packets sent from these addresses after a tcp connection are established are over too high a frequency. ",
+    "data": [
+        {
+            "address": "10.0.0.2",
+            "rate": 9
+        },
+        {
+            "address": "172.16.11.12",
+            "rate": 9
+        }
+    ]
+}
