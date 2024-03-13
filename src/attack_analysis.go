@@ -255,7 +255,12 @@ func tcpSynFloodDetect(file string) Report {
 
 	// start workers
 	for i := 0; i < 2; i++ {
-		go findSuspiciousTCP(addresses[i*workload:(i+1)*workload], suspicious, attacked, complete)
+		// if this is the last worker, give it the rest of the addresses
+		if i == 1 {
+			go findSuspiciousTCP(addresses[i*workload:], suspicious, attacked, complete)
+		} else {
+			go findSuspiciousTCP(addresses[i*workload:(i+1)*workload], suspicious, attacked, complete)
+		}
 	}
 
 	// receive marked addresses from goroutines
@@ -402,7 +407,12 @@ func tcpConnectScanDetect(file string, threshold int) []string {
 
 	// start workers
 	for i := 0; i < 2; i++ {
-		go findSuspiciousTcpScan(addresses[i*workload:(i+1)*workload], suspicious, complete, tcpPackets, threshold, interval)
+		// if this is the last worker, give it the rest of the addresses
+		if i == 1 {
+			go findSuspiciousTcpScan(addresses[i*workload:], suspicious, complete, tcpPackets, threshold, interval)
+		} else {
+			go findSuspiciousTcpScan(addresses[i*workload:(i+1)*workload], suspicious, complete, tcpPackets, threshold, interval)
+		}
 	}
 
 	// receive marked addresses from goroutines
@@ -442,6 +452,18 @@ func containsMac(macAddresses []MACAddress, addr MACAddress) bool {
 	return false
 }
 
+func arpWorker(macAddresses []MACAddress, suspicious chan<- string, complete chan<- bool) {
+	// if the mac address appears more than once, it is associated to more than one IP and is therefore suspicious
+	for i, address := range macAddresses {
+		// check if the addresses without this address contains this mac address
+		if containsMac(append(macAddresses[:i], macAddresses[i+1:]...), address) {
+			// send address through channel
+			suspicious <- address.IP.String()
+		}
+	}
+	complete <- true
+}
+
 // using the name of a pcap file, returns a slice containing any suspicious addresses
 func arpPoisonDetect(file string) []string {
 	// get packets from a pcap file
@@ -452,14 +474,48 @@ func arpPoisonDetect(file string) []string {
 	// slices to contain suspicious and attacked addresses
 	var suspiciousAddresses []string
 
-	// if the mac address appears more than once,it is associated to more than one IP and is therefore suspicious
-	for _, address := range macAddresses {
-		// check if the addresses without this address contains this mac address
-		if containsMac(macAddresses, address) {
-			// check the address isn't already marked
-			if !contains(suspiciousAddresses, address.IP.String()) {
-				// mark IP address as suspicious
-				suspiciousAddresses = append(suspiciousAddresses, address.IP.String())
+	// number of threads
+	threads := 6
+	// channels to receive found suspicious and attacked addresses
+	suspicious := make(chan string)
+	// channel to keep track of which goroutines are done
+	complete := make(chan bool)
+	// number of addresses to give to each worker
+	workload := len(macAddresses) / threads
+	// make sure workload isn't 0
+	if threads > len(macAddresses) {
+		threads = len(macAddresses)
+		workload = 1
+	}
+	// number of finished goroutines
+	finished := 0
+
+	// start workers
+	for i := 0; i < threads; i++ {
+		// if this is the last worker, give it the rest of the addresses
+		if i == threads-1 {
+			go arpWorker(macAddresses[i*workload:], suspicious, complete)
+		} else {
+			go arpWorker(macAddresses[i*workload:(i+1)*workload], suspicious, complete)
+		}
+	}
+
+	// receive marked addresses from goroutines
+Outer:
+	for {
+		select {
+		// suspicious address received
+		case address := <-suspicious:
+			if !contains(suspiciousAddresses, address) {
+				suspiciousAddresses = append(suspiciousAddresses, address)
+			}
+		// complete signal received
+		case <-complete:
+			// increment finished goroutines counter
+			finished++
+			// if all workers are finished, end
+			if finished == threads {
+				break Outer
 			}
 		}
 	}
