@@ -175,14 +175,25 @@ class Ui_MainWindow(object):
         self.label.setScaledContents(True)
         self.label.setObjectName("label")
         self.filterBox = QtWidgets.QComboBox(self.splitter_3)
+
+        self.labelSourceAddress = QtWidgets.QLabel(self.splitter_3)
+        self.labelSourceAddress.setSizePolicy(sizePolicy)
+        self.labelSourceAddress.setScaledContents(True)
+        self.labelSourceAddress.setObjectName("sourceAddressLabel")
+        self.addressInput = QtWidgets.QLineEdit(self.splitter_3)
+
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(7)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.filterBox.sizePolicy().hasHeightForWidth())
         self.filterBox.setSizePolicy(sizePolicy)
+        self.addressInput.setSizePolicy(sizePolicy)
         self.filterBox.setObjectName("filterBox")
+        self.addressInput.setObjectName("addressInput")
+
         self.filterBot = QtWidgets.QPushButton(self.splitter_3)
         self.filterBot.setObjectName("filterBot")
+
         self.amount = QtWidgets.QLabel(self.splitter_3)
         self.amount.setObjectName("amount")
         self.lineEdit = QtWidgets.QLineEdit(self.splitter_3)
@@ -397,6 +408,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Network Traffic Analysis"))
+        self.labelSourceAddress.setText(_translate("MainWindow", "Source Address: "))
         self.label.setText(_translate("MainWindow", " Display Filter: "))
         self.filterBot.setText(_translate("MainWindow", "Filter"))
         self.amount.setText(_translate("MainWindow", "Amount"))

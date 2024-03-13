@@ -51,6 +51,50 @@ class GUIActions:
                     self.sniffer.filtered_packets = filtered_packets
             return filtered_packets
 
+    def filter_packets_source_address(self, source_address):
+        filtered_packets = []
+        sniffed_packets = self.get_sniffed_packets()
+        # if no filter specified returns all packets
+        if source_address == "":
+            self.sniffer.filtered_packets.clear()
+            return sniffed_packets
+        else:
+            # Iterate through all sniffed packets and check if their source address matches the given address
+            # Supports both IP and ARP packets
+            for packet in sniffed_packets:
+                if packet.haslayer(IP) and packet[IP].src == source_address:
+                    filtered_packets.append(packet)
+                elif packet.haslayer(ARP) and packet[ARP].psrc == source_address:
+                    filtered_packets.append(packet)
+            return filtered_packets
+
+    def filter_packet_combined(self, protocol, source_address):
+        filtered_packets = []
+        sniffed_packets = self.get_sniffed_packets()
+        self.sniffer.set_protocol(protocol)
+        # If neither protocol nor source address is specified, return all sniffed packets
+        if protocol == "" and source_address == "":
+            filtered_packets = sniffed_packets
+
+        # If only protocol is specified, filter packets by the specified protocol
+        elif source_address == "":
+            filtered_packets = self.filter_packets(protocol)
+
+        # If only source address is specified, filter packets by the specified source address
+        elif protocol == "":
+            filtered_packets = self.filter_packets_source_address(source_address)
+
+        # If both protocol and source address are specified, first filter by protocol,
+        # then further filter by source address
+        else:
+            filtered_packets_protocol = self.filter_packets(protocol)
+            for packet in filtered_packets_protocol:
+                if packet.haslayer(IP) and packet[IP].src == source_address:
+                    filtered_packets.append(packet)
+                elif packet.haslayer(ARP) and packet[ARP].psrc == source_address:
+                    filtered_packets.append(packet)
+        return filtered_packets
+
     # Methods to read and write pcap files
     def read_pcap(self, file, window):
         self.sniffer.sniff_read(file, window)
