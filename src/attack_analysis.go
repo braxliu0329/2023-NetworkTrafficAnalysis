@@ -359,33 +359,14 @@ func getIP(packet gopacket.Packet) net.IP {
 // helper function to be used in parallel by tcpConnectScanDetect
 func findSuspiciousTcpScan(addresses []TCPAddressData, suspicious chan<- string, complete chan<- bool, tcpPackets []TCPPacketAddress, threshold int, interval time.Duration) {
 	// loop through addresses
-=======
-// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
-func tcpConnectScanDetect(file string, threshold int) []string {
-	// constant time interval to determine how long a packet can send less SYN packets than the threshold
-	interval := 5 * time.Second
-	// get packets from a pcap file
-	packets := getPackets(file)
-	// extract all TCP layers
-	tcpPackets := getTCP(packets)
-	// collate address data
-	addresses := getTCPAddressData(tcpPackets)
-
-	// slices to contain suspicious and attacked addresses
-	var suspiciousAddresses []string
-
-	// *threaded* loop through addresses
-
 	for _, address := range addresses {
 		// proceed with determining if the address is suspicious if it has sent SYN flags without receiving SYN-ACK packets
 		if address.SendsSYN > 0 && address.ReceivesACK == 0 {
 			// get the TCP Packets sent by the address
 			sentSYNPackets := getSentSYNPackets(address.Address, tcpPackets)
-
 			// initialise lists to contain the tcp connection count and time
 			var tcpConnectionCount int
 			var tcpConnectionTime time.Time
-
 			// loop through sent packets
 			for _, packet := range sentSYNPackets {
 				// initialise the time
@@ -394,7 +375,6 @@ func tcpConnectScanDetect(file string, threshold int) []string {
 				// If so, the packet is classified as suspicious
 				if tcpConnectionCount >= threshold {
 					if packet.Packet.Metadata().Timestamp.Sub(tcpConnectionTime) <= interval {
-						// check if the address has been recorded already
 						suspicious <- packet.Source.String()
 					} else { // if not, reset
 						tcpConnectionCount = 0
