@@ -419,7 +419,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Network Traffic Analysis"))
         self.labelSourceAddress.setText(_translate("MainWindow", "Source Address: "))
-        self.labelDstAddress.setText(_translate("MainWindow", "Dstination Address: "))
+        self.labelDstAddress.setText(_translate("MainWindow", "Destination Address: "))
         self.label.setText(_translate("MainWindow", " Protocol: "))
         self.filterBot.setText(_translate("MainWindow", "Filter"))
         self.amount.setText(_translate("MainWindow", "Amount"))
