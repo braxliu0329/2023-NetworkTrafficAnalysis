@@ -1,1 +1,138 @@
-[]
+[
+    {
+        "source": "192.168.1.62",
+        "frequency": 125
+    },
+    {
+        "source": "192.168.1.1",
+        "frequency": 52
+    },
+    {
+        "source": "192.168.1.126",
+        "frequency": 43
+    },
+    {
+        "source": "13.89.178.26",
+        "frequency": 29
+    },
+    {
+        "source": "192.168.1.129",
+        "frequency": 23
+    },
+    {
+        "source": "192.168.1.69",
+        "frequency": 18
+    },
+    {
+        "source": "192.168.1.131",
+        "frequency": 13
+    },
+    {
+        "source": "34.149.100.209",
+        "frequency": 13
+    },
+    {
+        "source": "192.168.1.49",
+        "frequency": 8
+    },
+    {
+        "source": "20.50.80.213",
+        "frequency": 6
+    },
+    {
+        "source": "192.168.1.186",
+        "frequency": 5
+    },
+    {
+        "source": "140.82.114.25",
+        "frequency": 5
+    },
+    {
+        "source": "35.186.224.39",
+        "frequency": 4
+    },
+    {
+        "source": "162.159.133.234",
+        "frequency": 4
+    },
+    {
+        "source": "192.168.1.123",
+        "frequency": 3
+    },
+    {
+        "source": "fe80::6c1c:fff:fe1f:40f6",
+        "frequency": 3
+    },
+    {
+        "source": "fe80::d6f5:47ff:fe17:d85",
+        "frequency": 3
+    },
+    {
+        "source": "192.168.1.15",
+        "frequency": 2
+    },
+    {
+        "source": "fe80::f639:9ff:fe28:23e9",
+        "frequency": 2
+    },
+    {
+        "source": "176.58.90.147",
+        "frequency": 2
+    },
+    {
+        "source": "192.168.1.180",
+        "frequency": 2
+    },
+    {
+        "source": "192.168.1.60",
+        "frequency": 2
+    },
+    {
+        "source": "34.120.208.123",
+        "frequency": 2
+    },
+    {
+        "source": "192.168.1.91",
+        "frequency": 1
+    },
+    {
+        "source": "54.161.152.147",
+        "frequency": 1
+    },
+    {
+        "source": "3.69.76.60",
+        "frequency": 1
+    },
+    {
+        "source": "162.159.129.235",
+        "frequency": 1
+    },
+    {
+        "source": "192.168.1.188",
+        "frequency": 1
+    },
+    {
+        "source": "162.159.134.233",
+        "frequency": 1
+    },
+    {
+        "source": "35.186.224.25",
+        "frequency": 1
+    },
+    {
+        "source": "162.159.128.233",
+        "frequency": 1
+    },
+    {
+        "source": "34.107.243.93",
+        "frequency": 1
+    },
+    {
+        "source": "0.0.0.0",
+        "frequency": 1
+    },
+    {
+        "source": "192.168.1.198",
+        "frequency": 1
+    }
+]

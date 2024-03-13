@@ -43,7 +43,7 @@ function SSLStripping() {
     };
     return (
         <div className="analysis">
-            <h1 className="title">DNS Flood Detection</h1>
+            <h1 className="title">SSL Stripping Detection</h1>
             <div style={{ height: chartHeight, width:1000, margin: "auto" }}>
                 <FrequencyGraph data={sourcedata.data} index={"ssl"}/>
             </div>

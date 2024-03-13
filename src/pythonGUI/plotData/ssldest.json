@@ -1,7 +1,59 @@
 {
     "data": [
         {
-            "address": "104.208.16.88",
+            "address": "13.89.178.26",
+            "frequency": 1
+        },
+        {
+            "address": "20.50.80.213",
+            "frequency": 1
+        },
+        {
+            "address": "35.186.224.39",
+            "frequency": 1
+        },
+        {
+            "address": "176.58.90.147",
+            "frequency": 1
+        },
+        {
+            "address": "162.159.133.234",
+            "frequency": 1
+        },
+        {
+            "address": "140.82.114.25",
+            "frequency": 1
+        },
+        {
+            "address": "3.69.76.60",
+            "frequency": 1
+        },
+        {
+            "address": "54.161.152.147",
+            "frequency": 1
+        },
+        {
+            "address": "162.159.128.233",
+            "frequency": 1
+        },
+        {
+            "address": "35.186.224.25",
+            "frequency": 1
+        },
+        {
+            "address": "162.159.134.233",
+            "frequency": 1
+        },
+        {
+            "address": "162.159.129.235",
+            "frequency": 1
+        },
+        {
+            "address": "34.107.243.93",
+            "frequency": 1
+        },
+        {
+            "address": "34.149.100.209",
             "frequency": 1
         }
     ]

@@ -161,4 +161,8 @@ cython_debug/
 /src/.idea/
 /src/pythonGUI/.idea/
 
+# plot data
+/src/pythonGUI/plotData
 
+# build files
+/src/analysis/backend/nta10a
