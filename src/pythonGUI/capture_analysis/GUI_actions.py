@@ -62,6 +62,8 @@ class GUIActions:
             for packet in sniffed_packets:
                 if packet.haslayer(IP) and packet[IP].src == source_address:
                     filtered_packets.append(packet)
+                elif packet.haslayer(ARP) and packet[ARP].psrc == source_address:
+                    filtered_packets.append(packet)
             return filtered_packets
 
     def filter_packet_combined(self, protocol, source_address):
@@ -78,6 +80,8 @@ class GUIActions:
             filtered_packets_protocol = self.filter_packets(protocol)
             for packet in filtered_packets_protocol:
                 if packet.haslayer(IP) and packet[IP].src == source_address:
+                    filtered_packets.append(packet)
+                elif packet.haslayer(ARP) and packet[ARP].psrc == source_address:
                     filtered_packets.append(packet)
         return filtered_packets
 
