@@ -58,7 +58,8 @@ class GUIActions:
             self.sniffer.filtered_packets.clear()
             return sniffed_packets
         else:
-            # checks if each packet's source address matches the given address and appends to list if so
+            # Iterate through all sniffed packets and check if their source address matches the given address
+            # Supports both IP and ARP packets
             for packet in sniffed_packets:
                 if packet.haslayer(IP) and packet[IP].src == source_address:
                     filtered_packets.append(packet)
@@ -70,12 +71,20 @@ class GUIActions:
         filtered_packets = []
         sniffed_packets = self.get_sniffed_packets()
         self.sniffer.set_protocol(protocol)
+        # If neither protocol nor source address is specified, return all sniffed packets
         if protocol == "" and source_address == "":
             filtered_packets = sniffed_packets
+
+        # If only protocol is specified, filter packets by the specified protocol
         elif source_address == "":
             filtered_packets = self.filter_packets(protocol)
+
+        # If only source address is specified, filter packets by the specified source address
         elif protocol == "":
             filtered_packets = self.filter_packets_source_address(source_address)
+
+        # If both protocol and source address are specified, first filter by protocol,
+        # then further filter by source address
         else:
             filtered_packets_protocol = self.filter_packets(protocol)
             for packet in filtered_packets_protocol:

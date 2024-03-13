@@ -340,13 +340,19 @@ class Window(window.Ui_MainWindow, QMainWindow):
         webbrowser.open_new_tab('https://ubiquitous-sniffle-y217w7w.pages.github.io/#/')
 
     def filter_capture(self):
+        # retrieve the currently selected protocol and source address
         protocol = self.filterBox.currentText()
         source_address = self.addressInput.text()
+
+        # call the filter method with the selected protocol and source address.
         filtered_packets = self.GUI_actions.filter_packet_combined(protocol, source_address)
+        # reset the row count of the table that displays captured packets in the GUI to 0.
         self.captureList.setRowCount(0)
+        # reset the packet number counter to 1.
         self.packet_number = 1
         for packet in filtered_packets:
             self.display_packet(packet)
+        # apply any markers that highlight specific packets
         self.reapply_markers()
 
     # in order to use PyQts build in sorting function for tables with integers,
