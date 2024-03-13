@@ -392,7 +392,7 @@ func tcpConnectScanDetect(file string, threshold int) []string {
 	// slices to contain suspicious and attacked addresses
 	var suspiciousAddresses []string
 
-	// channels to receive found suspicious and attacked addresses
+	// channel to receive found suspicious addresses
 	suspicious := make(chan string)
 	// channel to keep track of which goroutines are done
 	complete := make(chan bool)
@@ -476,7 +476,7 @@ func arpPoisonDetect(file string) []string {
 
 	// number of threads
 	threads := 6
-	// channels to receive found suspicious and attacked addresses
+	// channel to receive found suspicious addresses
 	suspicious := make(chan string)
 	// channel to keep track of which goroutines are done
 	complete := make(chan bool)
@@ -517,6 +517,11 @@ Outer:
 			if finished == threads {
 				break Outer
 			}
+			// handle no packets found
+		default:
+			if threads == 0 {
+				break Outer
+			}
 		}
 	}
 
@@ -539,11 +544,8 @@ func getICMP(packets []gopacket.Packet) []SourceTime {
 	return icmpPackets
 }
 
-// return all addresses with pps greater than the given threshold
-func testPPS(packets []SourceTime, threshold float64) []string {
-	// slice to store suspicious addresses
-	var suspiciousAddresses []string
-
+// helper function to determine the suspicious nature of packets using pps
+func ppsWorker(packets []SourceTime, threshold float64, suspicious chan<- string, complete chan<- bool) {
 	// collate addresses and their packets
 	for i, packet := range packets {
 		// check the address for the packet exists
@@ -566,7 +568,6 @@ func testPPS(packets []SourceTime, threshold float64) []string {
 			for j, icmpPacket := range packets {
 				// if the address matches, update time and count
 				if icmpPacket.Source.String() == ip {
-					// remove the packet if it is an outlier
 					// update start or end time
 					if icmpPacket.TimeStamp.Before(start) {
 						start = icmpPacket.TimeStamp
@@ -617,10 +618,69 @@ func testPPS(packets []SourceTime, threshold float64) []string {
 
 			// if pps is above the threshold, mark the address as suspicious
 			if pps > threshold {
-				suspiciousAddresses = append(suspiciousAddresses, ip)
+				suspicious <- ip
 			}
 		}
 	}
+	complete <- true
+}
+
+// return all addresses with pps greater than the given threshold
+func testPPS(packets []SourceTime, threshold float64) []string {
+	// slice to store suspicious addresses
+	var suspiciousAddresses []string
+
+	// number of threads
+	threads := 1
+	// channel to receive found suspicious addresses
+	suspicious := make(chan string)
+	// channel to keep track of which goroutines are done
+	complete := make(chan bool)
+	// number of addresses to give to each worker
+	workload := len(packets) / threads
+	// make sure workload isn't 0
+	if threads > len(packets) {
+		threads = len(packets)
+		workload = 1
+	}
+	// number of finished goroutines
+	finished := 0
+
+	// start workers
+	for i := 0; i < threads; i++ {
+		// if this is the last worker, give it the rest of the addresses
+		if i == threads-1 {
+			go ppsWorker(packets[i*workload:], threshold, suspicious, complete)
+		} else {
+			go ppsWorker(packets[i*workload:(i+1)*workload], threshold, suspicious, complete)
+		}
+	}
+
+	// receive marked addresses from goroutines
+Outer:
+	for {
+		select {
+		// suspicious address received
+		case address := <-suspicious:
+			if !contains(suspiciousAddresses, address) {
+				suspiciousAddresses = append(suspiciousAddresses, address)
+			}
+		// complete signal received
+		case <-complete:
+			// increment finished goroutines counter
+			finished++
+			// if all workers are finished, end
+			if finished == threads {
+				break Outer
+			}
+		// handle no packets found
+		default:
+			if threads == 0 {
+				break Outer
+			}
+		}
+	}
+
 	return suspiciousAddresses
 }
 
