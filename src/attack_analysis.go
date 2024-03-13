@@ -338,22 +338,9 @@ func getIP(packet gopacket.Packet) net.IP {
 	return nil
 }
 
-// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
-func tcpConnectScanDetect(file string, threshold int) []string {
-	// constant time interval to determine how long a packet can send less SYN packets than the threshold
-	interval := 5 * time.Second
-	// get packets from a pcap file
-	packets := getPackets(file)
-	// extract all TCP layers
-	tcpPackets := getTCP(packets)
-	// collate address data
-	// collate address data
-	addresses := getTCPAddressData(tcpPackets)
-
-	// slices to contain suspicious and attacked addresses
-	var suspiciousAddresses []string
-
-	// *threaded* loop through addresses
+// helper function to be used in parallel by tcpConnectScanDetect
+func findSuspiciousTcpScan(addresses []TCPAddressData, suspicious chan<- string, complete chan<- bool, tcpPackets []TCPPacketAddress, threshold int, interval time.Duration) {
+	// loop through addresses
 	for _, address := range addresses {
 		// proceed with determining if the address is suspicious if it has sent SYN flags without receiving SYN-ACK packets
 		if address.SendsSYN > 0 && address.ReceivesACK == 0 {
@@ -373,15 +360,67 @@ func tcpConnectScanDetect(file string, threshold int) []string {
 				if tcpConnectionCount >= threshold {
 					if packet.Packet.Metadata().Timestamp.Sub(tcpConnectionTime) <= interval {
 						// check if the address has been recorded already
-						if !contains(suspiciousAddresses, address.Address.String()) {
-							suspiciousAddresses = append(suspiciousAddresses, address.Address.String())
-						}
+						suspicious <- packet.Source.String()
 					} else { // if not, reset
 						tcpConnectionCount = 0
 					}
 				}
 				// add one to the packet number count
 				tcpConnectionCount++
+			}
+		}
+	}
+	complete <- true
+}
+
+// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
+func tcpConnectScanDetect(file string, threshold int) []string {
+	// constant time interval to determine how long a packet can send less SYN packets than the threshold
+	const interval = 5 * time.Second
+	// get packets from a pcap file
+	packets := getPackets(file)
+	// extract all TCP layers
+	tcpPackets := getTCP(packets)
+	// collate address data
+	addresses := getTCPAddressData(tcpPackets)
+
+	// slices to contain suspicious and attacked addresses
+	var suspiciousAddresses []string
+
+	// channels to receive found suspicious and attacked addresses
+	suspicious := make(chan string)
+	// channel to keep track of which goroutines are done
+	complete := make(chan bool)
+	// number of addresses to give to each worker
+	workload := len(addresses) / 2
+	// make sure workload isn't 0
+	if workload == 0 {
+		workload = len(addresses)
+	}
+	// number of finished goroutines
+	finished := 0
+
+	// start workers
+	for i := 0; i < 2; i++ {
+		go findSuspiciousTcpScan(addresses[i*workload:(i+1)*workload], suspicious, complete, tcpPackets, threshold, interval)
+	}
+
+	// receive marked addresses from goroutines
+Outer:
+	for {
+		select {
+		// suspicious address received
+		case address := <-suspicious:
+			if !contains(suspiciousAddresses, address) {
+				suspiciousAddresses = append(suspiciousAddresses, address)
+			}
+		// complete signal received
+		case <-complete:
+			// increment finished goroutines counter
+			finished++
+			// if all workers are finished, end
+			if finished == 2 {
+				break Outer
 			}
 		}
 	}
