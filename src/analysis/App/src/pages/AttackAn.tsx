@@ -14,6 +14,8 @@ function AttackAn() {
                     <li><Link to="/attackanalysis/httpflood">HTTP Flood Detection</Link></li>
                     <li><Link to="/attackanalysis/dnsflood">DNS Flood Detection</Link></li>
                     <li><Link to="/attackanalysis/icmpflood">ICMP Flood Detection</Link></li>
+                    <li><Link to="/attackanalysis/sslstripping">SSL Stripping Detection</Link></li>
+                    <li><Link to="/attackanalysis/udpflood">UDP Flood Detection</Link></li>
                 </ul>
             </div>
             </div>

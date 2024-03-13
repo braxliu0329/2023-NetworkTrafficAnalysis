@@ -1,32 +1,17 @@
 import { ResponsiveBar } from "@nivo/bar";
 
-interface BarData {
-    address: string;
-    sendsSYN: number;
-    receivesSYN: number;
-    sendSYNACK: number;
-    receivesSYNACK: number;
-}
+
 
 interface BarGraphProps {
-    data: BarData[];
+    data: any[];
 }
 
 // The TCP/SYN attack is visualised using a unique grouped data bar chart,
 // so it's best to have it in a separate component
 const TCPFrequencyGraph: React.FC<BarGraphProps> = ({ data }) => {
-    // Formats the JSON fields to be readable
-    const formattedData = data.map(item => ({
-        address: item.address,
-        'Sends SYN': item.sendsSYN,
-        'Receives SYN': item.receivesSYN,
-        'Send SYN/ACK': item.sendSYNACK,
-        'Receives SYN/ACK': item.receivesSYNACK,
-    }));
-
     return (
             <ResponsiveBar
-                data={formattedData}
+                data={data}
                 isInteractive={false}
                 keys={['Sends SYN', 'Receives SYN', 'Send SYN/ACK', 'Receives SYN/ACK']}
                 indexBy="address"

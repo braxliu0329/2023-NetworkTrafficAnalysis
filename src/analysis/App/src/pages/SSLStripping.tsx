@@ -2,9 +2,9 @@ import FrequencyGraph from "../components/FrequencyGraph";
 import { useState, useEffect } from 'react';
 import React from "react";
 
-function DNSFlood() {
-    const [resdata, setResData] = React.useState({} as any);
-    const [reqdata, setReqData] = React.useState({} as any)
+function SSLStripping() {
+    const [sourcedata, setSourceData] = React.useState({} as any);
+    const [destdata, setDestData] = React.useState({} as any)
     const [chartHeight, setChartHeight] = useState<number | string>('auto');
 
     // Fetch data from the backend when the component mounts
@@ -18,20 +18,20 @@ function DNSFlood() {
     // Fetch data from the backend
     const fetchData = async () => {
         try {
-            const responseRes = await fetch('/api/dnsresdata');
-            if (!responseRes.ok) {
+            const responseSource = await fetch('/api/sslsourcedata');
+            if (!responseSource.ok) {
                 throw new Error('Failed to fetch data');
             }
-            const resData = await responseRes.json();
-            setResData(resData);
-            const responseReq = await fetch('/api/dnsreqdata')
-            if (!responseReq.ok) {
+            const sourceData = await responseSource.json();
+            setSourceData(sourceData);
+            const responseDest = await fetch('/api/ssldestdata')
+            if (!responseDest.ok) {
                 throw new Error('Failed to fetch data')
             }
-            const reqData = await responseReq.json()
-            setReqData(reqData)
+            const destData = await responseDest.json()
+            setDestData(destData)
             // Calculate chart height based on number of nodes
-            const numNodes = resData.data.length;
+            const numNodes = destData.data.length;
             let calculatedHeight = 400;
             if (numNodes > 20) {
                 calculatedHeight = numNodes * 20;
@@ -45,17 +45,17 @@ function DNSFlood() {
         <div className="analysis">
             <h1 className="title">DNS Flood Detection</h1>
             <div style={{ height: chartHeight, width:1000, margin: "auto" }}>
-                <FrequencyGraph data={resdata.data} index={"address"}/>
+                <FrequencyGraph data={sourcedata.data} index={"ssl"}/>
             </div>
             <div style={{ height: chartHeight, width: 1000, margin: "auto" }}>
-                <FrequencyGraph data={reqdata.data} index={"address"}/>
+                <FrequencyGraph data={destdata.data} index={"ssl"}/>
             </div>
             <div style={{ textAlign: "center", maxWidth: 600, margin: "auto" }}>
-                <p><b>{resdata.suspicious}</b></p>
-                <p>{resdata.explanation}</p>
+                <p><b>{sourcedata.suspicious}</b></p>
+                <p>{sourcedata.explanation}</p>
             </div>
         </div>
     );
 }
 
-export default DNSFlood;
+export default SSLStripping;

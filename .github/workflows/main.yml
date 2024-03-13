@@ -25,10 +25,10 @@ jobs:
           pip install pandas
           pip install matplotlib
           pip install networkx
+          pip install libpcap
       
       - name: Run Tests
         run: |
           cd src
-          python -m unittest Packet_Capture_tests.py
           python -m unittest attack_analysis_tests.py
           

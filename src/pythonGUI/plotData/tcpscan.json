@@ -1,65 +1,17 @@
 {
-    "suspicious": "Suspicious addresses: 3.162.21.14, 52.223.203.214",
-    "explanation": "Addresses are marked as suspicious if the address sends SYN flags without receiving SYN-ACK packets and if the same address sends more SYN packets than the threshold within the time interval. ",
+    "suspicious": "No suspicious addresses detected",
+    "explanation": "Addresses are marked as suspicious if the address sends SYN flags without receiving SYN-ACK packets and if the same address sends more SYN packets than the  within the time interval. ",
     "data": [
         {
             "address": "192.168.1.62",
-            "rate": 87
+            "rate": 31
         },
         {
-            "address": "199.232.54.167",
-            "rate": 37
-        },
-        {
-            "address": "34.120.208.123",
-            "rate": 27
-        },
-        {
-            "address": "18.172.95.181",
-            "rate": 8
-        },
-        {
-            "address": "54.190.145.243",
-            "rate": 8
-        },
-        {
-            "address": "142.250.200.35",
-            "rate": 29
-        },
-        {
-            "address": "3.162.20.44",
-            "rate": 7
-        },
-        {
-            "address": "52.84.137.125",
-            "rate": 3
-        },
-        {
-            "address": "54.186.134.217",
-            "rate": 10
-        },
-        {
-            "address": "54.191.201.144",
+            "address": "192.168.1.48",
             "rate": 13
         },
         {
-            "address": "3.162.21.14",
-            "rate": 154
-        },
-        {
-            "address": "54.230.10.99",
-            "rate": 11
-        },
-        {
-            "address": "99.181.79.10",
-            "rate": 13
-        },
-        {
-            "address": "52.223.203.214",
-            "rate": 81
-        },
-        {
-            "address": "23.160.0.0",
+            "address": "54.161.152.147",
             "rate": 7
         }
     ]

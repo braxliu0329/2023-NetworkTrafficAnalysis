@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class MarkWaring(QtWidgets.QMessageBox):
     def __init__(self, parent=None):
+
         super().__init__(parent)
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
@@ -140,3 +141,5 @@ class MarkWaring(QtWidgets.QMessageBox):
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.PlaceholderText, brush)
         self.setPalette(palette)
+
+    

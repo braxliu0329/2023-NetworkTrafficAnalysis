@@ -32,8 +32,10 @@ class DataframeCreate:
                 version = IP
             elif packet.haslayer(IPv6):
                 version = IPv6
-            else:
+            elif packet.haslayer(ARP):
                 version = ARP
+            else:
+                return None
 
             data["Time"].append(packet.time)
             if packet.haslayer(Ether):

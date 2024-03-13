@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"github.com/google/gopacket/pcap"
+	"github.com/google/gopacket/pcapgo"
 	"math"
 	"net"
+	"os"
 	"sort"
 	"time"
 )
@@ -14,7 +15,7 @@ import (
 // Stage enum to store the status of tcp connections
 const (
 	syn       = iota
-	synack    = iota
+	synAck    = iota
 	connected = iota
 )
 
@@ -72,21 +73,33 @@ type DNSPacketAddress struct {
 
 // getPackets retrieves packets from a file into a slice of packets
 func getPackets(path string) []gopacket.Packet {
-	// handle errors, such as incorrect file paths
-	if handle, err := pcap.OpenOffline(path + ".pcap"); err != nil {
-		panic(err)
-	} else {
-		// slice to store packets
-		var packets []gopacket.Packet
-		// set the packet source as the given pcap file
-		packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-		// loop through every packet in the pcap file
-		for packet := range packetSource.Packets() {
-			// add the packet to the packet slice
-			packets = append(packets, packet)
+	// open the packet capture file using the given path
+	f, _ := os.Open(path + ".pcap")
+	// defer closing the file
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			print("An error occurred when attempting to close the file " + path + ".pcap\n")
 		}
-		return packets
+	}(f)
+
+	// set up data reader
+	r, err := pcapgo.NewReader(f)
+	if err != nil {
+		print("An error occurred when attempting to read from the file " + path + ".pcap\n")
+		return nil
 	}
+
+	// slice to store packets
+	var packets []gopacket.Packet
+	// set the packet source as the given pcap file
+	packetSource := gopacket.NewPacketSource(r, r.LinkType())
+	// loop through every packet in the pcap file
+	for packet := range packetSource.Packets() {
+		// add the packet to the packet slice
+		packets = append(packets, packet)
+	}
+	return packets
 }
 
 // getTCP extracts all TCP packet layers from a slice of packets
@@ -346,6 +359,23 @@ func getIP(packet gopacket.Packet) net.IP {
 // helper function to be used in parallel by tcpConnectScanDetect
 func findSuspiciousTcpScan(addresses []TCPAddressData, suspicious chan<- string, complete chan<- bool, tcpPackets []TCPPacketAddress, threshold int, interval time.Duration) {
 	// loop through addresses
+=======
+// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
+func tcpConnectScanDetect(file string, threshold int) []string {
+	// constant time interval to determine how long a packet can send less SYN packets than the threshold
+	interval := 5 * time.Second
+	// get packets from a pcap file
+	packets := getPackets(file)
+	// extract all TCP layers
+	tcpPackets := getTCP(packets)
+	// collate address data
+	addresses := getTCPAddressData(tcpPackets)
+
+	// slices to contain suspicious and attacked addresses
+	var suspiciousAddresses []string
+
+	// *threaded* loop through addresses
+
 	for _, address := range addresses {
 		// proceed with determining if the address is suspicious if it has sent SYN flags without receiving SYN-ACK packets
 		if address.SendsSYN > 0 && address.ReceivesACK == 0 {
@@ -713,7 +743,7 @@ func getTCPConnected(packets []TCPPacketAddress) []TCPPacketAddress {
 			for i, synPacket := range synPackets {
 				// if they match up, progress the stage of the connection
 				if synPacket.Source.String() == packet.Destination.String() && synPacket.Destination.String() == packet.Source.String() {
-					synPackets[i].Stage = synack
+					synPackets[i].Stage = synAck
 				}
 			}
 			// if ack is found, check if the syn-ack was previously found
@@ -721,7 +751,7 @@ func getTCPConnected(packets []TCPPacketAddress) []TCPPacketAddress {
 			// loop through found syn packets
 			for i, synPacket := range synPackets {
 				// if the ack is found and the addresses match up, progress to connected
-				if synPacket.Source.String() == packet.Destination.String() && synPacket.Destination.String() == packet.Source.String() && synPacket.Stage == synack {
+				if synPacket.Source.String() == packet.Destination.String() && synPacket.Destination.String() == packet.Source.String() && synPacket.Stage == synAck {
 					synPackets[i].Stage = connected
 					// add the packet to connected packets
 					connectedPackets = append(connectedPackets, packet)

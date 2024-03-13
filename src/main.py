@@ -1,22 +1,24 @@
 from dataclasses import dataclass
+from functools import partial
 import os.path
+import signal
 import sys
 import hashlib
+
 
 from PyQt5.Qt import Qt, QCompleter
 from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal
 from PyQt5.QtGui import QColor, QCursor
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QTreeWidgetItem, QMenu, QAction
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QTreeWidgetItem, QMenu, QDesktopWidget
 from PyQt5.QtWidgets import QHeaderView, QAbstractItemView, QComboBox
 from scapy.all import *
 from scapy.layers.inet import IP
 from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import ARP, Ether
-from PyQt5.QtGui import QDesktopServices
 import webbrowser
 
 from pythonGUI.capture_analysis import plotting
-from pythonGUI import subWindow, window, graph_window_action, attack_analysis_action, message
+from pythonGUI import subWindow, window, attack_analysis_action, message
 
 from pythonGUI.capture_analysis import GUI_actions, attack_detection
 
@@ -36,6 +38,8 @@ def hex_packet_data(packet_data):
 
     return ' --- '.join(result)
 
+
+
 # define the window class that inherits from the GUI window class and the main window class
 class Window(window.Ui_MainWindow, QMainWindow):
 
@@ -48,7 +52,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         self.detect = None
         self.cwd = None
-        self.stopped_capture = False
+        self.stopped_capture = True
+        self.stopped_analysis = True
         self.packet_number = 1
         # creates GUI_actions object
         self.GUI_actions = GUI_actions.GUIActions()
@@ -58,6 +63,11 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.show_in_hex = None
         self.show_in_bin = None
         self.capture_thread = None
+        self.analysis_thread = None
+        self.stop_event = threading.Event()
+        self.stop_analysis_event = threading.Event()
+       
+        
 
         # create array which tracks currently marked packets
         self.marked_packets = dict()
@@ -81,8 +91,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionPause.triggered.connect(self.pause_capture)
 
         # set the analysis menu
-        self.actionGraph.triggered.connect(self.graph)
-        self.actionAttack_Analysis.triggered.connect(self.attack_analysis)
+        self.actionStartAnalysis.triggered.connect(self.start_analysis)
+        
+
 
         # set the help menu
         self.actionUse_Guide.triggered.connect(self.use_guide)
@@ -146,6 +157,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionIgnorePacket.triggered.connect(self.ignore_packet)
         self.actionIgnoreAllDisplayed.triggered.connect(self.ignore_all_displayed)
         self.actionUnignoreAllDisplayed.triggered.connect(self.unignore_all_displayed)
+        webbrowser.open("http://localhost:8080")
 
     # Helper function to get the current row of the capture list
     def get_current_list_row(self):
@@ -284,6 +296,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # variable used to remove captured packets from display
         self.stopped_capture = True
+        self.stopped_analysis = True
         self.captureList.setRowCount(0)
         self.GUI_actions.start_sniffer(False, mainWindow)
         self.packet_number = 1
@@ -317,21 +330,50 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.capture_thread = threading.Thread(target=self.start_capture_thread)
         # starts running the thread
         self.capture_thread.start()
-        
-    # open the graph subwindow
-    def graph(self):
-        data = self.GUI_actions.get_sniffed_packets()
-        self.graph_window = graph_window_action.GraphWindow(data)
+    
+    # if analysis is NOT running and the packet capture is NOT stopped, START analysis
+    # if analysis IS running then STOP analysis and SET the event
+    def start_analysis(self):
+        if self.stopped_analysis and not self.stopped_capture:
+            self.open_alert("Analysis started", "Analysis is now running in the background!")
+            self.analysis_thread = threading.Thread(target=self.start_analysis_thread)
+            self.analysis_thread.start()
+            return
+        if not self.stopped_analysis and not self.stopped_capture:
+            self.open_alert("Analysis stopped", "Analysis is no longer running.")
+            self.stop_analysis_event.set()
+            self.stopped_analysis = True
+    
+    # if analysis_event is NOT SET AND packet capture IS running and the thread has NOT been told to stop
+    # then carry out packet analysis
+    # please allow a few seconds after clicking (x) for all threads to be told to stop
+    def start_analysis_thread(self):
+        self.stopped_analysis = False
+        while not self.stop_analysis_event.is_set() and not self.stopped_capture and not self.stop_event.is_set():
+            # using a lock so that flags and data refer to the same sniffed packets
+            with lock:
+                data = self.GUI_actions.get_sniffed_packets()
+                flags = self.flaggedIPs
+            # proceed to run all analyses and wait 5 seconds before looping again
+            plot = plotting.Plotting(data)
+            plot.run_all()
+            attack_analysis = attack_analysis_action.AttackAnalysis(data, flags)
+            attack_analysis.run_all_detect()
+            self.stop_analysis_event.wait(5)
+        # resets the event so that it can be set again
+        self.stop_analysis_event.clear()
 
-        self.graph_window.show()
-
-    # open the attack analysis subwindow
-    def attack_analysis(self):
-        data = self.GUI_actions.get_sniffed_packets()
-
-        self.attack_analysis_window = attack_analysis_action.AttackAnalysisWindow(data, self, self.flaggedIPs)
-
-        self.attack_analysis_window.show()
+    # sets the stop_event which tells all threads that they should terminate
+    # since the sniffer can simply be disabled using start_sniffer, only the analysis thread
+    # is told to stop using stop_event. Additionally, sends a SIGINT to the server to shut it down.
+    def closeEvent(self, event):
+        with open("src/analysis/backend/pid.txt", "r+") as f:
+            pid = f.read()
+            os.kill(int(pid), signal.SIGINT)
+        os.remove("src/analysis/backend/pid.txt")
+        self.stop_event.set()
+        self.GUI_actions.start_sniffer(False, mainWindow)
+        event.accept()
 
     def use_guide(self):
         # project_root = os.path.abspath(os.path.dirname(__file__))
@@ -339,18 +381,22 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # webbrowser.open(file_path)
         webbrowser.open_new_tab('https://ubiquitous-sniffle-y217w7w.pages.github.io/#/')
 
-    # filters captured packets
     def filter_capture(self):
-        # gets new list of filtered packets
-        filtered_packets = self.GUI_actions.filter_packets(self.filterBox.currentText())
-        # removes packets from display
+        # retrieve the currently selected protocol and source address
+        protocol = self.filterBox.currentText()
+        source_address = self.addressInput.text()
+
+        # call the filter method with the selected protocol and source address.
+        filtered_packets = self.GUI_actions.filter_packet_combined(protocol, source_address)
+        # reset the row count of the table that displays captured packets in the GUI to 0.
         self.captureList.setRowCount(0)
+        # reset the packet number counter to 1.
         self.packet_number = 1
-        # displays each packet
         for packet in filtered_packets:
             self.display_packet(packet)
+        # apply any markers that highlight specific packets
         self.reapply_markers()
-        
+
     # in order to use PyQts build in sorting function for tables with integers,
     # need to store integers using this custom item class which allows integer comparison
     class TableItemInt(QTableWidgetItem):
@@ -772,10 +818,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
     # create a message box warning user of a marking conflict
     def open_alert(self, title, warning):
-        msgBox = message.MarkWaring(self)
-        msgBox.setWindowTitle(title)
-        msgBox.setText(warning)
-        msgBox.exec_()
+        msg_box = message.MarkWaring(self, )
+        msg_box.setWindowTitle(title)
+        msg_box.setText(warning)
+        msg_box.exec_()
 
     # logic for marking a packet, as either a packet of interest or ignoring it
     def marker(self, row, ignore, mark):
@@ -928,33 +974,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
             self.filterBox.hidePopup()
         super(QComboBox, self.filterBox).enter_keypress(key)
 
-    # helper functions to generate graphs and detect attacks using the sniffed packets
-    def bar_analysis(self):
-        # create plotting object with sniffed packets
-        plotter = plotting.Plotting(self.GUI_actions.get_sniffed_packets())
-        # generate bar chart with sniffed packets
-        plotter.plot_protocol()
-
-    def network_graph(self):
-        plotter = plotting.Plotting(self.GUI_actions.get_sniffed_packets())
-        plotter.network_graph()
-
-    def mac_network_graph(self):
-        plotter = plotting.Plotting(self.GUI_actions.get_sniffed_packets())
-        plotter.mac_network_graph()
-
-    def sourceaddr_plot(self):
-        plotter = plotting.Plotting(self.GUI_actions.get_sniffed_packets())
-        plotter.plot_source()
-
-    def tcp_syn_flood_detect(self):
-        plotter = plotting.Plotting(self.GUI_actions.get_sniffed_packets())
-        self.detect = attack_detection.AttackDetection(plotter.data_frame)
-        self.detect.tcp_syn_flood_detect()
-
 # ran first and intialises PyQt window
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    lock = threading._RLock()
     mainWindow = Window()
     mainWindow.permission_allowed.connect(mainWindow.handle_permision_error)
     app.setStyle('Fusion')
