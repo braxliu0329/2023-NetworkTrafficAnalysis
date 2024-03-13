@@ -6,7 +6,7 @@ from scapy.layers.dns import DNS
 from scapy.layers.inet import IP, TCP, UDP
 from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import ARP, Ether
-import numpy as np
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 from pythonGUI.capture_analysis import dataframe_create
 
@@ -66,26 +66,91 @@ class Plotting:
                 json.dump(data, f, ensure_ascii=False, indent=4)
     
     def run_all(self):
+        for i in range(len(keys)):
+            if mode == "SourceIP":
+                data.append({
+                    "source": keys[i],
+                    "frequency": int(values[i])
+                })
+            elif mode == "DestIP":
+                data.append({
+                    "dest": keys[i],
+                    "frequency": int(values[i])
+                })
+            elif mode == "Protocol":
+                data.append({
+                    "protocol": keys[i],
+                    "frequency": int(values[i])
+                })
+        with open(f"src/pythonGUI/plotData/{mode}.json", "w+") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+    # Plots protocol frequency
+    def plot_protocol(self):
+        fig = plt.figure()
+        df_p = self.data_frame['Protocol'].value_counts().rename_axis("Protocols")
         self.write_frequency_json("Protocol")
+        df_p = df_p.plot(kind="barh")
+        df_p.bar_label(df_p.containers[-1], label_type='edge')
+        df_p.set_title("Protocol Frequency")
+        df_p.set_xlabel("Frequency")
+        canvas = FigureCanvas(fig)
+        return canvas
+
+    # Plots network address map for ipv4 addresses
+    def ipv4_network_graph(self):
+        fig = plt.figure()
 
         ipv4_addresses = self.data_frame[self.data_frame["IP_Version"] == "IPv4"]
         # uses connections between source ip and destination ip to form edges
         network = nx.from_pandas_edgelist(ipv4_addresses, source='SourceIP', target='DestIP')
         self.write_json(network, "ipv4")
+        nx.draw_circular(network, with_labels=True)
+        canvas = FigureCanvas(fig)
+        return canvas
 
-        ipv6_addresses = self.data_frame[self.data_frame["IP_Version"] == "IPv6"]
-        network = nx.from_pandas_edgelist(ipv6_addresses, source='SourceIP', target='DestIP')
+    # Plots network address map for ipv6 addresses
+    def ipv6_network_graph(self):
+        fig = plt.figure()
+
+        ipv4_addresses = self.data_frame[self.data_frame["IP_Version"] == "IPv6"]
+        network = nx.from_pandas_edgelist(ipv4_addresses, source='SourceIP', target='DestIP')
         self.write_json(network, "ipv6")
-        # Remove all None entries from data_frame
-        filtered_df = self.data_frame[~self.data_frame['SourceMac'].isnull()]
-        network = nx.from_pandas_edgelist(filtered_df, source="SourceMac", target="DestMac")
+        nx.draw_circular(network, with_labels=True)
+
+        canvas = FigureCanvas(fig)
+        return canvas
+
+    # Plots mac address map
+    def mac_network_graph(self):
+        fig = plt.figure()
+        network = nx.from_pandas_edgelist(self.data_frame, source="SourceMac", target="DestMac")
         self.write_json(network, "mac")
+        nx.draw_circular(network, with_labels=True)
+        canvas = FigureCanvas(fig)
+        return canvas
 
+    # plots frequency of source addresses
+    def plot_source(self):
+        fig = plt.figure()
         self.write_frequency_json("SourceIP")
+        df_p = self.data_frame['SourceIP'].value_counts()
+        df_p = df_p.plot(kind="barh")
+        df_p.set_title("IP Source Frequency")
+        df_p.set_xlabel("Frequency")
+        canvas = FigureCanvas(fig)
+        return canvas
 
+    # plots of destination addresses
+    def plot_dest(self):
+        fig = plt.figure()
         self.write_frequency_json("DestIP")
-
-    
+        df_p = self.data_frame['DestIP'].value_counts()
+        df_p = df_p.plot(kind="barh")
+        df_p.set_title("IP Destination Frequency")
+        df_p.set_xlabel("Frequency")
+        canvas = FigureCanvas(fig)
+        return canvas
 
     def get_protocol(self, protocol, packet):
         if protocol in self.protocols.keys():
