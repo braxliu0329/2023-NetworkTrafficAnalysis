@@ -21,7 +21,7 @@ const (
 // provide help on how to use the program on the CLI
 func help() {
 	// print help
-	fmt.Printf("Usage:\ngo run . [tests] [\"filepath\"]\nUse All to run all tests, for a list of tests use:\ngo run . tests\nIf entering a threshold, 'd' can be used for default settings")
+	fmt.Printf("Usage:\n./pcap_analysis [tests] [\"filepath\"]\nUse All to run all tests, for a list of tests use:\n./pcap_analysis tests\nIf entering a threshold, 'd' can be used for default settings")
 }
 
 // provide a list of tests usable
@@ -132,6 +132,7 @@ func main() {
 		}
 		// trim filepath, ignore src/ and .pcap
 		filepath = strings.ReplaceAll(filepath, "\"", "")
+		filepath = strings.ReplaceAll(filepath, ".\x5c", "")
 		filepath = strings.Split(filepath, ".")[0]
 		filepath = strings.ReplaceAll(filepath, "src/", "")
 

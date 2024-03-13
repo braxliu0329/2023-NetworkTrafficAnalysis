@@ -767,7 +767,7 @@ func httpFloodDetect(file string, threshold float64) []string {
 func getDNS(packets []gopacket.Packet) []DNSPacketAddress {
 	// slice to return tcp packets
 	var dnsPackets []DNSPacketAddress
-	// *threaded* loop through all packets
+	// loop through all packets
 	for _, packet := range packets {
 		// assign a variable to the TCP layer if it exists. If it doesn't exist, move on.
 		if dnsLayer := packet.Layer(layers.LayerTypeDNS); dnsLayer != nil {
