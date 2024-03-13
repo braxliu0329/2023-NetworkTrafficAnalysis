@@ -136,7 +136,7 @@ func getMAC(packets []gopacket.Packet) []MACAddress {
 func getTCPAddressData(tcpPackets []TCPPacketAddress) []TCPAddressData {
 	// slice to store tcp address information
 	var addresses []TCPAddressData
-	// *threaded* obtain all tcp address information
+	// obtain all tcp address information
 	for _, packet := range tcpPackets {
 		// go through existing addresses to see if this is a new source/destination
 		newSource := true
@@ -210,6 +210,22 @@ func getTCPAddressData(tcpPackets []TCPPacketAddress) []TCPAddressData {
 	return addresses
 }
 
+// helper function to loop through addresses in parallel
+func findSuspiciousTCP(addresses []TCPAddressData, suspicious chan<- string, attacked chan<- string, complete chan<- bool) {
+	for _, address := range addresses {
+		// mark the address as attacked if it receives more SYN packets than SYN-ACK packets sent
+		if address.ReceivesSyn > 3*address.SendsAck/2 {
+			attacked <- address.Address.String()
+		}
+		// mark the address as suspicious if it sends more SYN packets than SYN-ACK packets received
+		if address.SendsSYN > 3*address.ReceivesACK/2 {
+			suspicious <- address.Address.String()
+		}
+	}
+	// signal this goroutine is complete
+	complete <- true
+}
+
 // tcpSynFloodDetect uses the name of a pcap file and returns lists containing any suspicious and suspected attacked addresses
 func tcpSynFloodDetect(file string) Report {
 	// get packets from a pcap file
@@ -223,43 +239,42 @@ func tcpSynFloodDetect(file string) Report {
 	var suspiciousAddresses []string
 	var attackedAddresses []string
 
-	// *threaded* loop through obtained addresses
-	for _, address := range addresses {
-		// mark the address as attacked if it receives more SYN packets than SYN-ACK packets sent
-		if address.ReceivesSyn > 3*address.SendsAck/2 {
-			attackedAddresses = append(attackedAddresses, address.Address.String())
-		}
-		// mark the address as suspicious if it sends more SYN packets than SYN-ACK packets received
-		if address.SendsSYN > 3*address.ReceivesACK/2 {
-			suspiciousAddresses = append(suspiciousAddresses, address.Address.String())
-		}
+	// channels to receive found suspicious and attacked addresses
+	suspicious := make(chan string)
+	attacked := make(chan string)
+	// channel to keep track of which goroutines are done
+	complete := make(chan bool)
+	// number of addresses to give to each worker
+	workload := len(addresses) / 2
+	// make sure workload isn't 0
+	if workload == 0 {
+		workload = len(addresses)
+	}
+	// number of finished goroutines
+	finished := 0
+
+	// start workers
+	for i := 0; i < 2; i++ {
+		go findSuspiciousTCP(addresses[i*workload:(i+1)*workload], suspicious, attacked, complete)
 	}
 
-	// return the suspicious and attacked addresses as a pair
-	return Report{suspicious: suspiciousAddresses, attacked: attackedAddresses}
-}
-
-// sslStripping uses the name of a pcap file and returns lists containing any suspicious source and destination addresses
-func sslStrippingDetect(file string) Report {
-	// get packets from a pcap file
-	packets := getPackets(file)
-	// extract all TCP layers
-	tcpPackets := getTCP(packets)
-
-	// slices to contain suspicious and attacked addresses
-	var suspiciousAddresses []string
-	var attackedAddresses []string
-
-	// check through packets to see if there are any with the destination port 443, implying http instead of https
-	for _, packet := range tcpPackets {
-		print(packet.TcpPacket.DstPort.String())
-		if packet.TcpPacket.DstPort == 443 {
-			// if found to be suspicious, add source and destination addresses to list
-			if !contains(suspiciousAddresses, packet.Source.String()) {
-				suspiciousAddresses = append(suspiciousAddresses, packet.Source.String())
-			}
-			if !contains(attackedAddresses, packet.Destination.String()) {
-				attackedAddresses = append(attackedAddresses, packet.Destination.String())
+	// receive marked addresses from goroutines
+Outer:
+	for {
+		select {
+		// attacked address received
+		case attackedAddress := <-attacked:
+			attackedAddresses = append(attackedAddresses, attackedAddress)
+		// suspicious address received
+		case suspiciousAddress := <-suspicious:
+			suspiciousAddresses = append(suspiciousAddresses, suspiciousAddress)
+		// complete signal received
+		case <-complete:
+			// increment finished goroutines counter
+			finished++
+			// if all workers are finished, end
+			if finished == 2 {
+				break Outer
 			}
 		}
 	}

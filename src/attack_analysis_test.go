@@ -185,32 +185,3 @@ func TestDns(t *testing.T) {
 		t.Fatalf("Expected suspicious addresses %v, got %v instead", Report{knownRequestSuspicious, knownResponseSuspicious}, attackDetect)
 	}
 }
-
-// test the SSL Stripping attack detection for the CLI tool is working as expected
-func TestSslStripping(t *testing.T) {
-	// detect an attack using a pcap file without tcp flood attacks
-	attackFalseDetect := sslStrippingDetect("test_pcaps/dns")
-	// detect an attack using a pcap file with a tcp flood attack
-	attackDetect := sslStrippingDetect("test_pcaps/ssl_stripping")
-
-	// expected suspicious address
-	knownSource := []string{"192.168.1.100"}
-	// expected attacked address
-	knownDestination := []string{"192.168.1.1"}
-
-	// ensure that the method does not incur any false positives
-	if len(attackFalseDetect.suspicious) > 0 {
-		t.Fatalf("Expected no suspicious addresses, got %v instead", attackFalseDetect.suspicious)
-	}
-	if len(attackFalseDetect.attacked) > 0 {
-		t.Fatalf("Expected no attacked addresses, got %v instead", attackFalseDetect.attacked)
-	}
-
-	// tests whether the known suspicious and attacked addresses appeared in the correct lists
-	if !sliceEqual(attackDetect.suspicious, knownSource) {
-		t.Fatalf("Expected suspicious address %v, got %v instead", knownSource, attackDetect.suspicious)
-	}
-	if !sliceEqual(attackDetect.attacked, knownDestination) {
-		t.Fatalf("Expected suspicious address %v, got %v instead", knownDestination, attackDetect.attacked)
-	}
-}
