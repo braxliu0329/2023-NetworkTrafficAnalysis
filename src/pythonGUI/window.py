@@ -176,11 +176,19 @@ class Ui_MainWindow(object):
         self.label.setObjectName("label")
         self.filterBox = QtWidgets.QComboBox(self.splitter_3)
 
+        # source address label
         self.labelSourceAddress = QtWidgets.QLabel(self.splitter_3)
         self.labelSourceAddress.setSizePolicy(sizePolicy)
         self.labelSourceAddress.setScaledContents(True)
         self.labelSourceAddress.setObjectName("sourceAddressLabel")
         self.addressInput = QtWidgets.QLineEdit(self.splitter_3)
+
+        # destination address label
+        self.labelDstAddress = QtWidgets.QLabel(self.splitter_3)
+        self.labelDstAddress.setSizePolicy(sizePolicy)
+        self.labelDstAddress.setScaledContents(True)
+        self.labelDstAddress.setObjectName("dstAddressLabel")
+        self.addressInput2 = QtWidgets.QLineEdit(self.splitter_3)
 
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(7)
@@ -188,8 +196,10 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.filterBox.sizePolicy().hasHeightForWidth())
         self.filterBox.setSizePolicy(sizePolicy)
         self.addressInput.setSizePolicy(sizePolicy)
+        self.addressInput2.setSizePolicy(sizePolicy)
         self.filterBox.setObjectName("filterBox")
-        self.addressInput.setObjectName("addressInput")
+        self.addressInput.setObjectName("srcAddressInput")
+        self.addressInput2.setObjectName("dstAddressInput")
 
         self.filterBot = QtWidgets.QPushButton(self.splitter_3)
         self.filterBot.setObjectName("filterBot")
@@ -409,6 +419,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Network Traffic Analysis"))
         self.labelSourceAddress.setText(_translate("MainWindow", "Source Address: "))
+        self.labelDstAddress.setText(_translate("MainWindow", "Dstination Address: "))
         self.label.setText(_translate("MainWindow", " Display Filter: "))
         self.filterBot.setText(_translate("MainWindow", "Filter"))
         self.amount.setText(_translate("MainWindow", "Amount"))
