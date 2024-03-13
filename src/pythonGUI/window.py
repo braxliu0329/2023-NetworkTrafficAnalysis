@@ -420,7 +420,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "Network Traffic Analysis"))
         self.labelSourceAddress.setText(_translate("MainWindow", "Source Address: "))
         self.labelDstAddress.setText(_translate("MainWindow", "Dstination Address: "))
-        self.label.setText(_translate("MainWindow", " Display Filter: "))
+        self.label.setText(_translate("MainWindow", " Protocol: "))
         self.filterBot.setText(_translate("MainWindow", "Filter"))
         self.amount.setText(_translate("MainWindow", "Amount"))
         self.captureList.setSortingEnabled(True)

@@ -105,6 +105,7 @@ class GUIActions:
         elif protocol == "" and source_address == "":
             filtered_packets = self.filter_packets_destination_address(dst_address)
 
+        # If only protocol is not specified, filter packets by source address than destination address
         elif protocol == "":
             filtered_packets_source = self.filter_packets_source_address(source_address)
             for packet in filtered_packets_source:
@@ -113,6 +114,7 @@ class GUIActions:
                 elif packet.haslayer(ARP) and packet[ARP].pdst == dst_address:
                     filtered_packets.append(packet)
 
+        # If only source address in not specified, filter packets by protocol than destination address
         elif source_address == "":
             filtered_packets_protocol = self.filter_packets(protocol)
             for packet in filtered_packets_protocol:
@@ -121,6 +123,7 @@ class GUIActions:
                 elif packet.haslayer(ARP) and packet[ARP].pdst == dst_address:
                     filtered_packets.append(packet)
 
+        # If only destination address is not specified, filter packets by protocol than source address
         elif dst_address == "":
             filtered_packets_protocol = self.filter_packets(protocol)
             for packet in filtered_packets_protocol:
@@ -128,6 +131,8 @@ class GUIActions:
                     filtered_packets.append(packet)
                 elif packet.haslayer(ARP) and packet[ARP].psrc == source_address:
                     filtered_packets.append(packet)
+
+        # If protocol, destination address and source address all been specified
         else:
             filtered_packets_protocol = self.filter_packets(protocol)
             for packet in filtered_packets_protocol:
