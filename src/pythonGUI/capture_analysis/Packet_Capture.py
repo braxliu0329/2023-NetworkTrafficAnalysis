@@ -87,11 +87,11 @@ class Sniffer:
 
     def set_protocol(self, protocol):
         self.ptc = protocol
-
     # alternate sniffing method for reading pcap file packets
     def sniff_read(self, read_packets, window):
         sniff(count=self.amount, prn=self.packet_display(window), store=False, offline=read_packets,
               lfilter=self.packet_filter)
+        
 
     # called for every captured packet
     def packet_display(self, window):

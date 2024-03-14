@@ -443,15 +443,18 @@ class Window(window.Ui_MainWindow, QMainWindow):
     # if analysis is NOT running and the packet capture is NOT stopped, START analysis
     # if analysis IS running then STOP analysis and SET the event
     def start_analysis(self):
-        if self.stopped_analysis and not self.stopped_capture:
-            self.open_alert("Analysis started", "Analysis is now running in the background!")
-            self.analysis_thread = threading.Thread(target=self.start_analysis_thread)
-            self.analysis_thread.start()
-            return
-        if not self.stopped_analysis and not self.stopped_capture:
-            self.open_alert("Analysis stopped", "Analysis is no longer running.")
-            self.stop_analysis_event.set()
-            self.stopped_analysis = True
+        if self.stopped_capture:
+            self.open_alert("No packets", "Can't start analysis when no packets are loaded.")
+        else:
+            if self.stopped_analysis:
+                self.open_alert("Analysis started", "Analysis is now running in the background!")
+                self.analysis_thread = threading.Thread(target=self.start_analysis_thread)
+                self.analysis_thread.start()
+                return
+            else:
+                self.open_alert("Analysis stopped", "Analysis is no longer running.")
+                self.stop_analysis_event.set()
+                self.stopped_analysis = True
     
     # if analysis_event is NOT SET AND packet capture IS running and the thread has NOT been told to stop
     # then carry out packet analysis
