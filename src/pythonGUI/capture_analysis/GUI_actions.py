@@ -68,30 +68,78 @@ class GUIActions:
                     filtered_packets.append(packet)
             return filtered_packets
 
-    def filter_packet_combined(self, protocol, source_address):
+    def filter_packets_destination_address(self, destination_address):
+        filtered_packets = []
+        sniffed_packets = self.get_sniffed_packets()
+        # if no filter specified returns all packets
+        if destination_address == "":
+            self.sniffer.filtered_packets.clear()
+            return sniffed_packets
+        else:
+            # Iterate through all sniffed packets and check if their destination address matches the given address
+            # Supports both IP and ARP packets
+            for packet in sniffed_packets:
+                if packet.haslayer(IP) and packet[IP].dst == destination_address:
+                    filtered_packets.append(packet)
+                elif packet.haslayer(ARP) and packet[ARP].pdst == destination_address:
+                    filtered_packets.append(packet)
+            return filtered_packets
+
+    def filter_packet_combined(self, protocol, source_address, dst_address):
         filtered_packets = []
         sniffed_packets = self.get_sniffed_packets()
         self.sniffer.set_protocol(protocol)
         # If neither protocol nor source address is specified, return all sniffed packets
-        if protocol == "" and source_address == "":
+        if protocol == "" and source_address == "" and dst_address == "":
             filtered_packets = sniffed_packets
 
         # If only protocol is specified, filter packets by the specified protocol
-        elif source_address == "":
+        elif source_address == "" and dst_address == "":
             filtered_packets = self.filter_packets(protocol)
 
         # If only source address is specified, filter packets by the specified source address
-        elif protocol == "":
+        elif protocol == "" and dst_address == "":
             filtered_packets = self.filter_packets_source_address(source_address)
 
-        # If both protocol and source address are specified, first filter by protocol,
-        # then further filter by source address
-        else:
+        # If only destination address is specified, filter packets by the specified source address
+        elif protocol == "" and source_address == "":
+            filtered_packets = self.filter_packets_destination_address(dst_address)
+
+        # If only protocol is not specified, filter packets by source address than destination address
+        elif protocol == "":
+            filtered_packets_source = self.filter_packets_source_address(source_address)
+            for packet in filtered_packets_source:
+                if packet.haslayer(IP) and packet[IP].dst == dst_address:
+                    filtered_packets.append(packet)
+                elif packet.haslayer(ARP) and packet[ARP].pdst == dst_address:
+                    filtered_packets.append(packet)
+
+        # If only source address in not specified, filter packets by protocol than destination address
+        elif source_address == "":
+            filtered_packets_protocol = self.filter_packets(protocol)
+            for packet in filtered_packets_protocol:
+                if packet.haslayer(IP) and packet[IP].dst == dst_address:
+                    filtered_packets.append(packet)
+                elif packet.haslayer(ARP) and packet[ARP].pdst == dst_address:
+                    filtered_packets.append(packet)
+
+        # If only destination address is not specified, filter packets by protocol than source address
+        elif dst_address == "":
             filtered_packets_protocol = self.filter_packets(protocol)
             for packet in filtered_packets_protocol:
                 if packet.haslayer(IP) and packet[IP].src == source_address:
                     filtered_packets.append(packet)
                 elif packet.haslayer(ARP) and packet[ARP].psrc == source_address:
+                    filtered_packets.append(packet)
+
+        # If protocol, destination address and source address all been specified
+        else:
+            filtered_packets_protocol = self.filter_packets(protocol)
+            for packet in filtered_packets_protocol:
+                ip_match = packet.haslayer(IP) and packet[IP].src == source_address and packet[IP].dst == dst_address
+                arp_match = packet.haslayer(ARP) and packet[ARP].psrc == source_address and packet[ARP].pdst == dst_address
+
+                if ip_match or arp_match:
                     filtered_packets.append(packet)
         return filtered_packets
 

@@ -385,9 +385,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # retrieve the currently selected protocol and source address
         protocol = self.filterBox.currentText()
         source_address = self.addressInput.text()
+        dst_address = self.addressInput2.text()
 
         # call the filter method with the selected protocol and source address.
-        filtered_packets = self.GUI_actions.filter_packet_combined(protocol, source_address)
+        filtered_packets = self.GUI_actions.filter_packet_combined(protocol, source_address, dst_address)
         # reset the row count of the table that displays captured packets in the GUI to 0.
         self.captureList.setRowCount(0)
         # reset the packet number counter to 1.
