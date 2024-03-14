@@ -7,14 +7,14 @@ import psutil
 import yaml
 
 from PyQt5.Qt import Qt, QCompleter
-from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal, QObject, QThread, QMetaObject, Q_ARG
+from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal, QObject, QThread
 from PyQt5.QtGui import QColor, QCursor
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QTreeWidgetItem, QMenu, QDesktopWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QTreeWidgetItem, QMenu
 from PyQt5.QtWidgets import QHeaderView, QAbstractItemView, QComboBox
 from scapy.all import *
 from scapy.layers.inet import IP
 from scapy.layers.inet6 import IPv6
-from scapy.layers.l2 import ARP, Ether
+from scapy.layers.l2 import ARP
 import webbrowser
 
 from pythonGUI.capture_analysis import plotting
