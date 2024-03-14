@@ -1,0 +1,6 @@
+DNS_Flood_Detect_Threshold: 100
+DoS_Detect_Threshold: 100
+HTTP_Flood_Detect_Threshold: 100
+ICMP_Flood_Detect_Threshold: 100
+TCP_Scan_Detect_Threshold: 100
+UDP_Flood_Detect_Threshold: 100

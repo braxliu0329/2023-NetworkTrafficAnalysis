@@ -2,7 +2,7 @@
     "data": [
         {
             "protocol": "ARP",
-            "frequency": 2
+            "frequency": 8
         }
     ]
 }

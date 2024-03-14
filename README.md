@@ -91,14 +91,18 @@ _When finished running the program, don't forget to deactivate the virtual envir
 
 ## Deployment Instructions
 
-- Navigate to the Yarn environment and build the app
+- In the root directory, run the build script
 ```
-cd src/analysis/App
-yarn build
+./build.sh
 ```
-- Then return to the root directory and run the shell script
+
+- Then run the shell script called nta
 ```
-./run.sh
+./nta.sh
+```
+- Use --help for usage instructions
+```
+./nta.sh --help
 ```
 - To Use the CLI file analysis tool, navigate to `src` and run pcapAnalysis as follows:
 ```
