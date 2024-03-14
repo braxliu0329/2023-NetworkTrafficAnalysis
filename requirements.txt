@@ -28,6 +28,5 @@ matplotlib~=3.8.0
 pandas~=2.1.1
 networkx~=3.2
 numpy~=1.26.1
-
 psutil~=5.9.8
 PyYAML~=6.0.1

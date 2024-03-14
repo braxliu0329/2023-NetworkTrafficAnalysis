@@ -21,7 +21,7 @@ const (
 // provide help on how to use the program on the CLI
 func help() {
 	// print help
-	fmt.Printf("Usage:\ngo run . [tests] [\"filepath\"]\nUse All to run all tests, for a list of tests use:\ngo run . tests")
+	fmt.Printf("Usage:\n./pcap_analysis [tests] [\"filepath\"]\nUse All to run all tests, for a list of tests use:\n./pcap_analysis tests\nIf entering a threshold, 'd' can be used for default settings")
 }
 
 // provide a list of tests usable
@@ -53,7 +53,32 @@ func getTest(testArg string) int {
 	}
 }
 
-func inputThreshold(test string) int {
+// get a default threshold using an ID for the threshold test and the `config.txt` file
+func getDefaultThreshold(thresholdID int) int {
+	// access the config.txt file
+	f, err := os.ReadFile("config.txt")
+	// handle config.txt not found
+	if err != nil {
+		print("config file not found, using a threshold of 20\n")
+		return 20
+	}
+	// convert file into text
+	data := string(f)
+
+	// get relevant line
+	line := strings.Split(data, ";")[thresholdID]
+	// get threshold
+	threshold, err := strconv.Atoi(strings.Split(line, ": ")[1])
+	// handle bad config file
+	if err != nil {
+		print("config.txt not set up as expected, using a threshold of 20\n")
+		return 20
+	}
+
+	return threshold
+}
+
+func inputThreshold(test string, thresholdID int) int {
 	// ask user for a threshold
 	fmt.Println("Enter threshold for " + test + ":")
 	var input string
@@ -68,8 +93,13 @@ func inputThreshold(test string) int {
 	// convert input into an int
 	threshold, err := strconv.Atoi(input)
 	if err != nil {
-		fmt.Println("Threshold must be an integer.")
-		return -1
+		// if input is empty, use default input
+		if input == "d" {
+			getDefaultThreshold(thresholdID)
+		} else {
+			fmt.Println("Threshold must be an integer.")
+			return -1
+		}
 	}
 
 	return threshold
@@ -102,6 +132,7 @@ func main() {
 		}
 		// trim filepath, ignore src/ and .pcap
 		filepath = strings.ReplaceAll(filepath, "\"", "")
+		filepath = strings.ReplaceAll(filepath, ".\x5c", "")
 		filepath = strings.Split(filepath, ".")[0]
 		filepath = strings.ReplaceAll(filepath, "src/", "")
 
@@ -156,7 +187,7 @@ func runTcp(filepath string) {
 
 func runTcpConnect(filepath string) {
 	// get the threshold
-	threshold := inputThreshold("TCP Connection Scan")
+	threshold := inputThreshold("TCP Connection Scan", 1)
 	// bad format
 	if threshold == -1 {
 		runTcpConnect(filepath)
@@ -198,7 +229,7 @@ func runArp(filepath string) {
 }
 func runIcmp(filepath string) {
 	// get the threshold
-	threshold := inputThreshold("ICMP Flood Detection")
+	threshold := inputThreshold("ICMP Flood Detection", 2)
 	// bad format
 	if threshold == -1 {
 		runIcmp(filepath)
@@ -222,7 +253,7 @@ func runIcmp(filepath string) {
 }
 func runHttp(filepath string) {
 	// get the threshold
-	threshold := inputThreshold("HTTP Flood Detection")
+	threshold := inputThreshold("HTTP Flood Detection", 3)
 	// bad format
 	if threshold == -1 {
 		runHttp(filepath)
@@ -246,7 +277,7 @@ func runHttp(filepath string) {
 }
 func runDns(filepath string) {
 	// get the threshold
-	threshold := inputThreshold("DNS Attack Detection")
+	threshold := inputThreshold("DNS Attack Detection", 4)
 	// bad format
 	if threshold == -1 {
 		runDns(filepath)

@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"github.com/google/gopacket/pcap"
+	"github.com/google/gopacket/pcapgo"
 	"math"
 	"net"
+	"os"
 	"sort"
 	"time"
 )
@@ -14,7 +15,7 @@ import (
 // Stage enum to store the status of tcp connections
 const (
 	syn       = iota
-	synack    = iota
+	synAck    = iota
 	connected = iota
 )
 
@@ -72,21 +73,33 @@ type DNSPacketAddress struct {
 
 // getPackets retrieves packets from a file into a slice of packets
 func getPackets(path string) []gopacket.Packet {
-	// handle errors, such as incorrect file paths
-	if handle, err := pcap.OpenOffline(path + ".pcap"); err != nil {
-		panic(err)
-	} else {
-		// slice to store packets
-		var packets []gopacket.Packet
-		// set the packet source as the given pcap file
-		packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-		// loop through every packet in the pcap file
-		for packet := range packetSource.Packets() {
-			// add the packet to the packet slice
-			packets = append(packets, packet)
+	// open the packet capture file using the given path
+	f, _ := os.Open(path + ".pcap")
+	// defer closing the file
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			print("An error occurred when attempting to close the file " + path + ".pcap\n")
 		}
-		return packets
+	}(f)
+
+	// set up data reader
+	r, err := pcapgo.NewReader(f)
+	if err != nil {
+		print("An error occurred when attempting to read from the file " + path + ".pcap\n")
+		return nil
 	}
+
+	// slice to store packets
+	var packets []gopacket.Packet
+	// set the packet source as the given pcap file
+	packetSource := gopacket.NewPacketSource(r, r.LinkType())
+	// loop through every packet in the pcap file
+	for packet := range packetSource.Packets() {
+		// add the packet to the packet slice
+		packets = append(packets, packet)
+	}
+	return packets
 }
 
 // getTCP extracts all TCP packet layers from a slice of packets
@@ -136,7 +149,7 @@ func getMAC(packets []gopacket.Packet) []MACAddress {
 func getTCPAddressData(tcpPackets []TCPPacketAddress) []TCPAddressData {
 	// slice to store tcp address information
 	var addresses []TCPAddressData
-	// *threaded* obtain all tcp address information
+	// obtain all tcp address information
 	for _, packet := range tcpPackets {
 		// go through existing addresses to see if this is a new source/destination
 		newSource := true
@@ -210,6 +223,22 @@ func getTCPAddressData(tcpPackets []TCPPacketAddress) []TCPAddressData {
 	return addresses
 }
 
+// helper function to loop through addresses in parallel
+func findSuspiciousTCP(addresses []TCPAddressData, suspicious chan<- string, attacked chan<- string, complete chan<- bool) {
+	for _, address := range addresses {
+		// mark the address as attacked if it receives more SYN packets than SYN-ACK packets sent
+		if address.ReceivesSyn > 3*address.SendsAck/2 {
+			attacked <- address.Address.String()
+		}
+		// mark the address as suspicious if it sends more SYN packets than SYN-ACK packets received
+		if address.SendsSYN > 3*address.ReceivesACK/2 {
+			suspicious <- address.Address.String()
+		}
+	}
+	// signal this goroutine is complete
+	complete <- true
+}
+
 // tcpSynFloodDetect uses the name of a pcap file and returns lists containing any suspicious and suspected attacked addresses
 func tcpSynFloodDetect(file string) Report {
 	// get packets from a pcap file
@@ -223,15 +252,48 @@ func tcpSynFloodDetect(file string) Report {
 	var suspiciousAddresses []string
 	var attackedAddresses []string
 
-	// *threaded* loop through obtained addresses
-	for _, address := range addresses {
-		// mark the address as attacked if it receives more SYN packets than SYN-ACK packets sent
-		if address.ReceivesSyn > 3*address.SendsAck/2 {
-			attackedAddresses = append(attackedAddresses, address.Address.String())
+	// channels to receive found suspicious and attacked addresses
+	suspicious := make(chan string)
+	attacked := make(chan string)
+	// channel to keep track of which goroutines are done
+	complete := make(chan bool)
+	// number of addresses to give to each worker
+	workload := len(addresses) / 2
+	// make sure workload isn't 0
+	if workload == 0 {
+		workload = len(addresses)
+	}
+	// number of finished goroutines
+	finished := 0
+
+	// start workers
+	for i := 0; i < 2; i++ {
+		// if this is the last worker, give it the rest of the addresses
+		if i == 1 {
+			go findSuspiciousTCP(addresses[i*workload:], suspicious, attacked, complete)
+		} else {
+			go findSuspiciousTCP(addresses[i*workload:(i+1)*workload], suspicious, attacked, complete)
 		}
-		// mark the address as suspicious if it sends more SYN packets than SYN-ACK packets received
-		if address.SendsSYN > 3*address.ReceivesACK/2 {
-			suspiciousAddresses = append(suspiciousAddresses, address.Address.String())
+	}
+
+	// receive marked addresses from goroutines
+Outer:
+	for {
+		select {
+		// attacked address received
+		case attackedAddress := <-attacked:
+			attackedAddresses = append(attackedAddresses, attackedAddress)
+		// suspicious address received
+		case suspiciousAddress := <-suspicious:
+			suspiciousAddresses = append(suspiciousAddresses, suspiciousAddress)
+		// complete signal received
+		case <-complete:
+			// increment finished goroutines counter
+			finished++
+			// if all workers are finished, end
+			if finished == 2 {
+				break Outer
+			}
 		}
 	}
 
@@ -294,32 +356,17 @@ func getIP(packet gopacket.Packet) net.IP {
 	return nil
 }
 
-// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
-func tcpConnectScanDetect(file string, threshold int) []string {
-	// constant time interval to determine how long a packet can send less SYN packets than the threshold
-	interval := 5 * time.Second
-	// get packets from a pcap file
-	packets := getPackets(file)
-	// extract all TCP layers
-	tcpPackets := getTCP(packets)
-	// collate address data
-	// collate address data
-	addresses := getTCPAddressData(tcpPackets)
-
-	// slices to contain suspicious and attacked addresses
-	var suspiciousAddresses []string
-
-	// *threaded* loop through addresses
+// helper function to be used in parallel by tcpConnectScanDetect
+func findSuspiciousTcpScan(addresses []TCPAddressData, suspicious chan<- string, complete chan<- bool, tcpPackets []TCPPacketAddress, threshold int, interval time.Duration) {
+	// loop through addresses
 	for _, address := range addresses {
 		// proceed with determining if the address is suspicious if it has sent SYN flags without receiving SYN-ACK packets
 		if address.SendsSYN > 0 && address.ReceivesACK == 0 {
 			// get the TCP Packets sent by the address
 			sentSYNPackets := getSentSYNPackets(address.Address, tcpPackets)
-
 			// initialise lists to contain the tcp connection count and time
 			var tcpConnectionCount int
 			var tcpConnectionTime time.Time
-
 			// loop through sent packets
 			for _, packet := range sentSYNPackets {
 				// initialise the time
@@ -328,16 +375,72 @@ func tcpConnectScanDetect(file string, threshold int) []string {
 				// If so, the packet is classified as suspicious
 				if tcpConnectionCount >= threshold {
 					if packet.Packet.Metadata().Timestamp.Sub(tcpConnectionTime) <= interval {
-						// check if the address has been recorded already
-						if !contains(suspiciousAddresses, address.Address.String()) {
-							suspiciousAddresses = append(suspiciousAddresses, address.Address.String())
-						}
+						suspicious <- packet.Source.String()
 					} else { // if not, reset
 						tcpConnectionCount = 0
 					}
 				}
 				// add one to the packet number count
 				tcpConnectionCount++
+			}
+		}
+	}
+	complete <- true
+}
+
+// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
+func tcpConnectScanDetect(file string, threshold int) []string {
+	// constant time interval to determine how long a packet can send less SYN packets than the threshold
+	const interval = 5 * time.Second
+	// get packets from a pcap file
+	packets := getPackets(file)
+	// extract all TCP layers
+	tcpPackets := getTCP(packets)
+	// collate address data
+	addresses := getTCPAddressData(tcpPackets)
+
+	// slices to contain suspicious and attacked addresses
+	var suspiciousAddresses []string
+
+	// channel to receive found suspicious addresses
+	suspicious := make(chan string)
+	// channel to keep track of which goroutines are done
+	complete := make(chan bool)
+	// number of addresses to give to each worker
+	workload := len(addresses) / 2
+	// make sure workload isn't 0
+	if workload == 0 {
+		workload = len(addresses)
+	}
+	// number of finished goroutines
+	finished := 0
+
+	// start workers
+	for i := 0; i < 2; i++ {
+		// if this is the last worker, give it the rest of the addresses
+		if i == 1 {
+			go findSuspiciousTcpScan(addresses[i*workload:], suspicious, complete, tcpPackets, threshold, interval)
+		} else {
+			go findSuspiciousTcpScan(addresses[i*workload:(i+1)*workload], suspicious, complete, tcpPackets, threshold, interval)
+		}
+	}
+
+	// receive marked addresses from goroutines
+Outer:
+	for {
+		select {
+		// suspicious address received
+		case address := <-suspicious:
+			if !contains(suspiciousAddresses, address) {
+				suspiciousAddresses = append(suspiciousAddresses, address)
+			}
+		// complete signal received
+		case <-complete:
+			// increment finished goroutines counter
+			finished++
+			// if all workers are finished, end
+			if finished == 2 {
+				break Outer
 			}
 		}
 	}
@@ -359,6 +462,18 @@ func containsMac(macAddresses []MACAddress, addr MACAddress) bool {
 	return false
 }
 
+func arpWorker(macAddresses []MACAddress, suspicious chan<- string, complete chan<- bool) {
+	// if the mac address appears more than once, it is associated to more than one IP and is therefore suspicious
+	for i, address := range macAddresses {
+		// check if the addresses without this address contains this mac address
+		if containsMac(append(macAddresses[:i], macAddresses[i+1:]...), address) {
+			// send address through channel
+			suspicious <- address.IP.String()
+		}
+	}
+	complete <- true
+}
+
 // using the name of a pcap file, returns a slice containing any suspicious addresses
 func arpPoisonDetect(file string) []string {
 	// get packets from a pcap file
@@ -369,14 +484,53 @@ func arpPoisonDetect(file string) []string {
 	// slices to contain suspicious and attacked addresses
 	var suspiciousAddresses []string
 
-	// if the mac address appears more than once,it is associated to more than one IP and is therefore suspicious
-	for _, address := range macAddresses {
-		// check if the addresses without this address contains this mac address
-		if containsMac(macAddresses, address) {
-			// check the address isn't already marked
-			if !contains(suspiciousAddresses, address.IP.String()) {
-				// mark IP address as suspicious
-				suspiciousAddresses = append(suspiciousAddresses, address.IP.String())
+	// number of threads
+	threads := 6
+	// channel to receive found suspicious addresses
+	suspicious := make(chan string)
+	// channel to keep track of which goroutines are done
+	complete := make(chan bool)
+	// number of addresses to give to each worker
+	workload := len(macAddresses) / threads
+	// make sure workload isn't 0
+	if threads > len(macAddresses) {
+		threads = len(macAddresses)
+		workload = 1
+	}
+	// number of finished goroutines
+	finished := 0
+
+	// start workers
+	for i := 0; i < threads; i++ {
+		// if this is the last worker, give it the rest of the addresses
+		if i == threads-1 {
+			go arpWorker(macAddresses[i*workload:], suspicious, complete)
+		} else {
+			go arpWorker(macAddresses[i*workload:(i+1)*workload], suspicious, complete)
+		}
+	}
+
+	// receive marked addresses from goroutines
+Outer:
+	for {
+		select {
+		// suspicious address received
+		case address := <-suspicious:
+			if !contains(suspiciousAddresses, address) {
+				suspiciousAddresses = append(suspiciousAddresses, address)
+			}
+		// complete signal received
+		case <-complete:
+			// increment finished goroutines counter
+			finished++
+			// if all workers are finished, end
+			if finished == threads {
+				break Outer
+			}
+			// handle no packets found
+		default:
+			if threads == 0 {
+				break Outer
 			}
 		}
 	}
@@ -400,11 +554,8 @@ func getICMP(packets []gopacket.Packet) []SourceTime {
 	return icmpPackets
 }
 
-// return all addresses with pps greater than the given threshold
-func testPPS(packets []SourceTime, threshold float64) []string {
-	// slice to store suspicious addresses
-	var suspiciousAddresses []string
-
+// helper function to determine the suspicious nature of packets using pps
+func ppsWorker(packets []SourceTime, threshold float64, suspicious chan<- string, complete chan<- bool) {
 	// collate addresses and their packets
 	for i, packet := range packets {
 		// check the address for the packet exists
@@ -427,7 +578,6 @@ func testPPS(packets []SourceTime, threshold float64) []string {
 			for j, icmpPacket := range packets {
 				// if the address matches, update time and count
 				if icmpPacket.Source.String() == ip {
-					// remove the packet if it is an outlier
 					// update start or end time
 					if icmpPacket.TimeStamp.Before(start) {
 						start = icmpPacket.TimeStamp
@@ -478,10 +628,69 @@ func testPPS(packets []SourceTime, threshold float64) []string {
 
 			// if pps is above the threshold, mark the address as suspicious
 			if pps > threshold {
-				suspiciousAddresses = append(suspiciousAddresses, ip)
+				suspicious <- ip
 			}
 		}
 	}
+	complete <- true
+}
+
+// return all addresses with pps greater than the given threshold
+func testPPS(packets []SourceTime, threshold float64) []string {
+	// slice to store suspicious addresses
+	var suspiciousAddresses []string
+
+	// number of threads
+	threads := 1
+	// channel to receive found suspicious addresses
+	suspicious := make(chan string)
+	// channel to keep track of which goroutines are done
+	complete := make(chan bool)
+	// number of addresses to give to each worker
+	workload := len(packets) / threads
+	// make sure workload isn't 0
+	if threads > len(packets) {
+		threads = len(packets)
+		workload = 1
+	}
+	// number of finished goroutines
+	finished := 0
+
+	// start workers
+	for i := 0; i < threads; i++ {
+		// if this is the last worker, give it the rest of the addresses
+		if i == threads-1 {
+			go ppsWorker(packets[i*workload:], threshold, suspicious, complete)
+		} else {
+			go ppsWorker(packets[i*workload:(i+1)*workload], threshold, suspicious, complete)
+		}
+	}
+
+	// receive marked addresses from goroutines
+Outer:
+	for {
+		select {
+		// suspicious address received
+		case address := <-suspicious:
+			if !contains(suspiciousAddresses, address) {
+				suspiciousAddresses = append(suspiciousAddresses, address)
+			}
+		// complete signal received
+		case <-complete:
+			// increment finished goroutines counter
+			finished++
+			// if all workers are finished, end
+			if finished == threads {
+				break Outer
+			}
+		// handle no packets found
+		default:
+			if threads == 0 {
+				break Outer
+			}
+		}
+	}
+
 	return suspiciousAddresses
 }
 
@@ -514,7 +723,7 @@ func getTCPConnected(packets []TCPPacketAddress) []TCPPacketAddress {
 			for i, synPacket := range synPackets {
 				// if they match up, progress the stage of the connection
 				if synPacket.Source.String() == packet.Destination.String() && synPacket.Destination.String() == packet.Source.String() {
-					synPackets[i].Stage = synack
+					synPackets[i].Stage = synAck
 				}
 			}
 			// if ack is found, check if the syn-ack was previously found
@@ -522,7 +731,7 @@ func getTCPConnected(packets []TCPPacketAddress) []TCPPacketAddress {
 			// loop through found syn packets
 			for i, synPacket := range synPackets {
 				// if the ack is found and the addresses match up, progress to connected
-				if synPacket.Source.String() == packet.Destination.String() && synPacket.Destination.String() == packet.Source.String() && synPacket.Stage == synack {
+				if synPacket.Source.String() == packet.Destination.String() && synPacket.Destination.String() == packet.Source.String() && synPacket.Stage == synAck {
 					synPackets[i].Stage = connected
 					// add the packet to connected packets
 					connectedPackets = append(connectedPackets, packet)
@@ -534,7 +743,7 @@ func getTCPConnected(packets []TCPPacketAddress) []TCPPacketAddress {
 	return connectedPackets
 }
 
-// TODO: using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
+// using the name of a pcap file and a given threshold, returns a slice containing any suspicious addresses
 func httpFloodDetect(file string, threshold float64) []string {
 	// get packets from a pcap file
 	packets := getPackets(file)
@@ -552,10 +761,6 @@ func httpFloodDetect(file string, threshold float64) []string {
 		return nil
 	}
 
-	// check if connected packets are GET or POST requests
-	//var requestPackets []TCPPacketAddress
-	// loop through connected packets
-
 	// convert between packet address and time source
 	var packetTimes []SourceTime
 	for _, packet := range connectedPackets {
@@ -572,7 +777,7 @@ func httpFloodDetect(file string, threshold float64) []string {
 func getDNS(packets []gopacket.Packet) []DNSPacketAddress {
 	// slice to return tcp packets
 	var dnsPackets []DNSPacketAddress
-	// *threaded* loop through all packets
+	// loop through all packets
 	for _, packet := range packets {
 		// assign a variable to the TCP layer if it exists. If it doesn't exist, move on.
 		if dnsLayer := packet.Layer(layers.LayerTypeDNS); dnsLayer != nil {
@@ -590,7 +795,7 @@ func getDNS(packets []gopacket.Packet) []DNSPacketAddress {
 	return dnsPackets
 }
 
-// TODO: using the name of a pcap file and a given threshold, returns lists containing any suspicious and suspected attacked addresses
+// using the name of a pcap file and a given threshold, returns lists containing any suspicious and suspected attacked addresses
 func dnsRequestResponse(file string, threshold float64) Report {
 	// get packets from a pcap file
 	packets := getPackets(file)

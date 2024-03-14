@@ -104,6 +104,13 @@ _When finished running the program, don't forget to deactivate the virtual envir
 ```
 ./nta.sh --help
 ```
+- To Use the CLI file analysis tool, navigate to `src` and run pcapAnalysis as follows:
+```
+cd src
+./pcap_analysis
+```
+(Usage instructions should be explained by the command line)
+
 _(MacOS) When prompted to configure Python interpreter, select conda interpreter_
 
 ## License
