@@ -7,6 +7,7 @@ import psutil
 import yaml
 import pyshark
 import webbrowser
+import datetime
 
 from PyQt5.Qt import Qt, QCompleter
 from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal, QObject, QThread
@@ -492,7 +493,12 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
     def open_follow_stream(self):
         length = len(self.subs)
-        self.subs.append(follow_stream_window.FollowStreamWindow())
+        self.actionFollowStream.setDisabled(True)
+        current_time=str(datetime.now().date())
+        file_name = "src/" + "stream" + current_time
+        if not os.path.isfile(file_name + ".pcap"):
+            self.GUI_actions.write_pcap(file_name)
+        self.subs.append(follow_stream_window.FollowStreamWindow(file_name, self))
         self.subs[length].setWindowTitle("Protocol stream")
         self.subs[length].show()
         
