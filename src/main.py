@@ -5,6 +5,8 @@ import sys
 import hashlib
 import psutil
 import yaml
+import pyshark
+import webbrowser
 
 from PyQt5.Qt import Qt, QCompleter
 from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal, QObject, QThread
@@ -15,10 +17,10 @@ from scapy.all import *
 from scapy.layers.inet import IP
 from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import ARP
-import webbrowser
+
 
 from pythonGUI.capture_analysis import plotting
-from pythonGUI import subWindow, window, attack_analysis_action, message, config_window
+from pythonGUI import subWindow, window, attack_analysis_action, message, config_window, follow_stream_window
 
 from pythonGUI.capture_analysis import GUI_actions
 
@@ -129,8 +131,8 @@ class MarkerWorker(QObject):
     def unignore_all_displayed(self, all_rows):
         for row in range(all_rows):
             hash = self.hash_packet(row)
-            if hash in self.marked_packets:
-                if self.marked_packets[hash].ignored:
+            if hash in self.window.marked_packets:
+                if self.window.marked_packets[hash].ignored:
                     if self.marker(row, True, False) == 1:
                         return
         self.marking_finished.emit()
@@ -178,10 +180,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
        
         
 
-        # create array which tracks currently marked packets
+        # create set which tracks currently marked packets
         self.marked_packets = dict()
-        self.seen = set()
-        self.duplicates = set()
 
         # set open/save file and quit application function
         self.actionOpen_Multi_Files.triggered.connect(self.open_multiple_file)
@@ -204,6 +204,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionAttack_Analysis.triggered.connect(self.start_analysis)
         self.actionConfigureAttackAnalysis.triggered.connect(self.configure_analysis)
         self.actionConfigure.triggered.connect(self.configure_analysis)
+        self.actionFollowStream.triggered.connect(self.open_follow_stream)
         
 
 
@@ -488,6 +489,12 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 config_options = yaml.safe_load(f)
             config = config_window.Ui_ConfigWindow(config_options)
             config.exec_()
+
+    def open_follow_stream(self):
+        length = len(self.subs)
+        self.subs.append(follow_stream_window.FollowStreamWindow())
+        self.subs[length].setWindowTitle("Protocol stream")
+        self.subs[length].show()
         
     # sets the stop_event which tells all threads that they should terminate
     # since the sniffer can simply be disabled using start_sniffer, only the analysis thread

@@ -431,7 +431,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QTextBrowser" name="textBrowser"/>
+     <widget class="QTextBrowser" name="streamViewer"/>
     </item>
     <item>
      <widget class="QWidget" name="optionsWidget" native="true">
