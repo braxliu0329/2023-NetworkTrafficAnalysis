@@ -1,4 +1,6 @@
+import base64
 from PyQt5.QtWidgets import *
+import yaml
 from pythonGUI import follow_stream
 import pyshark
 import re
@@ -12,12 +14,40 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         self.setupUi(self)
 
         stream_index = []
+        self.peers = {}
+        self.packet_yaml = []
         self.streams = {"client_data": {}, "server_data": {}}
         self.cap = pyshark.FileCapture(self.file_name)
         for pkt in self.cap:
             try:
                 stream_index.append(pkt.tcp.stream)
             except:
+                pass
+            try:
+                src_ip = str(pkt.ip.src)
+                src_port = int(pkt.tcp.srcport)
+                dst_ip = str(pkt.ip.dst)
+                dst_port = int(pkt.tcp.dstport)
+                data = pkt.tcp.payload
+                if (src_ip, src_port) not in self.peers.values():
+                    peer_id = len(self.peers)
+                    self.peers[peer_id] = {'host': src_ip, 'port': src_port}
+                if (dst_ip, dst_port) not in self.peers.values():
+                    peer_id = len(self.peers)
+                    self.peers[peer_id] = {'host': dst_ip, 'port': dst_port}
+                try:
+                    peer_id = next(key for key, value in self.peers.items() if value == (src_ip, src_port))
+                except StopIteration:
+                    pass
+                packet_info = {
+                    'packet': int(pkt.number),
+                    'peer': peer_id,
+                    'index': 0,  # Assuming index is always 0 for simplicity
+                    'timestamp': float(pkt.frame_info.time_epoch),
+                    'data': base64.b64encode(bytes.fromhex(data.replace(':', ''))).decode()
+                }
+                self.packet_yaml.append(packet_info)
+            except AttributeError:
                 pass
         if len(stream_index) == 0:
             max_index = 0
@@ -50,10 +80,15 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         self.streamNumberSpinBox.valueChanged.connect(self.set_stream)
         self.formatComboBox.currentTextChanged.connect(self.set_stream)
         self.conversationComboBox.currentTextChanged.connect(self.set_stream)
+        self.printPushButton.clicked.connect(self.print_conversation)
 
         self.set_stream()
     
     def set_stream(self):
+        yaml_stream = {'peers': [{'peer': key, 'host': value['host'], 'port': value['port']} for key, value in self.peers.items()], 'packets': self.packet_yaml}
+        print(yaml.dump(yaml_stream["peers"], default_flow_style=False))
+        with open("stream.yaml", "w+") as f:
+            yaml_stream = yaml.safe_dump(yaml_stream, f, default_flow_style=False)
         stream_index = self.streamNumberSpinBox.value()
         self.streamViewer.clear()
         conversation = self.conversationComboBox.currentText()
@@ -81,6 +116,9 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
             self.streamViewer.append(client)
         if conversation == "Entire conversation" or conversation == "Server to client":
             self.streamViewer.append(server)
+
+    def print_conversation(self):
+        print(self.streamViewer.toPlainText())
 
 
     def closeEvent(self, event):
