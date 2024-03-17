@@ -5,7 +5,6 @@ import sys
 import hashlib
 import psutil
 import yaml
-import pyshark
 import webbrowser
 import datetime
 
