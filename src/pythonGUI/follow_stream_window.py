@@ -71,7 +71,7 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         self.streamNumberSpinBox.setMaximum(max_index - 1)
 
         self.formatComboBox.clear()
-        self.formatComboBox.addItems(["UTF-8", "UTF-16", "ASCII", "Hex", "YAML" ])
+        self.formatComboBox.addItems(["UTF-8", "UTF-16", "ASCII", "Raw", "YAML" ])
         self.conversationComboBox.clear()
         self.conversationComboBox.addItems(["Entire conversation", "Client to server", "Server to client"])
 
@@ -80,6 +80,7 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         self.formatComboBox.currentTextChanged.connect(self.set_stream)
         self.conversationComboBox.currentTextChanged.connect(self.set_stream)
         self.printPushButton.clicked.connect(self.print_conversation)
+        self.savePushButton.clicked.connect(self.save_conversation)
 
         self.set_stream()
 
@@ -108,7 +109,6 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         yaml_peers = {}
         for stream, peers_info in self.peers.items():
             yaml_peers[stream] = [{'peer': peer_id, 'host': info['host'], 'port': info['port']} for peer_id, info in peers_info.items()]
-        print(yaml_peers)
         return yaml_peers
 
     def set_stream(self):
@@ -121,6 +121,7 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
             yaml_packets = self.packet_yaml[stream_index]
             yaml_stream = {"peers": yaml_peer, "packets": yaml_packets}
             yaml = YAML()
+            yaml.indent = 4
             yaml.default_flow_style = False
             buf = io.BytesIO()
             yaml.dump(yaml_stream, buf)
@@ -153,6 +154,24 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
 
     def print_conversation(self):
         print(self.streamViewer.toPlainText())
+
+    def save_conversation(self):
+        stream_format = self.formatComboBox.currentText()
+        stream_index = self.streamNumberSpinBox.value()
+        conversation = self.streamViewer.toPlainText()
+        name = self.file_name.split('.')[0] + "TCPIndex" + str(stream_index)
+        if stream_format == "YAML":
+            name = name + ".yaml"
+            with open(name, "w+") as f:
+                f.write(conversation)
+        elif stream_format == "UTF-8" or stream_format == "UTF-16" or stream_format == "ASCII":
+            name = name + ".txt"
+            with open(name, "w+") as f:
+                f.write(conversation)
+        else:
+            name = name + ".bin"
+            with open(name, "wb+") as f:
+                f.write(bytearray.fromhex(conversation))
 
 
     def closeEvent(self, event):
