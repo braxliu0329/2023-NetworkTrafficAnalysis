@@ -5,9 +5,9 @@ from pythonGUI import follow_stream
 import pyshark
 import re
 import os
-import sys
 # PyYaml does not preserve the formatting, whereas ruamel does
 from ruamel.yaml import YAML
+
 class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
     def __init__(self, file_name, mainWindow):
         super().__init__()
@@ -20,6 +20,7 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         self.packet_yaml = {}
         self.streams = {"client_data": {}, "server_data": {}}
         self.cap = pyshark.FileCapture(self.file_name)
+        # Go through the captured packets, and track the protocol stream
         for pkt in self.cap:
             try:
                 stream = pkt.tcp.stream
@@ -29,22 +30,14 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
                 dst_ip = str(pkt.ip.dst)
                 dst_port = int(pkt.tcp.dstport)
                 data = pkt.tcp.payload
-                if (src_ip, src_port) not in self.peers.values():
-                    peer_id = len(self.peers)
-                    self.peers[peer_id] = {'host': src_ip, 'port': src_port}
-                    self.peers[peer_id]["stream"] = int(stream)
-                if (dst_ip, dst_port) not in self.peers.values():
-                    peer_id = len(self.peers)
-                    self.peers[peer_id] = {'host': dst_ip, 'port': dst_port}
-                    self.peers[peer_id]["stream"] = int(stream)
-                try:
-                    peer_id = next(key for key, value in self.peers.items() if value == (src_ip, src_port))
-                except StopIteration:
-                    pass
+
+                # Conversation in YAML show peers in a network, and the packets communicated between them
+                self.update_peer(int(stream), src_ip, src_port)
+                self.update_peer(int(stream), dst_ip, dst_port)
                 packet_info = {
                     'packet': int(pkt.number),
-                    'peer': peer_id,
-                    'index': 0,  # Assuming index is always 0 for simplicity
+                    'peer': self.get_peer_id(int(stream), src_ip, src_port),
+                    'index': 0,  
                     'timestamp': float(pkt.frame_info.time_epoch),
                     'data': base64.b64encode(bytes.fromhex(data.replace(':', ''))).decode()
                 }
@@ -55,11 +48,12 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
             except AttributeError:
                 pass
         if len(stream_index) == 0:
-            self.max_index = 0
+            max_index = 0
         else:
-            self.max_index = int(max(stream_index)) + 1
+            max_index = int(max(stream_index)) + 1
+        # Make a regex for ANSI escape characters and remove them from the HTTP field
         ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-        for stream in range(0, self.max_index):
+        for stream in range(0, max_index):
             client = ''
             server = ''
             for pkt in self.cap:
@@ -74,7 +68,7 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
                     pass
             self.streams["client_data"][stream] = client
             self.streams["server_data"][stream] = server
-        self.streamNumberSpinBox.setMaximum(self.max_index - 1)
+        self.streamNumberSpinBox.setMaximum(max_index - 1)
 
         self.formatComboBox.clear()
         self.formatComboBox.addItems(["UTF-8", "UTF-16", "ASCII", "Hex", "YAML" ])
@@ -88,23 +82,34 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         self.printPushButton.clicked.connect(self.print_conversation)
 
         self.set_stream()
+
+    def update_peer(self, stream, ip, port):
+        if stream not in self.peers:
+            self.peers[stream] = {}
+        found_peer = False
+        for peer_id, peer_info in self.peers[stream].items():
+            if peer_info['host'] == ip and peer_info['port'] == port:
+                found_peer = True
+                break
+        if not found_peer:
+            peer_id = len(self.peers[stream])
+            self.peers[stream][peer_id] = {
+                'host': ip,
+                'port': port
+            }
+
+    def get_peer_id(self, stream, ip, port):
+        for peer_id, peer_info in self.peers[stream].items():
+            if peer_info['host'] == ip and peer_info['port'] == port:
+                return peer_id
+        return None
         
     def make_yaml_stream(self):
-        yaml_stream = {}
-        for peer in self.peers.keys():
-            for stream in range(0,self.max_index):
-                if self.peers[peer]["stream"] == stream:
-                    peer_info = {
-                        'peer': peer,
-                        'host': self.peers[peer]["host"],
-                        'port': self.peers[peer]["port"]
-                    }
-                    if stream in yaml_stream:
-                        yaml_stream[stream].append(peer_info)
-                    else:
-                        yaml_stream[stream] = [peer_info]
-                    break
-        return yaml_stream
+        yaml_peers = {}
+        for stream, peers_info in self.peers.items():
+            yaml_peers[stream] = [{'peer': peer_id, 'host': info['host'], 'port': info['port']} for peer_id, info in peers_info.items()]
+        print(yaml_peers)
+        return yaml_peers
 
     def set_stream(self):
         stream_index = self.streamNumberSpinBox.value()
@@ -120,6 +125,7 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
             buf = io.BytesIO()
             yaml.dump(yaml_stream, buf)
             self.streamViewer.setText(buf.getvalue().decode('utf-8'))
+            
         else:    
             client = self.streams["client_data"][stream_index]
             server = self.streams["server_data"][stream_index]
