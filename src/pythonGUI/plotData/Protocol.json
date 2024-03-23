@@ -2,11 +2,7 @@
     "data": [
         {
             "protocol": "TCP",
-            "frequency": 41
-        },
-        {
-            "protocol": "UDP/DNS",
-            "frequency": 2
+            "frequency": 4975
         }
     ]
 }

@@ -1,18 +1,14 @@
 {
-    "suspicious": "No suspicious addresses detected",
+    "suspicious": "Suspicious addresses: 10.0.0.2, 10.128.0.2",
     "explanation": "These addresses are sending a greater amount of traffic then the  and therefore are marked as suspicious.",
     "data": [
         {
-            "address": "145.254.160.237",
-            "rate": 0
+            "address": "10.0.0.2",
+            "rate": 118
         },
         {
-            "address": "65.208.228.223",
-            "rate": 0
-        },
-        {
-            "address": "216.239.59.99",
-            "rate": 3
+            "address": "10.128.0.2",
+            "rate": 237
         }
     ]
 }
