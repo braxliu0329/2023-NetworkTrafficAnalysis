@@ -510,7 +510,7 @@ class AttackDetection:
                 pps_table['PPS'].append(int(pps))
 
                 if pps > threshold:
-                    self.suspicious_addresses.add(address)  # 假设self.suspicious_addresses现在是一个集合
+                    self.suspicious_addresses.add(address)
                     attack_sus_set.add(address)
 
         attack_sus_list[:] = list(attack_sus_set)
