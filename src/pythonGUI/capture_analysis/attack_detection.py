@@ -476,6 +476,8 @@ class AttackDetection:
         pps_table = {'Address': [],
                      'PPS': []}
 
+        attack_sus_set = set(attack_sus_list)
+
         # For each address:
         #    - calculate mean and standard deviation
         #    - remove any outliers using these
@@ -491,32 +493,27 @@ class AttackDetection:
         #   - before calculating the number of packets per second, check if the time difference is zero
         #   - performance can be improved by using Pandas vectorised operations rather than looping
 
-        for address in suspicious_addresses:
-            packets_ip = packets[packets['SourceIP'] == address]
+        grouped_packets = packets.groupby('SourceIP')
+        for address, group in grouped_packets:
+            if address in suspicious_addresses:
+                q1 = group['Time'].quantile(0.25)
+                q3 = group['Time'].quantile(0.75)
+                iqr = q3 - q1
+                filtered_group = group[(group['Time'] >= q1 - 1.5 * iqr) & (group['Time'] <= q3 + 1.5 * iqr)]
 
-            # calculates mean and standard deviation
-            mean = packets_ip['Time'].mean()
-            std = packets_ip['Time'].std()
+                # calculate pps, make sure won't be divided by 0
+                time_diff = filtered_group['Time'].max() - filtered_group['Time'].min()
+                pps = len(filtered_group) / time_diff if time_diff > 0 else 0
 
-            # removes any outliers (timestamps that are more than 3 standard deviations away from the mean)
-            packets_no_outliers = packets_ip[packets_ip['Time'] <= mean + (3 * std)]
-            packet_per_sec = 0
-            if len(packets_no_outliers.index) != 0:
-                # calculates average packets per second
-                difference = packets_no_outliers['Time'].iloc[-1] - packets_no_outliers['Time'].iloc[0]
-                packet_per_sec = len(packets_no_outliers) / difference
+                # update pps table
+                pps_table['Address'].append(address)
+                pps_table['PPS'].append(int(pps))
 
-            pps_table['Address'].append(address)
-            pps_table['PPS'].append(int(packet_per_sec))
+                if pps > threshold:
+                    self.suspicious_addresses.add(address)  # 假设self.suspicious_addresses现在是一个集合
+                    attack_sus_set.add(address)
 
-            # adds to suspicious addresses if above threshold
-            if packet_per_sec > threshold:
-                if address not in self.suspicious_addresses:
-                    self.suspicious_addresses.append(address)
-                if address not in attack_sus_list:
-                    attack_sus_list.append(address)
-
-
+        attack_sus_list[:] = list(attack_sus_set)
         return pps_table
 
     def run_all_detection(self, threshold):
