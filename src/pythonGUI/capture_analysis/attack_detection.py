@@ -481,6 +481,16 @@ class AttackDetection:
         #    - remove any outliers using these
         #    - calculate the packets per second sent by each address
         #    - adds to suspicious addresses if above the threshold
+
+        # problems may exist:
+        #   - difference of timestamps may be zero
+        #   - if timestamps not follow standard difference may lead to inaccuracies
+
+        # How to improve:
+        #   - use outlier detection methods that are better suited to skewed data
+        #   - before calculating the number of packets per second, check if the time difference is zero
+        #   - performance can be improved by using Pandas vectorised operations rather than looping
+
         for address in suspicious_addresses:
             packets_ip = packets[packets['SourceIP'] == address]
 
