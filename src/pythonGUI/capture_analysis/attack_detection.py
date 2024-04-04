@@ -416,9 +416,6 @@ class AttackDetection:
 
         # Returns both graphs
         return pps_table_res, pps_table_req
-
-
-        # -------------Below are new attack methods----------------
     
     def ssl_stripping(self):
         # initialises suspicious addresses address lists
