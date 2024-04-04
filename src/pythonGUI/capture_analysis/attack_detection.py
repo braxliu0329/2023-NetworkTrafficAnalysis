@@ -476,29 +476,20 @@ class AttackDetection:
         pps_table = {'Address': [],
                      'PPS': []}
 
+        # convert attack_sus_set to a set for faster lookup
         attack_sus_set = set(attack_sus_list)
 
-        # For each address:
-        #    - calculate mean and standard deviation
-        #    - remove any outliers using these
-        #    - calculate the packets per second sent by each address
-        #    - adds to suspicious addresses if above the threshold
-
-        # problems may exist:
-        #   - difference of timestamps may be zero
-        #   - if timestamps not follow standard difference may lead to inaccuracies
-
-        # How to improve:
-        #   - use outlier detection methods that are better suited to skewed data
-        #   - before calculating the number of packets per second, check if the time difference is zero
-        #   - performance can be improved by using Pandas vectorised operations rather than looping
-
+        # group packets for source address
         grouped_packets = packets.groupby('SourceIP')
+
+        # iterate through each address and its corresponding group of packets
         for address, group in grouped_packets:
             if address in suspicious_addresses:
+                # calculate first, third quartile and interquartile range
                 q1 = group['Time'].quantile(0.25)
                 q3 = group['Time'].quantile(0.75)
                 iqr = q3 - q1
+                # filter out outliers based on IQR
                 filtered_group = group[(group['Time'] >= q1 - 1.5 * iqr) & (group['Time'] <= q3 + 1.5 * iqr)]
 
                 # calculate pps, make sure won't be divided by 0

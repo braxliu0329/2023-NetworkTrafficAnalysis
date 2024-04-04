@@ -1,8 +1,8 @@
 {
     "data": [
         {
-            "protocol": "UDP",
-            "frequency": 10000
+            "protocol": "ARP",
+            "frequency": 8
         }
     ]
 }
