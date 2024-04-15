@@ -1,4 +1,5 @@
 import subprocess
+import re
 
 def tcp_stream(capture, format, stream):
     command = [
