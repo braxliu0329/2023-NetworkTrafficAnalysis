@@ -209,3 +209,14 @@ Group Members Absent: Joe
  - Tomos will update the CI this week, and ensure the functionality of the CLI tool
  - Ani will complete the GUI to the Beta standard
  - Tony will integrate the analysis windows for all remaining tests
+
+## Mentor and Group Meeting 17/04/2024
+Group Members Present: Tomos, Ani, Tony
+Group Members Absent: Joe
+### Plans for the final sprint
+ - Add promiscous and monitor mode
+ - Remove stale tickets
+ - Update the Webpage
+ - Fix Continuous Deployment
+ - Fix the PPS calculation
+ - Investigate stalls
