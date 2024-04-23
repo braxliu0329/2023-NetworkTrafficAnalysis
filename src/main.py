@@ -510,7 +510,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # project_root = os.path.abspath(os.path.dirname(__file__))
         # file_path = f"file://{project_root}/help_resource/index.html"
         # webbrowser.open(file_path)
-        webbrowser.open_new_tab('https://ubiquitous-sniffle-y217w7w.pages.github.io/#/')
+        webbrowser.open_new_tab('https://tomossherlock.github.io/NetworkTrafficAnalysis/#/README')
 
     def filter_capture(self):
         # retrieve the currently selected protocol and source address
