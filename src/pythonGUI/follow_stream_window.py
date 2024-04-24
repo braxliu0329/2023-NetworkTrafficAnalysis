@@ -5,7 +5,7 @@ from PyQt5.QtGui import QColor
 from pythonGUI import follow_stream
 import os
 # PyYaml does not preserve the formatting, whereas ruamel does
-from ruamel.yaml import YAML
+import yaml
 import tshark_wrapper.tshark as tshark
 import re
 
@@ -40,18 +40,24 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         if stream not in self.streams[stream_format]:
             self.streams[stream_format][stream] = tshark.tcp_stream(self.file_name, stream_format, stream)
         
- 
     def set_stream(self):
         self.streamViewer.clear()
         stream = self.streamNumberSpinBox.value()
         conversation = self.conversationComboBox.currentText()
         stream_format = self.formatComboBox.currentText().lower()
-        print(stream_format)
-
         if stream_format == "yaml":
             self.load_tcp_stream(stream_format, stream)
             loaded_stream = self.streams[stream_format][stream]
-            self.streamViewer.setText(loaded_stream)
+            color_coded_yaml = "<html><body style='white-space: pre'>Peers:<br>"
+            for line in loaded_stream.split("-"):
+                if "peer" in line and "peers" not in line:
+                    if (conversation == "Entire conversation" or conversation == "Client to server") and "peer: 0" in line:
+                        color_coded_yaml += f'<span style="background-color: #ED6769">-{line}</span>'
+                    if (conversation == "Entire conversation" or conversation == "Server to client") and "peer: 1" in line:
+                        color_coded_yaml += f'<span style="background-color: #6769ED">-{line}</span>'
+                
+            color_coded_yaml += "</body></html>"
+            self.streamViewer.setText(color_coded_yaml)
         else:
             self.load_tcp_stream(stream_format, stream)
             loaded_stream = self.streams[stream_format][stream]
@@ -64,13 +70,6 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
                 server_to_client = loaded_stream.split('\t', maxsplit=1)[1]
                 self.streamViewer.append(server_to_client)
             
-            
-            
-            
-            
-            
-            
-
     def print_conversation(self):
         print(self.streamViewer.toPlainText())
 

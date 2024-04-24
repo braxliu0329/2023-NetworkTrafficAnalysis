@@ -3,6 +3,10 @@
         {
             "mac": "00:50:56:8e:ee:89",
             "frequency": 2
+        },
+        {
+            "mac": "00:1f:f3:3c:e1:13",
+            "frequency": 1
         }
     ],
     "suspicious": "Suspicious addresses: 192.168.1.1, 192.168.1.254",

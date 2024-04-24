@@ -1,10 +1,54 @@
 [
     {
-        "source": "10.128.0.2",
-        "frequency": 3317
+        "source": "10.0.0.2",
+        "frequency": 15122
     },
     {
-        "source": "10.0.0.2",
-        "frequency": 1658
+        "source": "123.123.123.123",
+        "frequency": 10000
+    },
+    {
+        "source": "10.128.0.2",
+        "frequency": 4319
+    },
+    {
+        "source": "192.168.1.100",
+        "frequency": 1000
+    },
+    {
+        "source": "207.86.6.174",
+        "frequency": 572
+    },
+    {
+        "source": "205.94.14.222",
+        "frequency": 545
+    },
+    {
+        "source": "172.16.11.12",
+        "frequency": 70
+    },
+    {
+        "source": "216.34.181.45",
+        "frequency": 33
+    },
+    {
+        "source": "96.17.211.172",
+        "frequency": 19
+    },
+    {
+        "source": "172.16.11.1",
+        "frequency": 15
+    },
+    {
+        "source": "192.168.1.1",
+        "frequency": 4
+    },
+    {
+        "source": "192.168.1.254",
+        "frequency": 4
+    },
+    {
+        "source": "74.125.19.17",
+        "frequency": 4
     }
 ]
