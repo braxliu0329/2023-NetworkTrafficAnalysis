@@ -1,7 +1,7 @@
 {
     "data": [
         {
-            "protocol": "UDP",
+            "protocol": "UDP/DNS",
             "frequency": 10000
         }
     ]
