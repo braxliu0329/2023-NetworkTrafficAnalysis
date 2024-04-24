@@ -6,7 +6,6 @@ from pythonGUI.capture_analysis import dataframe_create
 class AttackDetection:
     # initialise attack detection variables
     def __init__(self, data, flagged_IPs):
-        self.suspicious_addresses = set(flagged_IPs) if flagged_IPs is not None else set()
         # initialise all flagged ip addresses as empty
         self.ssl_stripping_suspicious_address = None
         self.udp_suspicious = None
@@ -499,7 +498,7 @@ class AttackDetection:
                 pps_table['PPS'].append(int(pps))
 
                 if pps > threshold:
-                    self.suspicious_addresses.add(address)
+                    self.suspicious_addresses.append(address)
                     attack_sus_set.add(address)
 
         attack_sus_list[:] = list(attack_sus_set)
