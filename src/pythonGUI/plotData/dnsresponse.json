@@ -3,12 +3,8 @@
     "explanation": "These addresses were marked because the DNS packets sent from these addresses are over too high a frequency. ",
     "data": [
         {
-            "address": "205.94.14.222",
-            "rate": 23
-        },
-        {
-            "address": "172.16.11.1",
-            "rate": 10
+            "address": "145.253.2.203",
+            "rate": 0
         }
     ]
 }

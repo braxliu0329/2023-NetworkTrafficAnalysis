@@ -55,8 +55,14 @@ for arg in "$@"; do
         "--help")
             cat "$DIR/help.txt"
             exit;;
+        "-h")
+            cat "$DIR/help.txt"
+            exit;;
         "--version")
-            echo "1.0a"
+            echo "1.0"
+            exit;;
+        "-v")
+            echo "1.0"
             exit;;
         *)
             echo "NTA: Command not recognised"

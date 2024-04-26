@@ -1,13 +1,8 @@
-
-import io
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QColor
 from pythonGUI import follow_stream
 import os
-# PyYaml does not preserve the formatting, whereas ruamel does
-import yaml
 import tshark_wrapper.tshark as tshark
-import re
 
 
 class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
@@ -17,8 +12,11 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         self.file_name = file_name
         self.setupUi(self)
 
-        self.peers = {}
-        self.packet_yaml = {}
+        #Store each stream for each format in a separate dict for quick access
+        #Each stream will contain a tuple of two lists
+        #The left entry contains all requests in that stream
+        #The right entry contains all responses in that stream
+        #This does not apply for non ASCII/UTF-8 formats
         self.streams = {"ascii": {}, "utf-8": {}, "hex": {}, "raw": {}, "ebcdic": {}, "yaml": {}}
         self.formatComboBox.clear()
         self.formatComboBox.addItems(
@@ -38,13 +36,22 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
 
     def load_tcp_stream(self, stream_format, stream):
         if stream not in self.streams[stream_format]:
-            self.streams[stream_format][stream] = tshark.tcp_stream(self.file_name, stream_format, stream)
+
+            loaded_stream = tshark.tcp_stream(self.file_name, stream_format, stream)
+            self.streams[stream_format][stream] = tshark.split_stream(loaded_stream)
         
     def set_stream(self):
         self.streamViewer.clear()
         stream = self.streamNumberSpinBox.value()
         conversation = self.conversationComboBox.currentText()
         stream_format = self.formatComboBox.currentText().lower()
+        #YAML format displays content differently to the others.
+        #Other formats use a tab character to separate c2s and s2c.
+        #YAML requires some extra logic, which involves identifying the c2s peer, and the s2c peer
+        #then color coding the respective peers.
+        #Entries are wrapped in a html tag to render the background.
+        #The HTML tags couldn't be used in the other formats since the ASCII and UTF-8 versions
+        #contain XML. Having XML wrapped in a HTML tag renders the XML as an actual webpage.
         if stream_format == "yaml":
             self.load_tcp_stream(stream_format, stream)
             loaded_stream = self.streams[stream_format][stream]
@@ -60,14 +67,15 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
             self.streamViewer.setText(color_coded_yaml)
         else:
             self.load_tcp_stream(stream_format, stream)
-            loaded_stream = self.streams[stream_format][stream]
+            loaded_stream = self.streams[stream_format][stream].split('\t')
+            print(len(loaded_stream))
             if conversation == "Client to server" or conversation == "Entire conversation":
                 self.streamViewer.setTextBackgroundColor(QColor(105, 103, 237))
-                client_to_server = loaded_stream.split('\t', maxsplit=1)[0]
+                client_to_server = loaded_stream[0]
                 self.streamViewer.append(client_to_server)
             if conversation == "Server to client" or conversation == "Entire conversation":
                 self.streamViewer.setTextBackgroundColor(QColor(237, 103, 105))
-                server_to_client = loaded_stream.split('\t', maxsplit=1)[1]
+                server_to_client = loaded_stream[1]
                 self.streamViewer.append(server_to_client)
             
     def print_conversation(self):
@@ -93,5 +101,4 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
 
     def closeEvent(self, event):
         os.remove(self.file_name)
-        self.mainWindow.actionFollowStream.setDisabled(False)
         event.accept()

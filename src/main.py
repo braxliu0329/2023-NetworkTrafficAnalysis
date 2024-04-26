@@ -214,11 +214,11 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # set the analysis menu
         self.actionStartAnalysis.triggered.connect(self.start_analysis)
+        self.actionFollowTCPStream.triggered.connect(self.open_follow_stream)
         self.actionAttack_Analysis.triggered.connect(self.start_analysis)
         self.actionConfigureAttackAnalysis.triggered.connect(
             self.configure_analysis)
         self.actionConfigure.triggered.connect(self.configure_analysis)
-        self.actionFollowStream.triggered.connect(self.open_follow_stream)
 
         # set the help menu
         self.actionUse_Guide.triggered.connect(self.use_guide)
@@ -551,7 +551,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
     def open_follow_stream(self):
         length = len(self.subs)
-        self.actionFollowStream.setDisabled(True)
         current_time = str(datetime.now().date())
         file_name = "src/" + "stream" + current_time + ".pcap"
         if not os.path.isfile(file_name):

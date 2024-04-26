@@ -1,55 +1,20 @@
 {
-    "suspicious": "Suspicious addresses: 10.128.0.2, 192.168.1.100, 96.17.211.172, 216.34.181.45",
-    "attacked": "Suspected Attacked addresses: 10.0.0.2, 172.16.11.12, 192.168.1.1",
+    "suspicious": "Suspicious addresses: 65.208.228.223",
+    "attacked": "Suspected Attacked addresses: 145.254.160.237",
     "explanation": "The suspicious addresses were marked because these addresses send a greater amount of SYN requests than it does receive SYN-ACK responses back, suggesting it is overloading asystem. \nThe attacked addresses were marked because these addresses receive a greater amount of SYN requests than it sends SYN-ACK responses back, which is indicative that these addresses are being overwhelmed by SYN requests and cant response fast enough. ",
     "data": [
         {
-            "address": "10.128.0.2",
-            "Sends SYN": 3526,
-            "Receives SYN": 1867,
-            "Sends SYN/ACK": 3526,
-            "Receives SYN/ACK": 0
-        },
-        {
-            "address": "10.0.0.2",
-            "Sends SYN": 1867,
-            "Receives SYN": 3526,
+            "address": "145.254.160.237",
+            "Sends SYN": 1,
+            "Receives SYN": 1,
             "Sends SYN/ACK": 0,
-            "Receives SYN/ACK": 3526
+            "Receives SYN/ACK": 1
         },
         {
-            "address": "192.168.1.100",
-            "Sends SYN": 1000,
-            "Receives SYN": 0,
-            "Sends SYN/ACK": 0,
-            "Receives SYN/ACK": 0
-        },
-        {
-            "address": "172.16.11.12",
-            "Sends SYN": 5,
-            "Receives SYN": 5,
-            "Sends SYN/ACK": 0,
-            "Receives SYN/ACK": 5
-        },
-        {
-            "address": "96.17.211.172",
-            "Sends SYN": 4,
-            "Receives SYN": 4,
-            "Sends SYN/ACK": 4,
-            "Receives SYN/ACK": 0
-        },
-        {
-            "address": "216.34.181.45",
+            "address": "65.208.228.223",
             "Sends SYN": 1,
             "Receives SYN": 1,
             "Sends SYN/ACK": 1,
-            "Receives SYN/ACK": 0
-        },
-        {
-            "address": "192.168.1.1",
-            "Sends SYN": 0,
-            "Receives SYN": 1000,
-            "Sends SYN/ACK": 0,
             "Receives SYN/ACK": 0
         }
     ]

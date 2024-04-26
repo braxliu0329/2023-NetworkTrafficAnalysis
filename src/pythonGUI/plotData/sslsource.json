@@ -1,13 +1,13 @@
 {
-    "suspicious": "Suspicious source addresses: 192.168.1.100,172.16.11.12\nSuspicious destination addresses: 192.168.1.1,74.125.19.17",
+    "suspicious": "Suspicious source addresses: 172.23.19.252,2001:630:e4:4220:4393:b86e:5018:30e5\nSuspicious destination addresses: 104.78.170.24,2a00:1450:4009:820::2003,104.244.42.66,20.42.65.85,162.159.134.234,2606:2800:233:8173:898f:63b3:95c3:79d2",
     "explanation": "",
     "data": [
         {
-            "address": "192.168.1.100",
+            "address": "172.23.19.252",
             "frequency": 1
         },
         {
-            "address": "172.16.11.12",
+            "address": "2001:630:e4:4220:4393:b86e:5018:30e5",
             "frequency": 1
         }
     ]
