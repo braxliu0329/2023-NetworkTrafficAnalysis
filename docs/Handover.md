@@ -71,3 +71,17 @@ It lacks most of the features of the main NTAnalyser, not being able to capture 
 | `requirements.txt`          | `~`                                  | Text                              | Requirements              | Contains a list of requirements for all code.                                                                                                                |
  
 
+# Potential Improvements
+ - More cyberattacks can be researched and signs of these cyberattacks can be analysed.
+ - More functionality from NTAnalyser (GUI, all attack analyses, packet capturing) can be moved over to the CLI Tool.
+ - The CLI Tool can be made concurrent and therefore faster.
+ - The NTAnalyser can always be made more efficient.
+ - More insights into the captured packets.
+ - Make NTAnalyser no longer dependent on `npcap`.
+ - Analyses could provide advice on how to prevent cyberattacks.
+ - More extensive testing of current features (integration testing etc.).
+
+# Known Issues
+ - NTAnalyser relies on `npcap` being installed, making continuous testing of packet capturing difficult.
+ - NTAnalyser is known to stall or potentially crash on some devices when handling a large number of packets.
+ - The HTTP Flood function in the CLI tool is inconsistent.
