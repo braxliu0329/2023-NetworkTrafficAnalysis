@@ -83,7 +83,7 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
             self.streamViewer.setText(color_coded_yaml)
         else:
             if stream_format == "raw":
-                if loaded_stream == self.load_tcp_stream("ascii", stream) == 1:
+                if self.load_tcp_stream("ascii", stream) == 1:
                     return
                 loaded_stream = self.streams["ascii"][stream]
             else:
