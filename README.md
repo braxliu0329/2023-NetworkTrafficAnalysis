@@ -90,11 +90,21 @@ pip install -r requirements.txt
 _When finished running the program, don't forget to deactivate the virtual environment using `deactivate`._
 
 #### Tshark
-Tshark is a CLI version of Wireshark, and provides tools used in the follow stream functionality in the program.
-
-- Download [Tshark 4.2.x](https://www.wireshark.org/download/src/wireshark-4.2.4.tar.xz) from source and install the package
+Tshark is a CLI version of Wireshark, and provides tools used in the follow stream functionality in the program. Linux users can download just Tshark, but Windows users will need to install both Wireshark and Tshark, and follow other steps.
 *Any version from 4.2 onwards should work. Using any earlier version means the UTF-8 encoding is not available when following streams*
-- Alternatively, follow these steps
+
+##### Windows
+
+- Download the wireshark installer from [here](https://www.wireshark.org/#download)
+- In file explorer, select the install path of Wireshark.
+- Search your start menu for "Edit environment variables for your account".
+- Edit Path. (Should point to Python installation).
+- Hit OK to save the modified PATH environment.
+- Once PATH is set, run TShark to check if everything works correctly (you need to restart the cmd shell first).
+
+
+##### Linux
+- Download [Tshark 4.2.x](https://www.wireshark.org/download/src/wireshark-4.2.4.tar.xz) from source and install the package
 
 ```
 wget https://www.wireshark.org/download/src/wireshark-4.2.4.tar.xz -O /tmp/wireshark-4.2.4.tar.xz
