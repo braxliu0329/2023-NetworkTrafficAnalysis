@@ -42,7 +42,7 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
             if stream_format != "yaml":
                 loaded_stream = tshark.tcp_stream(self.file_name, stream_format, stream)
                 if loaded_stream is None:
-                    return
+                    return 1
                 loaded_stream = tshark.split_stream(loaded_stream)
                 if loaded_stream is None:
                     if stream == 0:
@@ -53,7 +53,8 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
             else:
                 loaded_stream = tshark.tcp_stream(self.file_name, stream_format, stream)
                 self.streams[stream_format][stream] = loaded_stream
-        
+        return 0
+    
     def set_stream(self):
         self.streamViewer.clear()
         stream = self.streamNumberSpinBox.value()
@@ -67,7 +68,8 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         #The HTML tags couldn't be used in the other formats since the ASCII and UTF-8 versions
         #contain XML. Having XML wrapped in a HTML tag renders the XML as an actual webpage.
         if stream_format == "yaml":
-            self.load_tcp_stream(stream_format, stream)
+            if self.load_tcp_stream(stream_format, stream) == 1:
+                return
             loaded_stream = self.streams[stream_format][stream]
             color_coded_yaml = "<html><body style='white-space: pre'>Peers:<br>"
             for line in loaded_stream.split("-"):
@@ -81,10 +83,12 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
             self.streamViewer.setText(color_coded_yaml)
         else:
             if stream_format == "raw":
-                loaded_stream = self.load_tcp_stream("ascii", stream)
+                if loaded_stream == self.load_tcp_stream("ascii", stream) == 1:
+                    return
                 loaded_stream = self.streams["ascii"][stream]
             else:
-                self.load_tcp_stream(stream_format, stream)
+                if self.load_tcp_stream(stream_format, stream) == 1:
+                    return
                 loaded_stream = self.streams[stream_format][stream]
             if loaded_stream is None:
                 return  
