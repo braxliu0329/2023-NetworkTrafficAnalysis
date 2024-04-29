@@ -75,13 +75,24 @@ It lacks most of the features of the main NTAnalyser, not being able to capture 
  - More cyberattacks can be researched and signs of these cyberattacks can be analysed.
  - More functionality from NTAnalyser (GUI, all attack analyses, packet capturing) can be moved over to the CLI Tool.
  - The CLI Tool can be made concurrent and therefore faster.
- - The NTAnalyser can always be made more efficient.
+ - The NTAnalyser can always be made more efficient. One way we suggest is to analyse only the new packets, rather than analysing every captured packet again.
  - More insights into the captured packets.
  - Make NTAnalyser no longer dependent on `npcap`.
  - Analyses could provide advice on how to prevent cyberattacks.
  - More extensive testing of current features (integration testing etc.).
+ - "Find" feature in follow streams is not implemented
+ - Add more protocols that can be followed in follow streams (Protocols supported by Tshark are UDP, HTTP/2, TLS).
+ - Slowly phase out use of python for packet capture and use C bindings instead.
+ - Add support for other packet types (e.g. .cap or .pcapng)
 
 # Known Issues
  - NTAnalyser relies on `npcap` being installed, making continuous testing of packet capturing difficult.
  - NTAnalyser is known to stall or potentially crash on some devices when handling a large number of packets.
  - The HTTP Flood function in the CLI tool is inconsistent.
+ - Some captured packet's addresses are incomplete
+ - Some capture packets don't have a recognised protocol
+ - Hard to replicate issue where you cannot scroll up when doing live capture. When you try to scroll up it will scroll itself down.
+ - Every plot .json needs to exist already, and needs to be a valid JSON, otherwise analysis will break.
+ - There is currently no mechanism for getting the maximum stream count for a follow stream in a YAML format.
+ - There are some colouring issues for the YAML format in follow stream.
+ - Some clipping and visual issues on the webpage.
