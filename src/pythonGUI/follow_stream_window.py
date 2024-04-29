@@ -40,7 +40,10 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
             stream_format == "ascii"
         if stream not in self.streams[stream_format]:
             if stream_format != "yaml":
-                loaded_stream = tshark.split_stream(tshark.tcp_stream(self.file_name, stream_format, stream))
+                loaded_stream = tshark.tcp_stream(self.file_name, stream_format, stream)
+                if loaded_stream is None:
+                    return
+                loaded_stream = tshark.split_stream(loaded_stream)
                 if loaded_stream is None:
                     if stream == 0:
                         self.streamNumberSpinBox.setMaximum(stream)
