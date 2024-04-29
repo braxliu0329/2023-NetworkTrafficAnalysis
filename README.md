@@ -89,6 +89,30 @@ pip install -r requirements.txt
 
 _When finished running the program, don't forget to deactivate the virtual environment using `deactivate`._
 
+#### Tshark
+Tshark is a CLI version of Wireshark, and provides tools used in the follow stream functionality in the program.
+
+- Download [Tshark 4.2.x](https://www.wireshark.org/download/src/wireshark-4.2.4.tar.xz) from source and install the package
+*Any version from 4.2 onwards should work. Using any earlier version means the UTF-8 encoding is not available when following streams*
+- Alternatively, follow these steps
+
+```
+wget https://www.wireshark.org/download/src/wireshark-4.2.4.tar.xz -O /tmp/wireshark-4.2.4.tar.xz
+tar -xvf /tmp/wireshark-4.2.4.tar.xz
+cd /tmp/wireshark-4.2.4
+
+sudo apt update && sudo apt dist-upgrade
+sudo apt install cmake libglib2.0-dev libgcrypt20-dev flex yacc bison byacc \
+  libpcap-dev qtbase5-dev libssh-dev libsystemd-dev qtmultimedia5-dev \
+  libqt5svg5-dev qttools5-dev
+cmake .
+make
+sudo make install
+```
+
+Make sure you've satisfied any dependencies requires by Tshark
+
+
 ## Deployment Instructions
 
 - In the root directory, run the build script

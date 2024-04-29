@@ -1,153 +1,18 @@
 {
     "nodes": [
         {
-            "id": "60:e3:2b:4a:7d:6a",
+            "id": "00:00:01:00:00:00",
             "size": 24
         },
         {
-            "id": "33:33:00:00:00:16",
-            "size": 24
-        },
-        {
-            "id": "00:08:e3:ff:ff:c4",
-            "size": 24
-        },
-        {
-            "id": "ff:ff:ff:ff:ff:ff",
-            "size": 24
-        },
-        {
-            "id": "54:6c:eb:9a:d8:dc",
-            "size": 24
-        },
-        {
-            "id": "58:1c:f8:57:30:0f",
-            "size": 24
-        },
-        {
-            "id": "9c:b6:d0:9a:e5:9d",
-            "size": 24
-        },
-        {
-            "id": "00:07:7d:0a:7a:40",
-            "size": 24
-        },
-        {
-            "id": "dc:46:28:e7:4e:88",
-            "size": 24
-        },
-        {
-            "id": "d8:f8:83:7a:ed:b5",
-            "size": 24
-        },
-        {
-            "id": "30:03:c8:3a:27:e9",
-            "size": 24
-        },
-        {
-            "id": "7c:70:db:70:8f:5a",
-            "size": 24
-        },
-        {
-            "id": "d4:d8:53:dc:fc:d5",
-            "size": 24
-        },
-        {
-            "id": "30:05:05:45:d8:69",
-            "size": 24
-        },
-        {
-            "id": "6c:a1:00:18:09:27",
-            "size": 24
-        },
-        {
-            "id": "08:d2:3e:78:df:25",
-            "size": 24
-        },
-        {
-            "id": "33:33:00:01:00:02",
+            "id": "fe:ff:20:00:01:00",
             "size": 24
         }
     ],
     "links": [
         {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "33:33:00:00:00:16",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "00:08:e3:ff:ff:c4",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "ff:ff:ff:ff:ff:ff",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "54:6c:eb:9a:d8:dc",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "58:1c:f8:57:30:0f",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "9c:b6:d0:9a:e5:9d",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "dc:46:28:e7:4e:88",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "d8:f8:83:7a:ed:b5",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "30:03:c8:3a:27:e9",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "7c:70:db:70:8f:5a",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "d4:d8:53:dc:fc:d5",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "30:05:05:45:d8:69",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "6c:a1:00:18:09:27",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "08:d2:3e:78:df:25",
-            "distance": 100
-        },
-        {
-            "source": "60:e3:2b:4a:7d:6a",
-            "target": "33:33:00:01:00:02",
-            "distance": 100
-        },
-        {
-            "source": "ff:ff:ff:ff:ff:ff",
-            "target": "00:07:7d:0a:7a:40",
+            "source": "00:00:01:00:00:00",
+            "target": "fe:ff:20:00:01:00",
             "distance": 100
         }
     ]

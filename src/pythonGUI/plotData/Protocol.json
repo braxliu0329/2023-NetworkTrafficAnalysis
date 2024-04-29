@@ -2,27 +2,11 @@
     "data": [
         {
             "protocol": "TCP",
-            "frequency": 130
-        },
-        {
-            "protocol": "ICMPv6",
-            "frequency": 105
-        },
-        {
-            "protocol": "0",
-            "frequency": 77
-        },
-        {
-            "protocol": "ARP",
-            "frequency": 36
+            "frequency": 41
         },
         {
             "protocol": "UDP/DNS",
-            "frequency": 18
-        },
-        {
-            "protocol": "UDP",
-            "frequency": 1
+            "frequency": 2
         }
     ]
 }

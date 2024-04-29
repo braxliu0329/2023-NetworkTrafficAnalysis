@@ -3,12 +3,12 @@
     "explanation": "Addresses are marked as suspicious if the address sends SYN flags without receiving SYN-ACK packets and if the same address sends more SYN packets than the  within the time interval. ",
     "data": [
         {
-            "address": "172.23.19.252",
-            "rate": 1
+            "address": "145.254.160.237",
+            "rate": 0
         },
         {
-            "address": "20.189.173.10",
-            "rate": 1
+            "address": "65.208.228.223",
+            "rate": 0
         }
     ]
 }
