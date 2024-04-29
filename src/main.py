@@ -19,6 +19,9 @@ from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import ARP
 
 
+
+
+
 from pythonGUI.capture_analysis import plotting
 from pythonGUI import subWindow, window, attack_analysis_action, message, config_window, follow_stream_window
 
@@ -182,7 +185,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.stopped_analysis = True
         self.packet_number = 1
         # creates GUI_actions object
-        self.GUI_actions = GUI_actions.GUIActions()
+        self.GUI_actions = GUI_actions.GUIActions(self._PROMISCUOUS)
         self.setupUi(self)
         self.showMaximized()
         self.flaggedIPs = []
@@ -433,7 +436,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionPauseCapture.setEnabled(False)
         self.actionStopCaputure.setEnabled(True)
         # stops the sniffer
-        self.GUI_actions.start_sniffer(False, mainWindow)
+        self.GUI_actions.start_sniffer(False, mainWindow, self._MONITOR)
 
     # stops the packet capturing
     def stop_capture(self):
@@ -446,7 +449,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.stopped_capture = True
         self.stopped_analysis = True
         self.captureList.setRowCount(0)
-        self.GUI_actions.start_sniffer(False, mainWindow)
+        self.GUI_actions.start_sniffer(False, mainWindow, self._MONITOR)
         self.packet_number = 1
         # resets captured packets
         self.GUI_actions.sniffer.reset()
@@ -460,7 +463,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # calls method in GUI_actions to start sniffer, passes window object
         # through
         try:
-            self.GUI_actions.start_sniffer(True, mainWindow)
+            self.GUI_actions.start_sniffer(True, mainWindow, self._MONITOR)
         except PermissionError:
             self.permission_allowed.emit()
 
@@ -578,7 +581,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
                         print(
                             "Unable to find process, process most likely killed before closeEvent() was called...")
         self.stop_event.set()
-        self.GUI_actions.start_sniffer(False, mainWindow)
+        self.GUI_actions.start_sniffer(False, mainWindow, self._MONITOR)
         event.accept()
 
     def use_guide(self):
