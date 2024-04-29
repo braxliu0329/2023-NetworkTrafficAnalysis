@@ -1,18 +1,158 @@
 [
     {
-        "source": "145.254.160.237",
+        "source": "172.23.19.252",
+        "frequency": 90
+    },
+    {
+        "source": "fe80::6487:4816:d4d1:5a21",
+        "frequency": 78
+    },
+    {
+        "source": "fe80::208:e3ff:feff:ffc4",
+        "frequency": 78
+    },
+    {
+        "source": "162.159.133.234",
+        "frequency": 23
+    },
+    {
+        "source": "20.189.173.10",
         "frequency": 20
     },
     {
-        "source": "65.208.228.223",
-        "frequency": 18
+        "source": "2001:630:e4:4220:aaea:7c8a:d9f2:55f",
+        "frequency": 14
     },
     {
-        "source": "216.239.59.99",
+        "source": "137.222.0.36",
+        "frequency": 9
+    },
+    {
+        "source": "2600:1901:1:292::",
+        "frequency": 6
+    },
+    {
+        "source": "172.21.4.110",
+        "frequency": 5
+    },
+    {
+        "source": "51.104.15.253",
+        "frequency": 5
+    },
+    {
+        "source": "2600:1f18:429f:9305:823d:72c0:16da:fb33",
         "frequency": 4
     },
     {
-        "source": "145.253.2.203",
+        "source": "2a05:d014:386:202:9a01:a6fe:4251:8db8",
+        "frequency": 4
+    },
+    {
+        "source": "2001:630:e4:4220:3cba:968d:abd7:4420",
+        "frequency": 3
+    },
+    {
+        "source": "fe80::61d:ba04:233c:5f95",
+        "frequency": 2
+    },
+    {
+        "source": "fe80::e4cc:910a:f245:f7a8",
+        "frequency": 2
+    },
+    {
+        "source": "172.21.0.190",
+        "frequency": 1
+    },
+    {
+        "source": "fe80::a0bb:916a:2fd6:29da",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:5ae:5fdb:783:1fe9",
+        "frequency": 1
+    },
+    {
+        "source": "0.0.0.0",
+        "frequency": 1
+    },
+    {
+        "source": "fe80::4f8e:e763:394a:cda1",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:1f96:b6c1:64a9:3c81",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:5260:49b7:efdd:4e6d",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:56f2:80e6:96b7:5a36",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:bc03:9cfe:c731:ac61",
+        "frequency": 1
+    },
+    {
+        "source": "fe80::4211:ea9c:f2a3:4ee3",
+        "frequency": 1
+    },
+    {
+        "source": "172.21.0.83",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:fa1c:f6b9:4cf:f2f3",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:cd2:cac4:19e2:ba6f",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:502b:1bb0:12a1:d861",
+        "frequency": 1
+    },
+    {
+        "source": "fe80::edea:cbc9:2711:23ba",
+        "frequency": 1
+    },
+    {
+        "source": "fe80::779:2435:299d:e7ce",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:9d0c:cde5:f5bc:3ede",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:8e:ce6d:c50c:edf5",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:2ee6:48e7:686b:def5",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:882b:4d47:b4f4:10ff",
+        "frequency": 1
+    },
+    {
+        "source": "172.21.4.30",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:1d0a:4986:34cd:d243",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:4858:92fc:1621:cd6e",
+        "frequency": 1
+    },
+    {
+        "source": "2001:630:e4:4220:d45e:1f56:9840:6b48",
         "frequency": 1
     }
 ]

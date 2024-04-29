@@ -24,14 +24,21 @@ def split_stream(stream):
     lines = stream.split('\n')
     requests = []
     responses = []
+    req_res = ([], [])
     for i in range(len(lines)):
         if re.match(REQUEST_PATTERN, lines[i]):
             requests.append(i)
         if re.match(RESPONSE_PATTERN, lines[i]):
             responses.append(i)
-    return ('\n'.join(requests), '\n'.join(responses))
-
-
+    for i in range(len(requests)):
+        req_res[0].append('\n'.join(lines[requests[i]:responses[i]-1]))
+        if i == len(requests) - 1:
+            req_res[1].append('\n'.join(lines[responses[i]:]))
+        else:
+            req_res[1].append('\n'.join(lines[responses[i]:requests[i+1]-1]))
+    if len(requests) == 0:
+        return None
+    return req_res
 # You can easily extend this to work for UDP, TLS, and HTTP/2 streams by
 # changing it from "tcp" to "xyz" in the command payload
 

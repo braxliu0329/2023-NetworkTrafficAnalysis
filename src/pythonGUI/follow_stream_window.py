@@ -13,14 +13,15 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         self.setupUi(self)
 
         #Store each stream for each format in a separate dict for quick access
-        #Each stream will contain a tuple of two lists
+        #Each stream will contain a tuple of lists of strings
         #The left entry contains all requests in that stream
         #The right entry contains all responses in that stream
         #This does not apply for non ASCII/UTF-8 formats
-        self.streams = {"ascii": {}, "utf-8": {}, "hex": {}, "raw": {}, "ebcdic": {}, "yaml": {}}
+        #Raw data uses the streams from "ascii" and encodes the bytes as hex
+        self.streams = {"ascii": {}, "utf-8": {}, "yaml": {}}
         self.formatComboBox.clear()
         self.formatComboBox.addItems(
-            ["UTF-8", "ASCII", "Hex", "Raw", "EBCDIC", "YAML"])
+            ["UTF-8", "ASCII", "Raw", "YAML"])
         self.conversationComboBox.clear()
         self.conversationComboBox.addItems(
             ["Entire conversation", "Client to server", "Server to client"])
@@ -35,10 +36,20 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
         self.set_stream()
 
     def load_tcp_stream(self, stream_format, stream):
+        if stream_format == "raw":
+            stream_format == "ascii"
         if stream not in self.streams[stream_format]:
-
-            loaded_stream = tshark.tcp_stream(self.file_name, stream_format, stream)
-            self.streams[stream_format][stream] = tshark.split_stream(loaded_stream)
+            if stream_format != "yaml":
+                loaded_stream = tshark.split_stream(tshark.tcp_stream(self.file_name, stream_format, stream))
+                if loaded_stream is None:
+                    if stream == 0:
+                        self.streamNumberSpinBox.setMaximum(stream)
+                    else:
+                        self.streamNumberSpinBox.setMaximum(stream - 1)
+                self.streams[stream_format][stream] = loaded_stream
+            else:
+                loaded_stream = tshark.tcp_stream(self.file_name, stream_format, stream)
+                self.streams[stream_format][stream] = loaded_stream
         
     def set_stream(self):
         self.streamViewer.clear()
@@ -66,17 +77,27 @@ class FollowStreamWindow(follow_stream.Ui_FollowStreamWindow, QMainWindow):
             color_coded_yaml += "</body></html>"
             self.streamViewer.setText(color_coded_yaml)
         else:
-            self.load_tcp_stream(stream_format, stream)
-            loaded_stream = self.streams[stream_format][stream].split('\t')
-            print(len(loaded_stream))
-            if conversation == "Client to server" or conversation == "Entire conversation":
-                self.streamViewer.setTextBackgroundColor(QColor(105, 103, 237))
-                client_to_server = loaded_stream[0]
-                self.streamViewer.append(client_to_server)
-            if conversation == "Server to client" or conversation == "Entire conversation":
-                self.streamViewer.setTextBackgroundColor(QColor(237, 103, 105))
-                server_to_client = loaded_stream[1]
-                self.streamViewer.append(server_to_client)
+            if stream_format == "raw":
+                loaded_stream = self.load_tcp_stream("ascii", stream)
+                loaded_stream = self.streams["ascii"][stream]
+            else:
+                self.load_tcp_stream(stream_format, stream)
+                loaded_stream = self.streams[stream_format][stream]
+            if loaded_stream is None:
+                return  
+            for i in range(len(loaded_stream[0])):
+                if conversation == "Client to server" or conversation == "Entire conversation":
+                    self.streamViewer.setTextBackgroundColor(QColor(105, 103, 237))
+                    if stream_format == "raw":
+                        self.streamViewer.append(loaded_stream[0][i].encode("ascii").hex())
+                    else:
+                        self.streamViewer.append(loaded_stream[0][i])
+                if conversation == "Server to client" or conversation == "Entire conversation":
+                    self.streamViewer.setTextBackgroundColor(QColor(237, 103, 105))
+                    if stream_format == "raw":
+                        self.streamViewer.append(loaded_stream[1][i].encode("ascii").hex())
+                    else:
+                        self.streamViewer.append(loaded_stream[1][i])
             
     def print_conversation(self):
         print(self.streamViewer.toPlainText())

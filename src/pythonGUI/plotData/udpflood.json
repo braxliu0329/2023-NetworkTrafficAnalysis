@@ -3,11 +3,7 @@
     "explanation": "",
     "data": [
         {
-            "address": "172.23.93.62",
-            "rate": 3
-        },
-        {
-            "address": "fe80::aa3a:79ff:fe31:e56e",
+            "address": "fe80::6487:4816:d4d1:5a21",
             "rate": 0
         }
     ]

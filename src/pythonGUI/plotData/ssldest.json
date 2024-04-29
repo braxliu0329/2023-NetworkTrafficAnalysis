@@ -1,27 +1,23 @@
 {
     "data": [
         {
-            "address": "104.78.170.24",
+            "address": "162.159.133.234",
             "frequency": 1
         },
         {
-            "address": "2a00:1450:4009:820::2003",
+            "address": "2600:1901:1:292::",
             "frequency": 1
         },
         {
-            "address": "104.244.42.66",
+            "address": "20.189.173.10",
             "frequency": 1
         },
         {
-            "address": "20.42.65.85",
+            "address": "2600:1f18:429f:9305:823d:72c0:16da:fb33",
             "frequency": 1
         },
         {
-            "address": "162.159.134.234",
-            "frequency": 1
-        },
-        {
-            "address": "2606:2800:233:8173:898f:63b3:95c3:79d2",
+            "address": "51.104.15.253",
             "frequency": 1
         }
     ]

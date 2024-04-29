@@ -1,18 +1,70 @@
 [
     {
-        "dest": "145.254.160.237",
+        "dest": "ff02::1",
+        "frequency": 105
+    },
+    {
+        "dest": "172.23.19.252",
+        "frequency": 84
+    },
+    {
+        "dest": "ff02::16",
+        "frequency": 77
+    },
+    {
+        "dest": "20.189.173.10",
+        "frequency": 25
+    },
+    {
+        "dest": "162.159.133.234",
         "frequency": 23
     },
     {
-        "dest": "65.208.228.223",
-        "frequency": 16
+        "dest": "2001:630:e4:4220:aaea:7c8a:d9f2:55f",
+        "frequency": 14
     },
     {
-        "dest": "216.239.59.99",
-        "frequency": 3
+        "dest": "137.222.0.36",
+        "frequency": 9
     },
     {
-        "dest": "145.253.2.203",
+        "dest": "2600:1901:1:292::",
+        "frequency": 6
+    },
+    {
+        "dest": "51.104.15.253",
+        "frequency": 6
+    },
+    {
+        "dest": "172.21.4.110",
+        "frequency": 5
+    },
+    {
+        "dest": "2a05:d014:386:202:9a01:a6fe:4251:8db8",
+        "frequency": 4
+    },
+    {
+        "dest": "2600:1f18:429f:9305:823d:72c0:16da:fb33",
+        "frequency": 4
+    },
+    {
+        "dest": "172.21.0.190",
+        "frequency": 1
+    },
+    {
+        "dest": "0.0.0.0",
+        "frequency": 1
+    },
+    {
+        "dest": "172.21.0.83",
+        "frequency": 1
+    },
+    {
+        "dest": "172.21.4.30",
+        "frequency": 1
+    },
+    {
+        "dest": "ff02::1:2",
         "frequency": 1
     }
 ]

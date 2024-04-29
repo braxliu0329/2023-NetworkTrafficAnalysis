@@ -1,43 +1,27 @@
 {
     "data": [
         {
-            "mac": "90:9c:4a:bf:ba:2d",
+            "mac": "60:e3:2b:4a:7d:6a",
             "frequency": 1
         },
         {
-            "mac": "a2:67:4e:d6:9c:a0",
+            "mac": "3e:50:2e:13:7a:ae",
             "frequency": 1
         },
         {
-            "mac": "04:cf:4b:f7:0f:71",
+            "mac": "62:c8:03:05:9d:22",
             "frequency": 1
         },
         {
-            "mac": "30:05:05:cf:b1:f6",
+            "mac": "6a:50:e6:02:c9:fb",
             "frequency": 1
         },
         {
-            "mac": "ea:39:f6:cb:14:dc",
+            "mac": "da:d7:cd:6d:f4:dc",
             "frequency": 1
         },
         {
-            "mac": "ce:d4:2f:d3:9b:b9",
-            "frequency": 1
-        },
-        {
-            "mac": "a4:b1:c1:86:f0:24",
-            "frequency": 1
-        },
-        {
-            "mac": "34:6f:24:c7:c8:67",
-            "frequency": 1
-        },
-        {
-            "mac": "36:a7:07:13:f4:b0",
-            "frequency": 1
-        },
-        {
-            "mac": "f6:e4:d7:7e:71:78",
+            "mac": "10:9f:41:c4:90:31",
             "frequency": 1
         }
     ],
