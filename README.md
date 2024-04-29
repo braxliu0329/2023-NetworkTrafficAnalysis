@@ -104,6 +104,7 @@ _When finished running the program, don't forget to deactivate the virtual envir
 ```
 ./nta.sh --help
 ```
+- [Usage Guide](https://tomossherlock.github.io/NetworkTrafficAnalysis/#/README)
 - To Use the CLI file analysis tool, navigate to `src` and run pcapAnalysis as follows:
 ```
 cd src
