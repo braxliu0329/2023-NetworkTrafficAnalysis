@@ -553,7 +553,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
             config.exec_()
 
     def open_follow_stream(self):
-        if self.GUI_actions.captured_packets is None or len(self.GUI_actions.captured_packets) == 0:
+        if self.captureList.rowCount() == 0:
             return
         length = len(self.subs)
         current_time = str(datetime.now().date())
