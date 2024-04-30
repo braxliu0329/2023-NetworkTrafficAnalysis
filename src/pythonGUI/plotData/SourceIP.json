@@ -1,10 +1,6 @@
 [
     {
-        "source": "192.168.1.1",
-        "frequency": 4
-    },
-    {
-        "source": "192.168.1.254",
-        "frequency": 4
+        "source": "123.123.123.123",
+        "frequency": 10000
     }
 ]

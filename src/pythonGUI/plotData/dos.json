@@ -1,14 +1,10 @@
 {
-    "suspicious": "No suspicious addresses detected",
+    "suspicious": "Suspicious addresses: 123.123.123.123",
     "explanation": "These addresses are sending a greater amount of traffic then the  and therefore are marked as suspicious.",
     "data": [
         {
-            "address": "192.168.1.1",
-            "rate": 0
-        },
-        {
-            "address": "192.168.1.254",
-            "rate": 0
+            "address": "123.123.123.123",
+            "rate": 1000
         }
     ]
 }
