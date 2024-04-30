@@ -1,10 +1,30 @@
 {
     "data": [
         {
-            "mac": "00:50:56:8e:ee:89",
-            "frequency": 2
+            "mac": "60:e3:2b:4a:7d:6a",
+            "frequency": 1
+        },
+        {
+            "mac": "3e:50:2e:13:7a:ae",
+            "frequency": 1
+        },
+        {
+            "mac": "62:c8:03:05:9d:22",
+            "frequency": 1
+        },
+        {
+            "mac": "6a:50:e6:02:c9:fb",
+            "frequency": 1
+        },
+        {
+            "mac": "da:d7:cd:6d:f4:dc",
+            "frequency": 1
+        },
+        {
+            "mac": "10:9f:41:c4:90:31",
+            "frequency": 1
         }
     ],
-    "suspicious": "Suspicious addresses: 192.168.1.1, 192.168.1.254",
+    "suspicious": "No suspicious addresses detected",
     "explanation": "These addresses were marked because the MAC addresses they originated from are associated with more than one IP address, which is erroneous and indicative of ARP Poisoning."
 }

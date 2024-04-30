@@ -1,8 +1,12 @@
 {
     "data": [
         {
+            "protocol": "TCP",
+            "frequency": 41
+        },
+        {
             "protocol": "UDP/DNS",
-            "frequency": 10000
+            "frequency": 2
         }
     ]
 }

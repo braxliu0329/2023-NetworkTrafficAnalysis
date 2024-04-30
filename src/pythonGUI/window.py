@@ -345,6 +345,8 @@ class Ui_MainWindow(object):
 
         self.actionAttack_Analysis = QtWidgets.QAction(MainWindow)
         self.actionAttack_Analysis.setObjectName("actionAttack_Analysis")
+        self.actionFollowTCPStream = QtWidgets.QAction(MainWindow)
+        self.actionFollowTCPStream.setObjectName("actionFollowTCPStream")
         self.actionConfigure = QtWidgets.QAction(MainWindow)
         self.actionConfigure.setObjectName("actionConfigure")
         self.actionOpen_Multi_Files = QtWidgets.QAction(MainWindow)
@@ -384,6 +386,7 @@ class Ui_MainWindow(object):
 
         self.menuAnalysis.addAction(self.actionAttack_Analysis)
         self.menuAnalysis.addAction(self.actionConfigure)
+        self.menuAnalysis.addAction(self.actionFollowTCPStream)
 
         self.menuEdit.addAction(self.actionCopy)
         self.menuEdit.addAction(self.actionFindNextPacket)
@@ -485,6 +488,7 @@ class Ui_MainWindow(object):
         self.actionSave_As_2.setShortcut(_translate("MainWindow", "Ctrl+Shift+S"))
         self.actionAttack_Analysis.setText(_translate("MainWindow", "Attack Analysis"))
         self.actionAttack_Analysis.setShortcut(_translate("MainWindow", "Ctrl+A"))
+        self.actionFollowTCPStream.setText(_translate("MainWindow", "Follow TCP stream"))
         self.actionOpen_Multi_Files.setText(_translate("MainWindow", "Open Multi-Files"))
         self.actionOpen_Multi_Files.setShortcut(_translate("MainWindow", "Ctrl+Shift+O"))
         self.actionUse_Guide.setText(_translate("MainWindow", "Use Guide"))

@@ -1,6 +1,18 @@
 [
     {
-        "source": "123.123.123.123",
-        "frequency": 10000
+        "source": "145.254.160.237",
+        "frequency": 20
+    },
+    {
+        "source": "65.208.228.223",
+        "frequency": 18
+    },
+    {
+        "source": "216.239.59.99",
+        "frequency": 4
+    },
+    {
+        "source": "145.253.2.203",
+        "frequency": 1
     }
 ]

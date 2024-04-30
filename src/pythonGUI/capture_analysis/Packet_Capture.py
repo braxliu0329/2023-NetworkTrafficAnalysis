@@ -3,7 +3,11 @@ from scapy.all import *
 
 # Sniffer object with related methods.
 class Sniffer:
-    def __init__(self):
+    def __init__(self, promiscuous):
+        if promiscuous == "true":
+            conf.sniff_promisc = True
+        else:
+            conf.sniff_promisc = False
         self.timeout = None
         self.sniffer = None
         self.amount = 0
@@ -18,10 +22,10 @@ class Sniffer:
         self.ignored_packets = []
 
     # Method ran when packet capture is initiated by user.
-    def run_sniffer(self, start, window):
+    def run_sniffer(self, start, window, monitor):
         if start:
             self.running = True
-            return self.sniffing(window)
+            return self.sniffing(window, monitor)
         else:
             self.running = False
 
@@ -63,18 +67,26 @@ class Sniffer:
             return True
 
     # Method to start asynchronous sniffing
-    def sniffing(self, window):
+    def sniffing(self, window, monitor):
         # if no packet amount is specified
         if self.continuous_sniff:
             # scapy sniffer to capture packets
             # prn = sends every captured packet to be handled by this function
             # stop_filter = calls method to check if the user has stopped the capture
-            sniff(prn=self.packet_display(window), filter=self.filter, store=False, stop_filter=self.stop_sniffing,
-                  timeout=self.timeout)
+            if monitor == "true":
+                sniff(prn=self.packet_display(window), filter=self.filter, store=False, stop_filter=self.stop_sniffing,
+                    timeout=self.timeout, monitor=True)
+            else:
+                sniff(prn=self.packet_display(window), filter=self.filter, store=False, stop_filter=self.stop_sniffing,
+                    timeout=self.timeout, monitor=False)
         else:
             # same as above by only captures a set amount of packets
-            sniff(count=self.amount, filter=self.filter, prn=self.packet_display(window), store=False,
-                  stop_filter=self.stop_sniffing, timeout=self.timeout)
+            if monitor == "true":
+                sniff(count=self.amount, filter=self.filter, prn=self.packet_display(window), store=False,
+                    stop_filter=self.stop_sniffing, timeout=self.timeout, monitor=True)
+            else:
+                sniff(prn=self.packet_display(window), filter=self.filter, store=False, stop_filter=self.stop_sniffing,
+                    timeout=self.timeout, monitor=False)
 
     def packet_filter(self, packet):
         if self.filter == "":

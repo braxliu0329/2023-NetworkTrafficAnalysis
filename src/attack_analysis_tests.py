@@ -14,7 +14,7 @@ from pythonGUI.capture_analysis import attack_detection, GUI_actions, dataframe_
 class MyTestCase(unittest.TestCase):
     # Define the actions for this to use as defined in GUI_actions
     def setUp(self):
-        self.actions = GUI_actions.GUIActions()
+        self.actions = GUI_actions.GUIActions(promiscuous="false")
 
     # set up an attack detection method by adding the packets in the provided file to sniffed packets, returning an
     # attack method using ALL sniffed packets

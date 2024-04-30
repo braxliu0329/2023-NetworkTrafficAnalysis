@@ -5,26 +5,33 @@ import sys
 import hashlib
 import psutil
 import yaml
+import webbrowser
+import datetime
 
 from PyQt5.Qt import Qt, QCompleter
-from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal, QObject, QThread, QMetaObject, Q_ARG
+from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal, QObject, QThread
 from PyQt5.QtGui import QColor, QCursor
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QTreeWidgetItem, QMenu, QDesktopWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QTreeWidgetItem, QMenu
 from PyQt5.QtWidgets import QHeaderView, QAbstractItemView, QComboBox
 from scapy.all import *
 from scapy.layers.inet import IP
 from scapy.layers.inet6 import IPv6
-from scapy.layers.l2 import ARP, Ether
-import webbrowser
+from scapy.layers.l2 import ARP
+
+
+
+
 
 from pythonGUI.capture_analysis import plotting
-from pythonGUI import subWindow, window, attack_analysis_action, message, config_window
+from pythonGUI import subWindow, window, attack_analysis_action, message, config_window, follow_stream_window
 
 from pythonGUI.capture_analysis import GUI_actions
 
 import pythonGUI.rc_icons as rc_icons
 
 # Turns the packet data into a hex string
+
+
 def hex_packet_data(packet_data):
     result = []
     digits = 4 if isinstance(packet_data, str) else 2
@@ -34,9 +41,11 @@ def hex_packet_data(packet_data):
         data = packet_data[i: i + 16]
         hexa = ' '.join([hex(x)[2:].upper().zfill(digits) for x in data])
         text = ' '.join([chr(x) if 0x20 <= x < 0x7F else '.' for x in data])
-        result.append("{0:04X}".format(i) + ' --- ' + hexa.ljust(16 * (digits + 1)) + ' --- ' + "{0}".format(text))
+        result.append("{0:04X}".format(
+            i) + ' --- ' + hexa.ljust(16 * (digits + 1)) + ' --- ' + "{0}".format(text))
 
     return ' --- '.join(result)
+
 
 class MarkerWorker(QObject):
     marking_finished = pyqtSignal()
@@ -51,7 +60,8 @@ class MarkerWorker(QObject):
         packet, details = self.window.get_select_packet(row)
         # append the time to the packet details, thus ensuring packets with the same
         # details aren't considered duplicates (A duplicate should be seen as two packets
-        # that are virtually indistinguishable, not two packets with the same "details")
+        # that are virtually indistinguishable, not two packets with the same
+        # "details")
         tag = (str(packet.time) + ''.join(details)).encode('utf-8')
         return hashlib.sha256(tag).hexdigest()
 
@@ -62,12 +72,17 @@ class MarkerWorker(QObject):
         if hashed_packet in self.window.marked_packets:
             # unmark by restoring to original color
             marked_packet = self.window.marked_packets[hashed_packet]
-            # if we try to mark and ignored packet, or ignore a marked packet, we launch a message box warning us
-            if (ignore and marked_packet.marked) or (marked_packet.ignored and mark):
-                self.open_alert("Marking Warning", "You are trying to mark an ignored packet, or ignore a marked packet")
+            # if we try to mark and ignored packet, or ignore a marked packet,
+            # we launch a message box warning us
+            if (ignore and marked_packet.marked) or (
+                    marked_packet.ignored and mark):
+                self.open_alert(
+                    "Marking Warning",
+                    "You are trying to mark an ignored packet, or ignore a marked packet")
                 return 1
-            
-            self.window.set_background(row, marked_packet.r, marked_packet.g, marked_packet.b)
+
+            self.window.set_background(
+                row, marked_packet.r, marked_packet.g, marked_packet.b)
             if ignore:
                 packet, _ = self.window.get_select_packet(row)
                 self.window.GUI_actions.sniffer.ignored_packets.append(packet)
@@ -75,8 +90,10 @@ class MarkerWorker(QObject):
         # mark packet if it hasn't been marked
         else:
             previous_color = cell.background().color()
-            red, green, blue = (previous_color.red(), previous_color.green(), previous_color.blue())
-            marked_packet = self.window.MarkedPacket(hashed_packet, red, green, blue, False, True)
+            red, green, blue = (
+                previous_color.red(), previous_color.green(), previous_color.blue())
+            marked_packet = self.window.MarkedPacket(
+                hashed_packet, red, green, blue, False, True)
             if ignore:
                 marked_packet.ignored = True
                 marked_packet.marked = False
@@ -98,8 +115,8 @@ class MarkerWorker(QObject):
     # mark all visible packets
     def mark_all_displayed(self, all_rows):
         for row in range(all_rows):
-                if self.marker(row, False, True) == 1:
-                    break
+            if self.marker(row, False, True) == 1:
+                break
         self.marking_finished.emit()
 
     # unmark all visible packets
@@ -111,26 +128,26 @@ class MarkerWorker(QObject):
                     if self.marker(row, False, True) == 1:
                         break
         self.marking_finished.emit()
-    
+
     def ignore_packet(self, selected_rows):
         for row in selected_rows:
-                if self.marker(row, True, False) == 1:
-                    break
+            if self.marker(row, True, False) == 1:
+                break
         self.marking_finished.emit()
 
     def ignore_all_displayed(self, all_rows):
         for row in range(all_rows):
-                hash = self.hash_packet(row)
-                if hash not in self.window.marked_packets:
-                    if self.marker(row, True, False) == 1:
-                        return
+            hash = self.hash_packet(row)
+            if hash not in self.window.marked_packets:
+                if self.marker(row, True, False) == 1:
+                    return
         self.marking_finished.emit()
 
     def unignore_all_displayed(self, all_rows):
         for row in range(all_rows):
             hash = self.hash_packet(row)
-            if hash in self.marked_packets:
-                if self.marked_packets[hash].ignored:
+            if hash in self.window.marked_packets:
+                if self.window.marked_packets[hash].ignored:
                     if self.marker(row, True, False) == 1:
                         return
         self.marking_finished.emit()
@@ -146,7 +163,10 @@ class MarkerWorker(QObject):
                     self.window.set_background(row, 0, 0, 0)
         self.marking_finished.emit()
 
-# define the window class that inherits from the GUI window class and the main window class
+# define the window class that inherits from the GUI window class and the
+# main window class
+
+
 class Window(window.Ui_MainWindow, QMainWindow):
 
     permission_allowed = pyqtSignal()
@@ -158,14 +178,14 @@ class Window(window.Ui_MainWindow, QMainWindow):
         super(Window, self).__init__()
 
         self.data_box_menu = QMenu(self)
-        
+
         self.detect = None
         self.cwd = None
         self.stopped_capture = True
         self.stopped_analysis = True
         self.packet_number = 1
         # creates GUI_actions object
-        self.GUI_actions = GUI_actions.GUIActions()
+        self.GUI_actions = GUI_actions.GUIActions(self._PROMISCUOUS)
         self.setupUi(self)
         self.showMaximized()
         self.flaggedIPs = []
@@ -175,13 +195,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.analysis_thread = None
         self.stop_event = threading.Event()
         self.stop_analysis_event = threading.Event()
-       
-        
 
-        # create array which tracks currently marked packets
+        # create set which tracks currently marked packets
         self.marked_packets = dict()
-        self.seen = set()
-        self.duplicates = set()
 
         # set open/save file and quit application function
         self.actionOpen_Multi_Files.triggered.connect(self.open_multiple_file)
@@ -201,11 +217,11 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # set the analysis menu
         self.actionStartAnalysis.triggered.connect(self.start_analysis)
+        self.actionFollowTCPStream.triggered.connect(self.open_follow_stream)
         self.actionAttack_Analysis.triggered.connect(self.start_analysis)
-        self.actionConfigureAttackAnalysis.triggered.connect(self.configure_analysis)
+        self.actionConfigureAttackAnalysis.triggered.connect(
+            self.configure_analysis)
         self.actionConfigure.triggered.connect(self.configure_analysis)
-        
-
 
         # set the help menu
         self.actionUse_Guide.triggered.connect(self.use_guide)
@@ -213,21 +229,33 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # set display filter
         self.filterBox.setEditable(True)
         self.filterBox.pFilterModel = QSortFilterProxyModel(self)
-        self.filterBox.pFilterModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.filterBox.pFilterModel.setFilterCaseSensitivity(
+            Qt.CaseInsensitive)
         self.filterBox.pFilterModel.setSourceModel(self.filterBox.model())
 
-        self.filterBox.completer = QCompleter(self.filterBox.pFilterModel, self)
+        self.filterBox.completer = QCompleter(
+            self.filterBox.pFilterModel, self)
 
-        self.filterBox.completer.setCompletionMode(QCompleter.UnfilteredPopupCompletion)
+        self.filterBox.completer.setCompletionMode(
+            QCompleter.UnfilteredPopupCompletion)
         self.filterBox.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.filterBox.setCompleter(self.filterBox.completer)
 
-        self.filterBox.lineEdit().textEdited.connect(self.filterBox.pFilterModel.setFilterFixedString)
+        self.filterBox.lineEdit().textEdited.connect(
+            self.filterBox.pFilterModel.setFilterFixedString)
         self.filterBox.completer.activated.connect(self.completer_operate)
 
         self.filterBot.clicked.connect(self.filter_capture)
 
-        self.filter_list = ["", "ARP", "DNS", "ICMP", "IGMP", "IPv6", "UDP", "TCP"]
+        self.filter_list = [
+            "",
+            "ARP",
+            "DNS",
+            "ICMP",
+            "IGMP",
+            "IPv6",
+            "UDP",
+            "TCP"]
         self.filterBox.addItems(self.filter_list)
 
         # set capture list
@@ -238,7 +266,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.captureList.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.captureList.cellClicked.connect(self.get_select_packet)
         self.captureList.cellClicked.connect(self.get_current_list_row)
-        self.captureList.cellDoubleClicked.connect(self.handle_double_clicked_row)
+        self.captureList.cellDoubleClicked.connect(
+            self.handle_double_clicked_row)
 
         # set sub window
         self.subs = []
@@ -261,10 +290,13 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionFindPreviousPacket.triggered.connect(self.previous_packet)
         self.actionMarkPacket.triggered.connect(self.mark_packet)
         self.actionMarkAllDisplayed.triggered.connect(self.mark_all_displayed)
-        self.actionUnmarkAllDisplayed.triggered.connect(self.unmark_all_displayed)
+        self.actionUnmarkAllDisplayed.triggered.connect(
+            self.unmark_all_displayed)
         self.actionIgnorePacket.triggered.connect(self.ignore_packet)
-        self.actionIgnoreAllDisplayed.triggered.connect(self.ignore_all_displayed)
-        self.actionUnignoreAllDisplayed.triggered.connect(self.unignore_all_displayed)
+        self.actionIgnoreAllDisplayed.triggered.connect(
+            self.ignore_all_displayed)
+        self.actionUnignoreAllDisplayed.triggered.connect(
+            self.unignore_all_displayed)
         if self._ANALYSIS == "true":
             webbrowser.open("http://localhost:8080")
 
@@ -273,15 +305,18 @@ class Window(window.Ui_MainWindow, QMainWindow):
         row = self.captureList.currentRow()
         return row
 
-    # Helper function to get the selected packet and its details from the capture list based on the row number
+    # Helper function to get the selected packet and its details from the
+    # capture list based on the row number
     def get_select_packet(self, row):
         item = self.captureList.item(row, 0)
         # if the filtered packets are empty, select the sniffed packets
         if not self.GUI_actions.sniffer.filtered_packets:
-            selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(item.text()) - 1]
+            selected_packet = self.GUI_actions.sniffer.sniffed_packets[int(
+                item.text()) - 1]
         # otherwise show the filtered packets
-        else: 
-            selected_packet = self.GUI_actions.sniffer.filtered_packets[int(item.text()) - 1]
+        else:
+            selected_packet = self.GUI_actions.sniffer.filtered_packets[int(
+                item.text()) - 1]
         details = str.splitlines(selected_packet.show(dump=True))
         return selected_packet, details
 
@@ -290,7 +325,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         if self.captureList.rowCount() == 0:
             return
         else:
-            next_row = (self.get_current_list_row() + 1) % self.captureList.rowCount()
+            next_row = (self.get_current_list_row() +
+                        1) % self.captureList.rowCount()
             self.captureList.setCurrentCell(next_row, 0)
 
     # select the previous packet
@@ -298,10 +334,12 @@ class Window(window.Ui_MainWindow, QMainWindow):
         if self.captureList.rowCount() == 0:
             return
         else:
-            prev_row = (self.get_current_list_row() - 1) % self.captureList.rowCount()
+            prev_row = (self.get_current_list_row() -
+                        1) % self.captureList.rowCount()
             self.captureList.setCurrentCell(prev_row, 0)
 
-    # Puts the data of the packet into a tree structure to make it easier to read
+    # Puts the data of the packet into a tree structure to make it easier to
+    # read
     def display_packet_detail(self, detail):
         root_amount = 0
         root_arr = []
@@ -318,8 +356,6 @@ class Window(window.Ui_MainWindow, QMainWindow):
             else:
                 root_index_arr.append(' ')
 
-        
-
         temp_index = 0
         for i in range(len(detail)):
             if i == 0:
@@ -331,26 +367,28 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 continue
             QTreeWidgetItem(root_arr[temp_index]).setText(0, detail[i])
 
-    # if a row is double-clicked, display the packets detail in new window (subWindow)
+    # if a row is double-clicked, display the packets detail in new window
+    # (subWindow)
     def handle_double_clicked_row(self, row):
         length = len(self.subs)
-        # Add the new subWindow to the subs list, which is used to keep track of all the subWindows
+        # Add the new subWindow to the subs list, which is used to keep track
+        # of all the subWindows
         self.subs.append(subWindow.SubWindow())
         selected_packet, details = self.get_select_packet(row)
         # self.subs[length].parse_packet(selected_packet)
-        self.subs[length].setWindowTitle("Packet #" + str(row + 1) + "  " + str(selected_packet.sprintf(
-            "%Ether.type%"
-        )))
+        self.subs[length].setWindowTitle(
+            "Packet #" + str(row + 1) + "  " + str(selected_packet.sprintf("%Ether.type%")))
         # Display the packet detail in the newly created subWindow
         self.subs[length].display_packet_data(selected_packet)
         self.subs[length].display_packet_detail(details)
         self.subs[length].show()
-        
+
     # open a single pcap file
     def open_file(self):
         self.actionStopCaputure.setEnabled(True)
         self.stopped_capture = False
-        file_name, _ = QFileDialog.getOpenFileName(self, "Open file", "", 'pcap (*.pcap);;All files (*)')
+        file_name, _ = QFileDialog.getOpenFileName(
+            self, "Open file", "", 'pcap (*.pcap);; All files (*)')
         if file_name:
             self.GUI_actions.read_pcap(str(file_name), mainWindow)
         else:
@@ -361,7 +399,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.actionStopCaputure.setEnabled(True)
         self.stopped_capture = False
         # gets the filename of the selected files
-        file_names, _ = QFileDialog.getOpenFileNames(self, "Open files", "", 'pcap (*.pcap);;All files (*)')
+        file_names, _ = QFileDialog.getOpenFileNames(
+            self, "Open files", "", 'pcap (*.pcap);; cap (*.cap);; pcapng (*.pcapng);; All files (*)')
         length = len(file_names)
         temp = 0
         while temp < length:
@@ -371,14 +410,16 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
     # saves a pcap file of the captured packets
     def save_file(self):
-        file_name = QFileDialog.getSaveFileName(self, 'Save file', "", 'pcap (*.pcap);;All files (*)')
+        file_name = QFileDialog.getSaveFileName(
+            self, 'Save file', "", 'pcap (*.pcap);;All files (*)')
         if file_name[0] == '':
             return
         self.GUI_actions.write_pcap(str(os.path.basename(file_name[0])))
 
     # saves a pcap file of the captured packets as a new file
     def save_as_file(self):
-        file_name = QFileDialog.getSaveFileName(self, 'Save As', '', 'pcap (*.pcap);;All files (*)')
+        file_name = QFileDialog.getSaveFileName(
+            self, 'Save As', '', 'pcap (*.pcap);;All files (*)')
         if file_name[0] == '':
             return
         self.GUI_actions.write_pcap(str(file_name[0]))
@@ -387,14 +428,15 @@ class Window(window.Ui_MainWindow, QMainWindow):
     def quit(self):
         self.close()
 
-    # pauses the packet capturing, does not remove packets, and doesn't reset packet counter
+    # pauses the packet capturing, does not remove packets, and doesn't reset
+    # packet counter
     def pause_capture(self):
         # disables/enables the buttons
         self.actionStartCapture.setEnabled(True)
         self.actionPauseCapture.setEnabled(False)
         self.actionStopCaputure.setEnabled(True)
         # stops the sniffer
-        self.GUI_actions.start_sniffer(False, mainWindow)
+        self.GUI_actions.start_sniffer(False, mainWindow, self._MONITOR)
 
     # stops the packet capturing
     def stop_capture(self):
@@ -407,91 +449,128 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.stopped_capture = True
         self.stopped_analysis = True
         self.captureList.setRowCount(0)
-        self.GUI_actions.start_sniffer(False, mainWindow)
+        self.GUI_actions.start_sniffer(False, mainWindow, self._MONITOR)
         self.packet_number = 1
         # resets captured packets
         self.GUI_actions.sniffer.reset()
 
-    # method to start sniffer, ran as thread so packets are displayed dynamically
+    # method to start sniffer, ran as thread so packets are displayed
+    # dynamically
     def start_capture_thread(self):
         self.stopped_capture = False
         self.GUI_actions.sniffer.set_sniff_amount(self.lineEdit.text())
         self.GUI_actions.sniffer.set_filter(self.filterBox.currentText())
-        # calls method in GUI_actions to start sniffer, passes window object through
+        # calls method in GUI_actions to start sniffer, passes window object
+        # through
         try:
-            self.GUI_actions.start_sniffer(True, mainWindow)
+            self.GUI_actions.start_sniffer(True, mainWindow, self._MONITOR)
         except PermissionError:
             self.permission_allowed.emit()
 
-    # handles error raised by sniffer if user does not have capture permissions     
+    # handles error raised by sniffer if user does not have capture permissions
     def handle_permision_error(self):
-        sys.stderr.write("PermissionError: You do not have permission to capture...\n")
+        sys.stderr.write(
+            "PermissionError: You do not have permission to capture...\n")
         sys.stderr.flush()
         self.stop_capture()
-        self.open_alert("Permission Error", "You are not allowed to capture packets")
-    
+        self.open_alert(
+            "Permission Error",
+            "You are not allowed to capture packets")
+
     # initialises and starts packet capture thread
     def start_capture(self):
         self.actionStartCapture.setEnabled(False)
         self.actionPauseCapture.setEnabled(True)
         self.actionStopCaputure.setEnabled(True)
-        # creates a thread to run simultaneously so the user can still interact with GUI
-        self.capture_thread = threading.Thread(target=self.start_capture_thread)
+        # creates a thread to run simultaneously so the user can still interact
+        # with GUI
+        self.capture_thread = threading.Thread(
+            target=self.start_capture_thread)
         # starts running the thread
         self.capture_thread.start()
-    
+
     # if analysis is NOT running and the packet capture is NOT stopped, START analysis
     # if analysis IS running then STOP analysis and SET the event
     def start_analysis(self):
         if self.stopped_capture:
-            self.open_alert("No packets", "Can't start analysis when no packets are loaded.")
+            self.open_alert(
+                "No packets",
+                "Can't start analysis when no packets are loaded.")
         else:
             if self.stopped_analysis:
-                self.open_alert("Analysis started", "Analysis is now running in the background!")
-                self.analysis_thread = threading.Thread(target=self.start_analysis_thread)
+                self.open_alert("Analysis started",
+                                "Analysis is now running in the background!")
+                self.analysis_thread = threading.Thread(
+                    target=self.start_analysis_thread)
                 self.analysis_thread.start()
                 return
             else:
-                self.open_alert("Analysis stopped", "Analysis is no longer running.")
+                self.open_alert(
+                    "Analysis stopped",
+                    "Analysis is no longer running.")
                 self.stop_analysis_event.set()
                 self.stopped_analysis = True
-    
+
     # if analysis_event is NOT SET AND packet capture IS running and the thread has NOT been told to stop
     # then carry out packet analysis
-    # please allow a few seconds after clicking (x) for all threads to be told to stop
+    # please allow a few seconds after clicking (x) for all threads to be told
+    # to stop
     def start_analysis_thread(self):
         self.stopped_analysis = False
         config_options = {}
         with open("src/pythonGUI/config.yml", "r") as f:
             config_options = yaml.safe_load(f)
-        while not self.stop_analysis_event.is_set() and not self.stopped_capture and not self.stop_event.is_set():
-            # using a lock so that flags and data refer to the same sniffed packets
+        while not self.stop_analysis_event.is_set(
+        ) and not self.stopped_capture and not self.stop_event.is_set():
+            # using a lock so that flags and data refer to the same sniffed
+            # packets
             with lock:
                 data = self.GUI_actions.get_sniffed_packets()
                 flags = self.flaggedIPs
-            # proceed to run all analyses and wait 5 seconds before looping again
+            # proceed to run all analyses and wait 5 seconds before looping
+            # again
             plot = plotting.Plotting(data)
             plot.run_all()
-            attack_analysis = attack_analysis_action.AttackAnalysis(data, flags)
+            attack_analysis = attack_analysis_action.AttackAnalysis(
+                data, flags)
             attack_analysis.run_all_detect(config_options)
             self.stop_analysis_event.wait(5)
         # resets the event so that it can be set again
         self.stop_analysis_event.clear()
 
-    # if analysis is NOT running, the user can view and edit the threshold configurations defined in config.yaml
+    # if analysis is NOT running, the user can view and edit the threshold
+    # configurations defined in config.yaml
     def configure_analysis(self):
         if not self.stopped_analysis:
-            self.open_alert("Warning", "Cannot change configuration options whilst analysis is running")
+            self.open_alert(
+                "Warning",
+                "Cannot change configuration options whilst analysis is running")
         else:
             config_options = {}
             with open("src/pythonGUI/config.yml", "r") as f:
                 config_options = yaml.safe_load(f)
             config = config_window.Ui_ConfigWindow(config_options)
             config.exec_()
-        
+
+    def open_follow_stream(self):
+        if self.captureList.rowCount() == 0:
+            return
+        length = len(self.subs)
+        current_time = str(datetime.now().date())
+        file_name = "src/" + "stream" + current_time + ".pcap"
+        if not os.path.isfile(file_name):
+            self.GUI_actions.write_pcap(file_name)
+        file_name = os.path.abspath(file_name)
+        self.subs.append(
+            follow_stream_window.FollowStreamWindow(
+                file_name, self))
+        self.subs[length].setWindowTitle("Protocol stream")
+        self.subs[length].show()
+
     # sets the stop_event which tells all threads that they should terminate
     # since the sniffer can simply be disabled using start_sniffer, only the analysis thread
-    # is told to stop using stop_event. Additionally, sends a SIGINT to the server to shut it down.
+    # is told to stop using stop_event. Additionally, sends a SIGINT to the
+    # server to shut it down.
     def closeEvent(self, event):
         PROC_NAME = "nta10a"
         if self._ANALYSIS == "true":
@@ -501,9 +580,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     try:
                         os.kill(pid, signal.SIGINT)
                     except ProcessLookupError:
-                        print("Unable to find process, process most likely killed before closeEvent() was called...")
+                        print(
+                            "Unable to find process, process most likely killed before closeEvent() was called...")
         self.stop_event.set()
-        self.GUI_actions.start_sniffer(False, mainWindow)
+        self.GUI_actions.start_sniffer(False, mainWindow, self._MONITOR)
         event.accept()
 
     def use_guide(self):
@@ -512,6 +592,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # webbrowser.open(file_path)
         webbrowser.open_new_tab('https://tomossherlock.github.io/NetworkTrafficAnalysis/#/README')
 
+
     def filter_capture(self):
         # retrieve the currently selected protocol and source address
         protocol = self.filterBox.currentText()
@@ -519,8 +600,10 @@ class Window(window.Ui_MainWindow, QMainWindow):
         dst_address = self.addressInput2.text()
 
         # call the filter method with the selected protocol and source address.
-        filtered_packets = self.GUI_actions.filter_packet_combined(protocol, source_address, dst_address)
-        # reset the row count of the table that displays captured packets in the GUI to 0.
+        filtered_packets = self.GUI_actions.filter_packet_combined(
+            protocol, source_address, dst_address)
+        # reset the row count of the table that displays captured packets in
+        # the GUI to 0.
         self.captureList.setRowCount(0)
         # reset the packet number counter to 1.
         self.packet_number = 1
@@ -530,13 +613,15 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.reapply_markers()
 
     # in order to use PyQts build in sorting function for tables with integers,
-    # need to store integers using this custom item class which allows integer comparison
+    # need to store integers using this custom item class which allows integer
+    # comparison
     class TableItemInt(QTableWidgetItem):
         # less than initializer that allows two items to be compared.
         def __lt__(self, other):
             return int(self.text()) < int(other.text())
 
-    # called whenever a packet is captured by the sniffer, displays this packet in a table
+    # called whenever a packet is captured by the sniffer, displays this
+    # packet in a table
     def display_packet(self, packet):
         # gets current amount of rows
         row_number = self.captureList.rowCount()
@@ -547,18 +632,23 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # 2nd column for timestamp
         self.captureList.setItem(row_number, 1, QTableWidgetItem(
             str(datetime.fromtimestamp(int(packet.time)))))
-        # depending on the layers of the packet attributes need to be handled differently
+        # depending on the layers of the packet attributes need to be handled
+        # differently
         if packet.haslayer(IP):
             # 3rd column = source address
-            self.captureList.setItem(row_number, 2, QTableWidgetItem(packet.getlayer(IP).src))
+            self.captureList.setItem(
+                row_number, 2, QTableWidgetItem(
+                    packet.getlayer(IP).src))
 
             # 4th column = destination address
-            self.captureList.setItem(row_number, 3, QTableWidgetItem(packet.getlayer(IP).dst))
+            self.captureList.setItem(
+                row_number, 3, QTableWidgetItem(
+                    packet.getlayer(IP).dst))
 
-            # 5th column = protocol obtained from calling function to get protocol name from protocol number
-            self.captureList.setItem(row_number, 4,
-                                     QTableWidgetItem(
-                                         str(self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet))))
+            # 5th column = protocol obtained from calling function to get
+            # protocol name from protocol number
+            self.captureList.setItem(row_number, 4, QTableWidgetItem(
+                str(self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet))))
 
             # 6th column = length of packet
             packet_len_item = self.TableItemInt(str(len(packet)))
@@ -568,8 +658,9 @@ class Window(window.Ui_MainWindow, QMainWindow):
             self.captureList.update()
             # allows scroll bar to follow most recent captured packet
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
-            
-            if self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "TCP":
+
+            if self.GUI_actions.get_protocol(
+                    packet.getlayer(IP).proto, packet) == "TCP":
                 self.set_background(row_number, 0, 51, 102)
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "UDP" or self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "UDP/DNS":
                 self.set_background(row_number, 0, 102, 51)
@@ -578,22 +669,27 @@ class Window(window.Ui_MainWindow, QMainWindow):
             elif self.GUI_actions.get_protocol(packet.getlayer(IP).proto, packet) == "ICMP":
                 self.set_background(row_number, 0, 102, 102)
 
-
         # Handles the case where the packet has an ARP layer
         elif packet.haslayer(ARP):
-            # The capture list is updated with the source and destination IP addresses
-            self.captureList.setItem(row_number, 2, QTableWidgetItem(packet.getlayer(ARP).psrc))
+            # The capture list is updated with the source and destination IP
+            # addresses
+            self.captureList.setItem(
+                row_number, 2, QTableWidgetItem(
+                    packet.getlayer(ARP).psrc))
 
-            self.captureList.setItem(row_number, 3, QTableWidgetItem(packet.getlayer(ARP).pdst))
+            self.captureList.setItem(
+                row_number, 3, QTableWidgetItem(
+                    packet.getlayer(ARP).pdst))
 
             self.captureList.setItem(row_number, 4,
                                      QTableWidgetItem("ARP"))
 
             # The capture list is updated with the length of the packet
-            # TableItemInt is used to allow the table to sort the length of the packet
+            # TableItemInt is used to allow the table to sort the length of the
+            # packet
             packet_len_item = self.TableItemInt(str(len(packet)))
             self.captureList.setItem(row_number, 5, packet_len_item)
-            
+
             # The capture list is updated
             self.captureList.update()
             self.captureList.verticalScrollBar().setSliderPosition(row_number)
@@ -601,15 +697,18 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         # Handles the case where the packet has an IPv6 layer
         elif packet.haslayer(IPv6):
-            
-            self.captureList.setItem(row_number, 2, QTableWidgetItem(packet.getlayer(IPv6).src))
 
-            self.captureList.setItem(row_number, 3, QTableWidgetItem(packet.getlayer(IPv6).dst))
+            self.captureList.setItem(
+                row_number, 2, QTableWidgetItem(
+                    packet.getlayer(IPv6).src))
+
+            self.captureList.setItem(
+                row_number, 3, QTableWidgetItem(
+                    packet.getlayer(IPv6).dst))
 
             # The capture list is updated with the protocol for the packet
-            self.captureList.setItem(row_number, 4,
-                                     QTableWidgetItem(
-                                         str(self.GUI_actions.get_protocol(packet.getlayer(IPv6).nh, packet))))
+            self.captureList.setItem(row_number, 4, QTableWidgetItem(
+                str(self.GUI_actions.get_protocol(packet.getlayer(IPv6).nh, packet))))
 
             # The capture list is updated as above
             packet_len_item = self.TableItemInt(str(len(packet)))
@@ -635,18 +734,55 @@ class Window(window.Ui_MainWindow, QMainWindow):
         # increments packet number for each captured packet
         self.packet_number += 1
 
-
     # set background color for a row depending on the packet's protocol
+
     def set_background(self, row_number, red, green, blue):
-        self.captureList.item(row_number, 0).setBackground(QColor(red, green, blue))
-        self.captureList.item(row_number, 1).setBackground(QColor(red, green, blue))
-        self.captureList.item(row_number, 2).setBackground(QColor(red, green, blue))
-        self.captureList.item(row_number, 3).setBackground(QColor(red, green, blue))
-        self.captureList.item(row_number, 4).setBackground(QColor(red, green, blue))
-        self.captureList.item(row_number, 5).setBackground(QColor(red, green, blue))
+        self.captureList.item(
+            row_number,
+            0).setBackground(
+            QColor(
+                red,
+                green,
+                blue))
+        self.captureList.item(
+            row_number,
+            1).setBackground(
+            QColor(
+                red,
+                green,
+                blue))
+        self.captureList.item(
+            row_number,
+            2).setBackground(
+            QColor(
+                red,
+                green,
+                blue))
+        self.captureList.item(
+            row_number,
+            3).setBackground(
+            QColor(
+                red,
+                green,
+                blue))
+        self.captureList.item(
+            row_number,
+            4).setBackground(
+            QColor(
+                red,
+                green,
+                blue))
+        self.captureList.item(
+            row_number,
+            5).setBackground(
+            QColor(
+                red,
+                green,
+                blue))
 
     # method to display the byte version of the packet
-    # currently displays data but would like, so it shows in the detail section the selected bytes
+    # currently displays data but would like, so it shows in the detail
+    # section the selected bytes
     def display_packet_data(self, packet):
         # clears any previous data
         self.data.clear()
@@ -695,8 +831,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     if hex_data_helper >= len(hex_data_current_split):
                         break
                     # create a table item for each byte
-                    self.data.setItem(int(current_row), hex_data_helper,
-                                      QTableWidgetItem(str(hex_data_current_split[hex_data_helper])))
+                    self.data.setItem(int(current_row), hex_data_helper, QTableWidgetItem(
+                        str(hex_data_current_split[hex_data_helper])))
                     hex_data_helper += 1
                 # splits the text data into a list of bytes similar to above
                 text_data_current = text_datas[current_row]
@@ -708,14 +844,14 @@ class Window(window.Ui_MainWindow, QMainWindow):
                     if text_data_helper2 >= len(text_data_current_split):
                         break
                     # create a table item for each byte
-                    self.data.setItem(int(current_row), text_data_helper1,
-                                      QTableWidgetItem(str(text_data_current_split[text_data_helper2])))
+                    self.data.setItem(int(current_row), text_data_helper1, QTableWidgetItem(
+                        str(text_data_current_split[text_data_helper2])))
                     text_data_helper1 += 1
                     text_data_helper2 += 1
                 # move on to the next row of data
                 current_row += 1
         # displays "NO DATA" if there is no data
-        except:
+        except BaseException:
             self.data.setItem(0, 0, QTableWidgetItem("NO DATA"))
 
         self.actionTurnHex.setCheckable(True)
@@ -735,7 +871,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
 
         self.actionTurnHex.setCheckable(True)
         self.data_box_menu.addAction(self.actionTurnHex)
-        
+
         # display the menu at the current cursor position
         self.data_box_menu.popup(QCursor.pos())
 
@@ -743,7 +879,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
     def show_data_bin(self, packet):
         # clear any previous data
         self.data.clear()
-        # convert the packet data into a list of bytes which are stored in datas
+        # convert the packet data into a list of bytes which are stored in
+        # datas
         packet_data = bytes(packet)
         hex_data = hex_packet_data(packet_data)
         datas = hex_data.split(' --- ')
@@ -785,7 +922,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
             while current_row < int(row_number):
                 hex_data_current = hex_datas[current_row]
                 hex_data_current_split = hex_data_current.split(' ')
-                
+
                 # convert hex data to binary
                 index = 0
                 hex_data_fin = []
@@ -794,19 +931,21 @@ class Window(window.Ui_MainWindow, QMainWindow):
                         hex_data_fin.append(hex_data_current_split[index])
                     index += 1
 
-
                 bin_data_current_split = []
                 for x in hex_data_fin:
-                    bin_data_current_split.append(bin(int(str(x), 16))[2:].zfill(2 * 4))
+                    bin_data_current_split.append(
+                        bin(int(str(x), 16))[2:].zfill(2 * 4))
 
                 bin_data_helper = 0
                 # handles the binary representation of the packet data
                 while bin_data_helper < 16:
                     if bin_data_helper >= len(bin_data_current_split):
                         break
-                    # sets the item at the current row and column to be the binary data
-                    self.data.setItem(int(current_row), bin_data_helper,
-                                      QTableWidgetItem(bin_data_current_split[bin_data_helper]))
+                    # sets the item at the current row and column to be the
+                    # binary data
+                    self.data.setItem(
+                        int(current_row), bin_data_helper, QTableWidgetItem(
+                            bin_data_current_split[bin_data_helper]))
                     bin_data_helper += 1
                 text_data_current = text_datas[current_row]
                 text_data_current_split = text_data_current.split(' ')
@@ -816,13 +955,13 @@ class Window(window.Ui_MainWindow, QMainWindow):
                 while text_data_helper1 < 32:
                     if text_data_helper2 >= len(text_data_current_split):
                         break
-                    self.data.setItem(int(current_row), text_data_helper1,
-                                      QTableWidgetItem(str(text_data_current_split[text_data_helper2])))
+                    self.data.setItem(int(current_row), text_data_helper1, QTableWidgetItem(
+                        str(text_data_current_split[text_data_helper2])))
                     text_data_helper1 += 1
                     text_data_helper2 += 1
                 # move on to the next row of data
                 current_row += 1
-        except:
+        except BaseException:
             self.data.setItem(0, 0, QTableWidgetItem("NO DATA"))
 
         self.actionTurnBin.setCheckable(True)
@@ -901,7 +1040,8 @@ class Window(window.Ui_MainWindow, QMainWindow):
         selected_rows = [index.row() for index in selected_indexes]
         return selected_rows
 
-    # data class to keep track of a marked packet, its hash, and its previous colour prior to marking
+    # data class to keep track of a marked packet, its hash, and its previous
+    # colour prior to marking
     @dataclass
     class MarkedPacket:
         hash: int
@@ -910,7 +1050,7 @@ class Window(window.Ui_MainWindow, QMainWindow):
         b: int
         ignored: bool
         marked: bool
-                
+
     # on every filter, reapply markings to packets
     def reapply_markers(self):
         all_rows = self.captureList.rowCount()
@@ -933,57 +1073,65 @@ class Window(window.Ui_MainWindow, QMainWindow):
         self.marker_thread.start()
 
     def mark_packet(self):
-        selected_rows = self.get_selected_rows()    
+        selected_rows = self.get_selected_rows()
         self.marker_thread = QThread()
         self.marker_worker = MarkerWorker(window=self)
         self.start_marker_thread(self.marker_worker.mark_packet, selected_rows)
-        
+
     # mark all visible packets
     def mark_all_displayed(self):
         all_rows = self.captureList.rowCount()
         self.marker_thread = QThread()
         self.marker_worker = MarkerWorker(window=self)
-        self.start_marker_thread(self.marker_worker.mark_all_displayed, all_rows)
-        
+        self.start_marker_thread(
+            self.marker_worker.mark_all_displayed, all_rows)
+
     # unmark all visible packets
     def unmark_all_displayed(self):
         all_rows = self.captureList.rowCount()
         self.marker_thread = QThread()
         self.marker_worker = MarkerWorker(window=self)
-        self.start_marker_thread(self.marker_worker.unmark_all_displayed, all_rows)
+        self.start_marker_thread(
+            self.marker_worker.unmark_all_displayed, all_rows)
 
     # mark a packet or packets as ignored, or unmark it as such
     def ignore_packet(self):
         selected_rows = self.get_selected_rows()
         self.marker_thread = QThread()
         self.marker_worker = MarkerWorker(window=self)
-        self.start_marker_thread(self.marker_worker.ignore_packet, selected_rows)
-        
+        self.start_marker_thread(
+            self.marker_worker.ignore_packet,
+            selected_rows)
+
     # ignores all visible packets
     def ignore_all_displayed(self):
         all_rows = self.captureList.rowCount()
         self.marker_thread = QThread()
         self.marker_worker = MarkerWorker(window=self)
-        self.start_marker_thread(self.marker_worker.ignore_all_displayed, all_rows)
-        
+        self.start_marker_thread(
+            self.marker_worker.ignore_all_displayed, all_rows)
+
     # removes all markings that say a packet is ignored for visible packets
     def unignore_all_displayed(self):
         all_rows = self.captureList.rowCount()
         self.marker_thread = QThread()
         self.marker_worker = MarkerWorker(window=self)
-        self.start_marker_thread(self.marker_worker.unignore_all_displayed, all_rows)
-        
+        self.start_marker_thread(
+            self.marker_worker.unignore_all_displayed, all_rows)
+
     # use <ENTER> in filter box of the GUI to select filter
-    def enter_keypress(self, key): # key refers to the key that was pressed
+    def enter_keypress(self, key):  # key refers to the key that was pressed
         # if the key pressed is the enter key
         if key.key() == Qt.Key_Enter & key.key() == Qt.Key_Return:
             # get the text and index of the text from the filter box
             text = self.filterBox.currentText()
-            index = self.filterBox.findText(text, Qt.MatchExactly | Qt.MatchCaseSensitive)
+            index = self.filterBox.findText(
+                text, Qt.MatchExactly | Qt.MatchCaseSensitive)
             self.filterBox.setCurrentIndex(index)
             # hide the dropdown list
             self.filterBox.hidePopup()
         super(QComboBox, self.filterBox).enter_keypress(key)
+
 
 # ran first and intialises PyQt window
 if __name__ == '__main__':

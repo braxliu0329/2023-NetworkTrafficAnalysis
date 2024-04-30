@@ -15,10 +15,10 @@ from scapy.all import *
 
 # object with commands accessible from the user interface
 class GUIActions:
-    def __init__(self):
+    def __init__(self, promiscuous):
         self.captured_packets = None
         self.running = True
-        self.sniffer = Sniffer()
+        self.sniffer = Sniffer(promiscuous)
 
         self.protocols = {1: "ICMP",
                           2: "IGMP",
@@ -27,8 +27,8 @@ class GUIActions:
                           58: "ICMPv6"}
 
     # calls method to start sniffer
-    def start_sniffer(self, status, window):
-        self.sniffer.run_sniffer(status, window)
+    def start_sniffer(self, status, window, monitor):
+        self.sniffer.run_sniffer(status, window, monitor)
 
     # returns sniffed packets from sniffer
     def get_sniffed_packets(self):

@@ -89,6 +89,54 @@ pip install -r requirements.txt
 
 _When finished running the program, don't forget to deactivate the virtual environment using `deactivate`._
 
+#### Tshark
+Tshark is a CLI version of Wireshark, and provides tools used in the follow stream functionality in the program. Linux users can download just Tshark, but Windows users will need to install both Wireshark and Tshark, and follow other steps.
+*Any version from 4.2 onwards should work. Using any earlier version means the UTF-8 encoding is not available when following streams*
+
+##### Windows
+
+- Download the wireshark installer from [here](https://www.wireshark.org/#download)
+- In file explorer, select the install path of Wireshark.
+- Search your start menu for "Edit environment variables for your account".
+- Edit Path. (Should point to Python installation).
+- Hit OK to save the modified PATH environment.
+- Once PATH is set, run TShark to check if everything works correctly (you need to restart the cmd shell first).
+
+
+##### Linux
+- Download [Tshark 4.2.x](https://www.wireshark.org/download/src/wireshark-4.2.4.tar.xz) from source and install the package
+
+#### MacOs
+- Download Homebrew
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+- Download Wireshark(Tshark is included)
+```
+brew install wireshark
+```
+- Verify the TShark Installation
+```
+Tshark -v
+```
+
+```
+wget https://www.wireshark.org/download/src/wireshark-4.2.4.tar.xz -O /tmp/wireshark-4.2.4.tar.xz
+tar -xvf /tmp/wireshark-4.2.4.tar.xz
+cd /tmp/wireshark-4.2.4
+
+sudo apt update && sudo apt dist-upgrade
+sudo apt install cmake libglib2.0-dev libgcrypt20-dev flex yacc bison byacc \
+  libpcap-dev qtbase5-dev libssh-dev libsystemd-dev qtmultimedia5-dev \
+  libqt5svg5-dev qttools5-dev
+cmake .
+make
+sudo make install
+```
+
+Make sure you've satisfied any dependencies requires by Tshark
+
+
 ## Deployment Instructions
 
 - In the root directory, run the build script

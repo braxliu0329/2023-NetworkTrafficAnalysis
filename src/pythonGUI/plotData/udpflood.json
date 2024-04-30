@@ -3,8 +3,8 @@
     "explanation": "These addresses were marked because the UDP packets sent from these addresses are over a too high frequency",
     "data": [
         {
-            "address": "123.123.123.123",
-            "rate": 19103
+            "address": "fe80::6487:4816:d4d1:5a21",
+            "rate": 0
         }
     ]
 }
