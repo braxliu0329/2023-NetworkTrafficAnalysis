@@ -416,9 +416,6 @@ class AttackDetection:
 
         # Returns both graphs
         return pps_table_res, pps_table_req
-
-
-        # -------------Below are new attack methods----------------
     
     def ssl_stripping(self):
         # initialises suspicious addresses address lists
@@ -476,37 +473,35 @@ class AttackDetection:
         pps_table = {'Address': [],
                      'PPS': []}
 
-        # For each address:
-        #    - calculate mean and standard deviation
-        #    - remove any outliers using these
-        #    - calculate the packets per second sent by each address
-        #    - adds to suspicious addresses if above the threshold
-        for address in suspicious_addresses:
-            packets_ip = packets[packets['SourceIP'] == address]
+        # convert attack_sus_set to a set for faster lookup
+        attack_sus_set = set(attack_sus_list)
 
-            # calculates mean and standard deviation
-            mean = packets_ip['Time'].mean()
-            std = packets_ip['Time'].std()
+        # group packets for source address
+        grouped_packets = packets.groupby('SourceIP')
 
-            # removes any outliers (timestamps that are more than 3 standard deviations away from the mean)
-            packets_no_outliers = packets_ip[packets_ip['Time'] <= mean + (3 * std)]
-            packet_per_sec = 0
-            if len(packets_no_outliers.index) != 0:
-                # calculates average packets per second
-                difference = packets_no_outliers['Time'].iloc[-1] - packets_no_outliers['Time'].iloc[0]
-                packet_per_sec = len(packets_no_outliers) / difference
+        # iterate through each address and its corresponding group of packets
+        for address, group in grouped_packets:
+            if address in suspicious_addresses:
+                # calculate first, third quartile and interquartile range
+                q1 = group['Time'].quantile(0.25)
+                q3 = group['Time'].quantile(0.75)
+                iqr = q3 - q1
+                # filter out outliers based on IQR
+                filtered_group = group[(group['Time'] >= q1 - 1.5 * iqr) & (group['Time'] <= q3 + 1.5 * iqr)]
 
-            pps_table['Address'].append(address)
-            pps_table['PPS'].append(int(packet_per_sec))
+                # calculate pps, make sure won't be divided by 0
+                time_diff = filtered_group['Time'].max() - filtered_group['Time'].min()
+                pps = len(filtered_group) / time_diff if time_diff > 0 else 0
 
-            # adds to suspicious addresses if above threshold
-            if packet_per_sec > threshold:
-                if address not in self.suspicious_addresses:
+                # update pps table
+                pps_table['Address'].append(address)
+                pps_table['PPS'].append(int(pps))
+
+                if pps > threshold:
                     self.suspicious_addresses.append(address)
-                if address not in attack_sus_list:
-                    attack_sus_list.append(address)
+                    attack_sus_set.add(address)
 
-
+        attack_sus_list[:] = list(attack_sus_set)
         return pps_table
 
     def run_all_detection(self, threshold):

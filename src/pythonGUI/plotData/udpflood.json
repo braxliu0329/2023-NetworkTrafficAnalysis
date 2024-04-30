@@ -1,6 +1,6 @@
 {
-    "suspicious": "No suspicious addresses detected",
-    "explanation": "",
+    "suspicious": "Suspicious addresses: 123.123.123.123",
+    "explanation": "These addresses were marked because the UDP packets sent from these addresses are over a too high frequency",
     "data": [
         {
             "address": "fe80::6487:4816:d4d1:5a21",
