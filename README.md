@@ -106,6 +106,20 @@ Tshark is a CLI version of Wireshark, and provides tools used in the follow stre
 ##### Linux
 - Download [Tshark 4.2.x](https://www.wireshark.org/download/src/wireshark-4.2.4.tar.xz) from source and install the package
 
+#### MacOs
+- Download Homebrew
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+- Download Wireshark(Tshark is included)
+```
+brew install wireshark
+```
+- Verify the TShark Installation
+```
+Tshark -v
+```
+
 ```
 wget https://www.wireshark.org/download/src/wireshark-4.2.4.tar.xz -O /tmp/wireshark-4.2.4.tar.xz
 tar -xvf /tmp/wireshark-4.2.4.tar.xz
