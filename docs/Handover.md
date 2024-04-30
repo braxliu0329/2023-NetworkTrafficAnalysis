@@ -93,6 +93,6 @@ It lacks most of the features of the main NTAnalyser, not being able to capture 
  - Some capture packets don't have a recognised protocol
  - Hard to replicate issue where you cannot scroll up when doing live capture. When you try to scroll up it will scroll itself down.
  - Every plot .json needs to exist already, and needs to be a valid JSON, otherwise analysis will break.
- - There is currently no mechanism for getting the maximum stream count for a follow stream in a YAML format.
+ - There is currently no mechanism for getting the maximum stream count for a follow stream in a YAML format. (It does work if you scroll through any non-YAML format first)
  - There are some colouring issues for the YAML format in follow stream.
  - Some clipping and visual issues on the webpage.
