@@ -7,7 +7,7 @@
   - [User Stories](#user-stories)
   - [Setup Instructions](#setup-instruction-for-development)
   - [Deployment Instructions](#deployment-instructions)
-  - [License](#license)
+  - [Licence](#licence)
 
 ## Project Description
   This project builds upon last year's Network Traffic Analysis, optimising their implementations of packet sniffing. The project as it existed last year was capable of detecting numerous attack methods,
@@ -162,5 +162,5 @@ cd src
 
 _(MacOS) When prompted to configure Python interpreter, select conda interpreter_
 
-## License
-Distributed under a *MIT License*
+## Licence
+Distributed under a *Company License*
