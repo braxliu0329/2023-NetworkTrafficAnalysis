@@ -1,5 +1,18 @@
 # 网络流量分析工具 (Network Traffic Analysis)
 
+---
+<p align="center">
+  <a href="https://braxliu0329.github.io/2023-NetworkTrafficAnalysis/">
+    <img alt="在线使用文档" src="https://img.shields.io/badge/%F0%9F%9A%80_%E5%9C%A8%E7%BA%BF%E6%96%87%E6%A1%A3-GitHub_Pages-2ea44f?style=for-the-badge">
+  </a>
+  &nbsp;
+  <a href="README.md">
+    <img alt="English Version" src="https://img.shields.io/badge/README-English-blue?style=for-the-badge&logo=readme&logoColor=white">
+  </a>
+</p>
+
+---
+
 ## 目录
 
 - [项目简介](#项目简介)

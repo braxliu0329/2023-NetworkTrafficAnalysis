@@ -1,3 +1,16 @@
+---
+<p align="center">
+  <a href="https://braxliu0329.github.io/2023-NetworkTrafficAnalysis/">
+    <img alt="Online Documentation" src="https://img.shields.io/badge/%F0%9F%9A%80_Online_Docs-GitHub_Pages-2ea44f?style=for-the-badge">
+  </a>
+  &nbsp;
+  <a href="README_zh.md">
+    <img alt="中文说明文档" src="https://img.shields.io/badge/文档-%E4%B8%AD%E6%96%87%E7%89%88-red?style=for-the-badge&logo=readme&logoColor=white">
+  </a>
+</p>
+
+---
+
 ## Table of Contents
   - [Project Description](#project-description)
   - [Requirements](#requirements)
