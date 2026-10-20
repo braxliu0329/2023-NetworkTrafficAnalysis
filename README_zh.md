@@ -62,7 +62,7 @@
 ## 团队成员
 
 - Ani Boja
-- Tony Liu
+- Zehao Liu
 - Tomos Sherlock
 - Joe Dobson
 
